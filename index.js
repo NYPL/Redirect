@@ -18,20 +18,23 @@ const getIndexMapping = index => indexMappings[index] || '';
 const recodeSearchQuery = query => query.split(/\+|\s/).join("%20");
 
 const getQueryFromParams = (url, parsedURL) => {
-  console.log('getting query from params', parsedURL);
-  // const searchArg = url.match(/\?.*searcharg=([^&]+)/);
   const searchArg = parsedURL.searchParams.get('searcharg');
-  console.log('searchArg: ', searchArg);
-  // const searchArgAlt = url.match(/\?.*SEARCH=([^&]+)/);
   const searchArgAlt = parsedURL.searchParams.get('SEARCH');
-  console.log('searchArgAlt: ', searchArgAlt);
-  // const q = searchArg ? searchArg[1] : (searchArgAlt ? searchArgAlt[1] : '');
-  const q = searchArg || searchArgAlt || '';
-  console.log('q: ', q);
-  // const searchType = url.match(/\?.*searchtype=([^&]+)/);
-  const searchType = parsedURL.searchParams.get('searchtype');
-  console.log('searchType: ', searchType);
-  // return recodeSearchQuery(q + (searchType ? getIndexMapping(searchType[1]) : ''));
+  let searchIndex;
+  let searchArgFromQueryParam;
+  let breaker = false;
+  parsedURL.searchParams.forEach((v,k) => {
+    if (!v && !breaker) {
+      const splitted = k.split('/');
+      if (splitted[1]) {
+        searchIndex = splitted[1][0];
+        searchArgFromQueryParam = splitted[1].slice(1);
+        breaker = true;
+      }
+    }
+  });
+  const q = searchArg || searchArgAlt || searchArgFromQueryParam || '';
+  const searchType = parsedURL.searchParams.get('searchtype') || searchIndex;
   return recodeSearchQuery(q + (searchType ? getIndexMapping(searchType) : ''));
 }
 
@@ -43,16 +46,12 @@ const expressions = {
     handler: () => BASE_SCC_URL,
   },
   searchRegWith: {
-    expr: /\/search(~S\d*)?\/([a-zA-Z])?((\w|\W)+)/,
+    expr: /\/search(~S\d*)?\/([a-zA-Z])((\w|\W)+)/,
     handler: match => `${BASE_SCC_URL}search?q=${recodeSearchQuery(match[3])}${getIndexMapping(match[2])}`
   },
-  // searchRegNone: {
-  //     expr: /\/search(~S\d*)?\/?([a-zA-Z])?$/,
-  //     handler: match => `${BASE_SCC_URL}search?q=''${getIndexMapping(match[2])}`
-  // },
   searchRegWithout: {
-    expr: /\/search(~S\d*)?\/([a-zA-Z])?/,
-    handler: (match, parsedURL) => `${BASE_SCC_URL}search?q=${getQueryFromParams(match[0], parsedURL)}${getIndexMapping(match[2])}`
+    expr: /\/search(~S\d*)?(\/([a-zA-Z]))?/,
+    handler: (match, parsedURL) => `${BASE_SCC_URL}search?q=${getQueryFromParams(match[0], parsedURL)}${getIndexMapping(match[3])}`
   },
   patroninfoReg: {
     expr: /\/patroninfo[^\/]\/(\d+)/,
@@ -64,14 +63,6 @@ const expressions = {
   },
 };
 
-
-// const mapWebPacUrlToSCCURL = (url) => Object.values(expressions).find((pathtype) => {
-//   const parsedURL = new URL(url);
-//   const pathname = parsedURL.pathname
-//   const match = pathname.match(pathtype.expr);
-//   if (match) return pathtype.handler(match, parsedURL);
-//   return false;
-// });
 const mapWebPacUrlToSCCURL = (url) => {
   let redirectURL;
   for (let pathType of Object.values(expressions)) {
