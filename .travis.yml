@@ -14,18 +14,18 @@ before_deploy:
 - rm -rf vendor
 deploy:
 - provider: lambda
-  function_name: Redirect-dev
+  function_name: Redirect-qa
   description: Redirects old webpac requests to Research Catalog
   region: us-east-1
-  role: arn:aws:iam::224280085904:role/lambda_basic_execution
+  role: arn:aws:iam::946183545209:role/lambda-full-access
   runtime: nodejs12.x
   module_name: index
   handler_name: handler
   skip_cleanup: true
-  access_key_id: "$AWS_ACCESS_KEY_ID_DEVELOPMENT"
-  secret_access_key: "$AWS_SECRET_ACCESS_KEY_DEVELOPMENT"
+  access_key_id: "$AWS_ACCESS_KEY_ID_QA"
+  secret_access_key: "$AWS_SECRET_ACCESS_KEY_QA"
   on:
-    branch: development
+    branch: qa
 after_deploy:
 - rake set_config
 env:
