@@ -1,0 +1,31 @@
+language: node_js
+node_js:
+  - 12
+rvm: 2.7.0
+before_install:
+- gem install bundler
+- gem install nypl_ruby_util
+install:
+- pip install awscli
+cache: bundler
+script:
+- npm run test
+before_deploy:
+- rm -rf vendor
+deploy:
+- provider: lambda
+  function_name: Redirect-dev
+  description: Redirects old webpac requests to Research Catalog
+  region: us-east-1
+  role: arn:aws:iam::224280085904:role/lambda_basic_execution
+  runtime: nodejs12.x
+  module_name: index
+  handler_name: handler
+  skip_cleanup: true
+  access_key_id: "$AWS_ACCESS_KEY_ID_DEVELOPMENT"
+  secret_access_key: "$AWS_SECRET_ACCESS_KEY_DEVELOPMENT"
+  region: us-east-1
+  on:
+    branch: development
+after_deploy:
+- rake set_config
