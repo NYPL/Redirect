@@ -74,7 +74,6 @@ const mapWebPacUrlToSCCURL = (url) => {
       const pathname = parsedURL.pathname
       const match = pathname.match(pathType.expr);
       if (match) {
-        console.log('matching: ', pathType);
         redirectURL = pathType.handler(match, parsedURL);
         break
       }
@@ -83,7 +82,6 @@ const mapWebPacUrlToSCCURL = (url) => {
 }
 
 const handler = async (event, context, callback) => {
-  console.log('event: ', event, 'context: ', context);
   const response = {
     statusCode: 301,
     headers: {
