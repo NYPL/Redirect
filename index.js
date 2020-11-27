@@ -49,6 +49,10 @@ const expressions = {
     expr: /^\/$/,
     handler: () => BASE_SCC_URL,
   },
+  authReg: {
+    expr: /\/iii\/cas\/login/,
+    handler: (match, parsedURL) => parsedURL.href.replace('catalog.nypl.org', 'ilsstaff.nypl.org'),
+  },
   searchRegWith: {
     expr: /\/search(~S\d*)?\/([a-zA-Z])((\w|\W)+)/,
     handler: match => `${BASE_SCC_URL}search?q=${recodeSearchQuery(match[3])}${getIndexMapping(match[2])}`
@@ -82,12 +86,17 @@ const mapWebPacUrlToSCCURL = (url) => {
 }
 
 const handler = async (event, context, callback) => {
-  const response = {
-    statusCode: 301,
-    headers: {
-      Location: mapWebPacUrlToSCCURL(event.queryStringParameters.origin),
+  const redirectLocation = mapWebPacUrlToSCCURL(event.queryStringParameters.origin);
+  const response = redirectLocation ?
+    {
+      statusCode: 301,
+      headers: {
+        Location: redirectLocation,
+      }
     }
-  };
+    : {
+      statusCode: 404
+    };
   return callback(null, response);
 };
 
