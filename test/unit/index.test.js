@@ -42,8 +42,3 @@ describe('mapWebPacUrlToSCCURL', () => {
       .to.eql(`${BASE_SCC_URL}search?q=brainwash&search_scope=title`)
   });
 })
-
-
-//https://catalog.nypl.org/search~S97?/tbrainwash/tbrainwash/1%2C3%2C10%2CB/exact&FF=tbrainwash&1%2C4%2C
-//https://catalog.nypl.org/search~S1?/aRubina%2CD/arubina+d/1%2C3%2C85%2CB/exact&FF=arubina+dina&1%2C46%2C
-// https://catalog.nypl.org/search~S1/a?jac+winspeare%2C
