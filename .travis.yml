@@ -3,6 +3,7 @@ node_js:
 - 12
 rvm: 2.7.0
 before_install:
+- npm install
 - gem install bundler
 - gem install nypl_ruby_util
 install:
