@@ -31,6 +31,10 @@ const getQueryFromParams = (url, parsedURL) => {
         searchArgFromQueryParam = splitted[1].slice(1);
         breaker = true;
       }
+      else if (splitted[0]) {
+        searchArgFromQueryParam = splitted[0];
+        breaker = true;
+      }
     }
   });
   const q = searchArg || searchArgAlt || searchArgFromQueryParam || '';
@@ -84,4 +88,17 @@ module.exports = {
   getQueryFromParams,
   getIndexMapping,
   indexMappings,
+  BASE_SCC_URL,
+};
+
+exports.handler = async (event, context, callback) => {
+   console.log('event: ', event, 'context: ', context);
+   const response = {
+    statusCode: 301,
+    headers: {
+      Location: mapWebPacUrlToSCCURL(event.queryStringParameters.origin),
+    }
+  };
+
+  return callback(null, response);
 };
