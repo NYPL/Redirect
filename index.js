@@ -82,23 +82,23 @@ const mapWebPacUrlToSCCURL = (url) => {
   return redirectURL;
 }
 
+const handler = async (event, context, callback) => {
+  console.log('event: ', event, 'context: ', context);
+  const response = {
+    statusCode: 301,
+    headers: {
+      Location: mapWebPacUrlToSCCURL(event.queryStringParameters.origin),
+    }
+  };
+  return callback(null, response);
+};
+
 module.exports = {
   mapWebPacUrlToSCCURL,
   expressions,
   getQueryFromParams,
   getIndexMapping,
   indexMappings,
+  handler,
   BASE_SCC_URL,
-};
-
-exports.handler = async (event, context, callback) => {
-   console.log('event: ', event, 'context: ', context);
-   const response = {
-    statusCode: 301,
-    headers: {
-      Location: mapWebPacUrlToSCCURL(event.queryStringParameters.origin),
-    }
-  };
-
-  return callback(null, response);
 };
