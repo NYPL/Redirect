@@ -11,6 +11,7 @@ Implemented:
 - homepage
 - permanent urls for bib show pages
 - most common search pages, accounting for search index and argument
+- login page
 
 Not yet implemented:
 
@@ -19,6 +20,7 @@ Not yet implemented:
 - non-research pages
 - more complicated search page parameters (e.g. sort type)
 - subject searches
+- standard number searches are implemented, but seem to have some issues.
 
 ## Running locally
 
