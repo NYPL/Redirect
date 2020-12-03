@@ -1,9 +1,10 @@
 BASE_SCC_URL = 'http://discovery.nypl.org/research/collections/shared-collection-catalog/';
 
+// Classic catalog uses certain letters to denote the type of search.
+// indexMappings maps these letters to the corresponding SCC params.
+// For keyword searches and unknown search types, we just do a general search.
 
 const indexMappings = {
-  // X: '',
-  // Y: '',
   a: '&search_scope=contributor',
   t: '&search_scope=title',
   s: '&search_scope=journal_title',
@@ -15,22 +16,32 @@ const indexMappings = {
 
 const getIndexMapping = index => indexMappings[index] || '';
 
+// change Catalog's + for the more standard %20
 const recodeSearchQuery = query => query.split(/\+|\s/).join("%20");
 
+// search query strings can be found in multiple places, so we need a method to
+// extract them
 const getQueryFromParams = (url, parsedURL) => {
+  // search query strings can be given in the searcharg or SEARCH params
   const searchArg = parsedURL.searchParams.get('searcharg');
   const searchArgAlt = parsedURL.searchParams.get('SEARCH');
+  // searchIndex will track the type of seearch, e.g. author, title, etc.
   let searchIndex;
   let searchArgFromQueryParam;
   let breaker = false;
+  // here we are looking for urls of the form search?/XYZ..., where /XYZ is given
+  // as a key with no value, and denotes the search index + term
   parsedURL.searchParams.forEach((v,k) => {
     if (!v && !breaker) {
       const splitted = k.split('/');
       if (splitted[1]) {
+        // the searchIndex can be found in the first letter after the /
         searchIndex = splitted[1][0];
+        // the rest of the path after / is the query
         searchArgFromQueryParam = splitted[1].slice(1);
         breaker = true;
       }
+      // the search param can also be given as search/X?YZ with the searchIndex before the ?.
       else if (splitted[0]) {
         searchArgFromQueryParam = splitted[0];
         breaker = true;
@@ -42,7 +53,7 @@ const getQueryFromParams = (url, parsedURL) => {
   return recodeSearchQuery(q + (searchType ? getIndexMapping(searchType) : ''));
 }
 
-// declare some regular expressions
+// declare some regular expressions and how to handle them
 
 const expressions = {
   nothingReg: {
@@ -70,6 +81,8 @@ const expressions = {
     handler: match => `${BASE_SCC_URL}bib/${match[1]}`
   },
 };
+
+// the main mapping method
 
 const mapWebPacUrlToSCCURL = (url) => {
   let redirectURL;
