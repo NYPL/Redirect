@@ -19,37 +19,40 @@ const getIndexMapping = index => indexMappings[index] || '';
 // change Catalog's + for the more standard %20
 const recodeSearchQuery = query => query.split(/\+|\s/).join("%20");
 
+// here we are looking for urls of the form search?/XYZ..., where /XYZ is given
+// as a key with no value, and denotes the search index + term
+const getQueryParamsGivenAsKeys = (searchParams) => {
+  for ([searchParamValue, searchParamKey] of searchParams.entries()) {
+    if (!searchParamValue) {
+      const splitted = searchParamKey.split('/');
+      if (splitted[1]) {
+        // the searchIndex can be found in the first letter after the /
+        searchIndex = splitted[1][0];
+        // the rest of the path after / is the query
+        searchArgFromQueryParam = splitted[1].slice(1);
+        return { searchIndex, searchArgFromQueryParam };
+      }
+      // the search param can also be given as search/X?YZ with the searchIndex before the ?.
+      else if (splitted[0]) {
+        searchArgFromQueryParam = splitted[0];
+        return { searchArgFromQueryParam };
+      }
+    }
+  }
+}
+
 // search query strings can be found in multiple places, so we need a method to
 // extract them
 const getQueryFromParams = (url, parsedURL) => {
   // search query strings can be given in the searcharg or SEARCH params
   const searchArg = parsedURL.searchParams.get('searcharg');
   const searchArgAlt = parsedURL.searchParams.get('SEARCH');
-  // searchIndex will track the type of seearch, e.g. author, title, etc.
-  let searchIndex;
-  let searchArgFromQueryParam;
-  let breaker = false;
-  // here we are looking for urls of the form search?/XYZ..., where /XYZ is given
-  // as a key with no value, and denotes the search index + term
-  parsedURL.searchParams.forEach((v,k) => {
-    if (!v && !breaker) {
-      const splitted = k.split('/');
-      if (splitted[1]) {
-        // the searchIndex can be found in the first letter after the /
-        searchIndex = splitted[1][0];
-        // the rest of the path after / is the query
-        searchArgFromQueryParam = splitted[1].slice(1);
-        breaker = true;
-      }
-      // the search param can also be given as search/X?YZ with the searchIndex before the ?.
-      else if (splitted[0]) {
-        searchArgFromQueryParam = splitted[0];
-        breaker = true;
-      }
-    }
-  });
+  // searchIndex will track the type of search, e.g. author, title, etc.
+  const { searchIndex, searchArgFromQueryParam } = getQueryParamsGivenAsKeys(parsedURL.searchParams);
+
   const q = searchArg || searchArgAlt || searchArgFromQueryParam || '';
   const searchType = parsedURL.searchParams.get('searchtype') || searchIndex;
+
   return recodeSearchQuery(q + (searchType ? getIndexMapping(searchType) : ''));
 }
 
