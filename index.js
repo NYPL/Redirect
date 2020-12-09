@@ -6,7 +6,7 @@ const { expressions, BASE_SCC_URL } = require('./expressions.js');
 const mapWebPacUrlToSCCURL = (url) => {
   let redirectURL;
   const parsedURL = new URL(url);
-  const pathname = decodeURIComponent(parsedURL.pathname)
+  const pathname = parsedURL.pathname
   for (let pathType of expressions) {
       const match = pathname.match(pathType.expr);
       if (match) {
