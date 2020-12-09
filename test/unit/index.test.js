@@ -13,7 +13,7 @@ describe('mapWebPacUrlToSCCURL', () => {
   })
 
   it('should map search pages using the format /Xsearchterm', () => {
-    expect(mapWebPacUrlToSCCURL('https://catalog.nypl.org/search~S1?/aRubina%2C+Dina/arubina+dina/1%2C2%2C84%2CB/exact&FF=arubina+dina+author&1%2C-1%2C/indexsort=-)'))
+    expect(mapWebPacUrlToSCCURL('https://catalog.nypl.org/search~S1/aRubina%2C+Dina/arubina+dina/1%2C2%2C84%2CB/exact&FF=arubina+dina+author&1%2C-1%2C/indexsort=-)'))
       .to.eql(`${BASE_SCC_URL}search?q=Rubina,%20Dina&search_scope=contributor`)
   });
 
