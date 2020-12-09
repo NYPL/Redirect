@@ -10,7 +10,7 @@ const expressions = [
   // used to match the homepage
   // matches path '/', full url e.g. 'http://catalog.nypl.org/'
   {
-    name: 'hompage',
+    name: 'homepage',
     expr: /^\/$/,
     handler: () => BASE_SCC_URL,
   },

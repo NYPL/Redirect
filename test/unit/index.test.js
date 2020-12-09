@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { mapWebPacUrlToSCCURL, BASE_SCC_URL } = require('../../index.js');
+const { mapWebPacUrlToSCCURL, handler, BASE_SCC_URL } = require('../../index.js');
 
 describe('mapWebPacUrlToSCCURL', () => {
   it('should map the base URL correctly', () => {
@@ -40,5 +40,37 @@ describe('mapWebPacUrlToSCCURL', () => {
   it('should map search pages with search query and search type as query param', () => {
     expect(mapWebPacUrlToSCCURL('https://catalog.nypl.org/search~S97?/tbrainwash/tbrainwash/1%2C3%2C10%2CB/exact&FF=tbrainwash&1%2C4%2C'))
       .to.eql(`${BASE_SCC_URL}search?q=brainwash&search_scope=title`)
+  });
+
+  it('should return undefined if no match is found', () => {
+    expect(mapWebPacUrlToSCCURL('https://catalog/record=&%!^/'))
+      .to.eql(undefined);
+  });
+});
+
+describe('handler', () => {
+  const context = {};
+  const callback = (_, resp) => resp.statusCode;
+
+  it('should call the callback with 301 response for matching url', async function () {
+    const event = {
+      queryStringParameters: {
+        origin: 'https://catalog.nypl.org'
+      }
+    }
+
+    const resp = await handler(event, context, callback);
+    expect(resp).to.eql(301);
+  });
+
+  it('should call the callback with 404 response for non-matching url', async function () {
+    const event = {
+        queryStringParameters: {
+          origin: 'https://catalog/record=&%!^/'
+        }
+    }
+
+    const resp = await handler(event, context, callback);
+    expect(resp).to.eql(404);
   });
 })
