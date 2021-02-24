@@ -9,6 +9,8 @@ before_install:
 install:
 - pip install awscli
 cache: bundler
+script:
+- echo "skipping tests"
 before_deploy:
 - rm -rf vendor
 deploy:
