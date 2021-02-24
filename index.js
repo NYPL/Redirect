@@ -1,3 +1,5 @@
+const { checkRecordSource } = require('./platformUtil.js');
+
 const BASE_SCC_URL = 'discovery.nypl.org/research/collections/shared-collection-catalog/';
 
 
@@ -64,17 +66,34 @@ const expressions = {
   },
   recordReg: {
     expr: /\/record=(\w+)/,
-    handler: match => `${BASE_SCC_URL}bib/${match[1]}`
+    handler: async function(match) {
+      const bnum = match[1];
+      console.log('record: ', bnum);
+      let source = await checkRecordSource(bnum);
+      // Look it up in Discovery API, if it exists handle it normally.
+      if (source === 'discovery') {
+        return `${BASE_SCC_URL}bib/${bnum}`;
+      }
+      // If it doesn't exist look up the bnumber in the bib service.
+      // If it exists there, redirect to classic catalog (it's future URL TBD)
+      else if (source === 'bib-service'){
+        return `${CLASSIC_CATALOG_URL}/record/${bnum}`;
+      }
+      // If it doesn't exist in either, return a 404
+      else {
+        return `${BASE_SCC_URL}/404`;
+      }
+    }
   },
 };
 
-const mapWebPacUrlToSCCURL = (path, query) => {
+async function mapWebPacUrlToSCCURL(path, query) {
   let redirectURL;
   for (let pathType of Object.values(expressions)) {
       const match = path.match(pathType.expr);
       if (match) {
         console.log('matching: ', pathType);
-        redirectURL = pathType.handler(match, query);
+        redirectURL = await pathType.handler(match, query);
         break
       }
   }
@@ -87,7 +106,8 @@ const handler = async (event, context, callback) => {
   let path = event.path;
   let query = event.multiValueQueryStringParameters;
   let method = event.multiValueHeaders['x-forwarded-proto'][0] ;
-  let redirectLocation = `${method}://${mapWebPacUrlToSCCURL(path, query)}`;
+  let mappedUrl = await mapWebPacUrlToSCCURL(path, query);
+  let redirectLocation = `${method}://${mappedUrl}`;
   console.log('location: ', redirectLocation);
   const response = {
     isBase64Encoded: false,
