@@ -9,8 +9,6 @@ before_install:
 install:
 - pip install awscli
 cache: bundler
-script:
-- npm run test
 before_deploy:
 - rm -rf vendor
 deploy:
