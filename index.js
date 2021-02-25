@@ -1,7 +1,7 @@
 const { checkRecordSource } = require('./platformUtil.js');
 
 const {
-  BASE_SCC_URL
+  BASE_SCC_URL,
   CLASSIC_CATALOG_URL,
 } = process.env;
 
