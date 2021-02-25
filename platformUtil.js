@@ -1,19 +1,26 @@
 let axios = require('axios');
 const {
-  CLIENT_ID,
-  CLIENT_SECRET,
   OAUTH_URL,
   PLATFORM_BASE_URL,
+  CLIENT_ID,
+  CLIENT_SECRET,
 } = process.env;
 
-const oauthConfig = { client_id: CLIENT_ID,
-  client_secret: CLIENT_SECRET,
-  grant_type: 'client_credentials',
-  scope: 'openid' };
-
-const stringifiedOauthConfig =  Object.entries(oauthConfig).map(([k,v]) => `${k}=${v}`).join('&');
 
 async function getToken() {
+
+  const { decrypt } = require('./kms_util.js');
+
+  const decryptedClientId = await decrypt(CLIENT_ID);
+  const decryptedClientSecret = await decrypt(CLIENT_SECRET);
+
+  const oauthConfig = { client_id: decryptedClientId,
+    client_secret: decryptedClientSecret,
+    grant_type: 'client_credentials',
+    scope: 'openid'
+  };
+
+  const stringifiedOauthConfig =  Object.entries(oauthConfig).map(([k,v]) => `${k}=${v}`).join('&');
   let resp = await axios.post(OAUTH_URL, stringifiedOauthConfig);
   return resp.data.access_token;
 }
