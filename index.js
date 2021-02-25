@@ -1,6 +1,9 @@
 const { checkRecordSource } = require('./platformUtil.js');
 
-const BASE_SCC_URL = 'discovery.nypl.org/research/collections/shared-collection-catalog/';
+const {
+  BASE_SCC_URL
+  CLASSIC_CATALOG_URL,
+} = process.env;
 
 
 const indexMappings = {
