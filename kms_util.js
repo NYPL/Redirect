@@ -3,6 +3,7 @@ const { KMS } = require('aws-sdk');
 // If we want to use encrypted client id and secret strings, then we need to set up
   // AWS and the KMS decryption function.
   function decrypt(key) {
+    global.log('attempting to decrypt in kms')
     kms = new KMS({
       region: 'us-east-1',
     });
@@ -14,10 +15,10 @@ const { KMS } = require('aws-sdk');
     return new Promise((resolve, reject) => {
       kms.decrypt(params, (err, data) => {
         if (err) {
-          console.log('error decrypting secrets');
+          global.log('error decrypting secrets');
           reject(err);
         } else {
-          console.log('successfully decrypted secrets');
+          global.log('successfully decrypted secrets');
           resolve(data.Plaintext.toString());
         }
       });

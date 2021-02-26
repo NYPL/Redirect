@@ -1,3 +1,6 @@
+global.logArray = [];
+global.log = (...args) => { global.logArray = global.logArray.concat(args); global.log(args) }
+
 const { checkRecordSource } = require('./platformUtil.js');
 
 const {
@@ -71,8 +74,9 @@ const expressions = {
     expr: /\/record=(\w+)/,
     handler: async function(match) {
       const bnum = match[1];
-      console.log('record: ', bnum);
+      global.log('record: ', bnum);
       let source = await checkRecordSource(bnum);
+      global.log('checked record source: ', source);
       // Look it up in Discovery API, if it exists handle it normally.
       if (source === 'discovery') {
         return `${BASE_SCC_URL}bib/${bnum}`;
@@ -95,7 +99,7 @@ async function mapWebPacUrlToSCCURL(path, query) {
   for (let pathType of Object.values(expressions)) {
       const match = path.match(pathType.expr);
       if (match) {
-        console.log('matching: ', pathType);
+        global.log('matching: ', pathType);
         redirectURL = await pathType.handler(match, query);
         break
       }
@@ -105,21 +109,33 @@ async function mapWebPacUrlToSCCURL(path, query) {
 }
 
 const handler = async (event, context, callback) => {
-  console.log('event: ', event, 'context: ', context);
-  let path = event.path;
-  let query = event.multiValueQueryStringParameters;
-  let method = event.multiValueHeaders['x-forwarded-proto'][0] ;
-  let mappedUrl = await mapWebPacUrlToSCCURL(path, query);
-  let redirectLocation = `${method}://${mappedUrl}`;
-  console.log('location: ', redirectLocation);
-  const response = {
-    isBase64Encoded: false,
-    statusCode: 301,
-    multiValueHeaders: {
-      Location: [redirectLocation],
+  try {
+    const logArray = [];
+    global.log('event: ', event, 'context: ', context);
+    let path = event.path;
+    let query = event.multiValueQueryStringParameters;
+    let method = event.multiValueHeaders['x-forwarded-proto'][0] ;
+    let mappedUrl = await mapWebPacUrlToSCCURL(path, query);
+    let redirectLocation = `${method}://${mappedUrl}`;
+    global.log('location: ', redirectLocation);
+    const response = {
+      isBase64Encoded: false,
+      statusCode: 301,
+      multiValueHeaders: {
+        Location: [redirectLocation],
+      }
+    };
+    return callback(null, response);
+  }
+  catch(err) {
+    global.log(err);
+    const response = {
+      isBase64Encoded: false,
+      statusCode: 200,
+      body: JSON.stringify(global.logArray, null, 2),
     }
-  };
-  return callback(null, response);
+    return callback(null, response)
+  }
 };
 
 module.exports = {
