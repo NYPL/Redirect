@@ -11,15 +11,8 @@ async function getToken() {
 
   global.log('getting token')
 
-  const { decrypt } = require('./kms_util.js');
-
-  global.log('decrypting')
-  const decryptedClientId = await decrypt(CLIENT_ID);
-  const decryptedClientSecret = await decrypt(CLIENT_SECRET);
-  global.log('successfully decrypted');
-
-  const oauthConfig = { client_id: decryptedClientId,
-    client_secret: decryptedClientSecret,
+  const oauthConfig = { client_id: global.decryptedClientId,
+    client_secret: global.decryptedClientSecret,
     grant_type: 'client_credentials',
     scope: 'openid'
   };

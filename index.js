@@ -108,10 +108,25 @@ async function mapWebPacUrlToSCCURL(path, query) {
   return redirectURL;
 }
 
+const init = async () => {
+  global.log('init env vars: ', process.env);
+  const { decrypt } = require('./kms_util.js');
+
+  global.log('decrypting')
+  global.decryptedClientId = await decrypt(CLIENT_ID);
+  global.decryptedClientSecret = await decrypt(CLIENT_SECRET);
+  global.log('successfully decrypted');
+  return new Promise(resolve => resolve());
+}
+
+const initPromise = init();
+
 const handler = async (event, context, callback) => {
-  // try {
+  try {
     global.log('env vars: ', process.env);
     global.log('event: ', event, 'context: ', context);
+    const functionConfig = await initPromise;
+    global.log('decrypted secrets check ', !!global.decryptedClientId, !!global.decryptedClientSecret);
     let path = event.path;
     let query = event.multiValueQueryStringParameters;
     let method = event.multiValueHeaders['x-forwarded-proto'][0] ;
@@ -126,16 +141,22 @@ const handler = async (event, context, callback) => {
       }
     };
     return callback(null, response);
-  // }
-  // catch(err) {
-  //   global.log(err);
-  //   const response = {
-  //     isBase64Encoded: false,
-  //     statusCode: 200,
-  //     body: JSON.stringify(global.logArray, null, 2),
-  //   }
-  //   return callback(null, response)
-  // }
+  }
+  catch(err) {
+    global.log('err: ', err);
+    console.log(JSON.stringify(global.logArray, null, 2));
+    let method = event.multiValueHeaders['x-forwarded-proto'][0] ;
+    let mappedUrl = BASE_SCC_URL;
+    let redirectLocation = `${method}://${mappedUrl}`;
+    const response = {
+      isBase64Encoded: false,
+      statusCode: 301,
+      multiValueHeaders: {
+        Location: [redirectLocation],
+      }
+    };
+    return callback(null, response)
+  }
 };
 
 module.exports = {
