@@ -1,5 +1,5 @@
 global.logArray = [];
-global.log = (...args) => { global.logArray = global.logArray.concat(args); global.log(args) }
+global.log = (...args) => { global.logArray = global.logArray.concat(args); console.log(args) }
 
 const { checkRecordSource } = require('./platformUtil.js');
 
@@ -109,8 +109,8 @@ async function mapWebPacUrlToSCCURL(path, query) {
 }
 
 const handler = async (event, context, callback) => {
-  try {
-    const logArray = [];
+  // try {
+    global.log('env vars: ', process.env);
     global.log('event: ', event, 'context: ', context);
     let path = event.path;
     let query = event.multiValueQueryStringParameters;
@@ -126,16 +126,16 @@ const handler = async (event, context, callback) => {
       }
     };
     return callback(null, response);
-  }
-  catch(err) {
-    global.log(err);
-    const response = {
-      isBase64Encoded: false,
-      statusCode: 200,
-      body: JSON.stringify(global.logArray, null, 2),
-    }
-    return callback(null, response)
-  }
+  // }
+  // catch(err) {
+  //   global.log(err);
+  //   const response = {
+  //     isBase64Encoded: false,
+  //     statusCode: 200,
+  //     body: JSON.stringify(global.logArray, null, 2),
+  //   }
+  //   return callback(null, response)
+  // }
 };
 
 module.exports = {

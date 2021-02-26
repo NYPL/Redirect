@@ -16,7 +16,7 @@ async function getToken() {
   global.log('decrypting')
   const decryptedClientId = await decrypt(CLIENT_ID);
   const decryptedClientSecret = await decrypt(CLIENT_SECRET);
-  global.log('successfully decrypted')
+  global.log('successfully decrypted');
 
   const oauthConfig = { client_id: decryptedClientId,
     client_secret: decryptedClientSecret,
