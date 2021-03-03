@@ -101,29 +101,31 @@ describe('mapWebPacUrlToSCCURL', async function() {
   });
 });
 
-// describe('handler', () => {
-//   const context = {};
-//   const callback = (_, resp) => resp.statusCode;
-//
-//   it('should call the callback with 301 response for matching url', async function () {
-//     const event = {
-//       queryStringParameters: {
-//         origin: 'https://catalog.nypl.org'
-//       }
-//     }
-//
-//     const resp = await handler(event, context, callback);
-//     expect(resp).to.eql(301);
-//   });
-//
-//   it('should call the callback with 404 response for non-matching url', async function () {
-//     const event = {
-//         queryStringParameters: {
-//           origin: 'https://catalog/record=&%!^/'
-//         }
-//     }
-//
-//     const resp = await handler(event, context, callback);
-//     expect(resp).to.eql(404);
-//   });
-// })
+describe('handler', () => {
+  const context = {};
+  const callback = (_, resp) => resp.statusCode;
+
+  it('should call the callback with 301 response for matching url', async function () {
+    const event = {
+      path: '/',
+      multiValueHeaders: {
+        'x-forwarded-proto': ['https']
+      }
+    }
+
+    const resp = await handler(event, context, callback);
+    expect(resp).to.eql(301);
+  });
+
+  it('should call the callback with 301 response for non-matching url', async function () {
+    const event = {
+        path: '/record=&%!^/',
+        multiValueHeaders: {
+          'x-forwarded-proto': ['https']
+        }
+    }
+
+    const resp = await handler(event, context, callback);
+    expect(resp).to.eql(301);
+  });
+})
