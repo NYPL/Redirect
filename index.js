@@ -6,6 +6,8 @@ const { checkRecordSource } = require('./platformUtil.js');
 const {
   BASE_SCC_URL,
   CLASSIC_CATALOG_URL,
+  CLIENT_ID,
+  // CLIENT_SECRET,
 } = process.env;
 
 
@@ -59,12 +61,12 @@ const expressions = {
     handler: () => BASE_SCC_URL,
   },
   searchRegWith: {
-    expr: /\/search(~S\d*)?\/([a-zA-Z])((\w|\W)+)/,
-    handler: match => `${BASE_SCC_URL}search?q=${recodeSearchQuery(match[3])}${getIndexMapping(match[2])}`
+    expr: /\/search(~S\d*)?\/([a-zA-Z])(([^\/])+)/,
+    handler: match => `${BASE_SCC_URL}/search?q=${recodeSearchQuery(match[3])}${getIndexMapping(match[2])}`
   },
   searchRegWithout: {
     expr: /\/search(~S\d*)?(\/([a-zA-Z]))?/,
-    handler: (match, query) => `${BASE_SCC_URL}search?q=${getQueryFromParams(match[0], query)}${getIndexMapping(match[3])}`
+    handler: (match, query) => `${BASE_SCC_URL}/search?q=${getQueryFromParams(match[0], query)}${getIndexMapping(match[3])}`
   },
   patroninfoReg: {
     expr: /\/patroninfo[^\/]\/(\d+)/,
@@ -79,7 +81,7 @@ const expressions = {
       global.log('checked record source: ', source);
       // Look it up in Discovery API, if it exists handle it normally.
       if (source === 'discovery') {
-        return `${BASE_SCC_URL}bib/${bnum}`;
+        return `${BASE_SCC_URL}/bib/${bnum}`;
       }
       // If it doesn't exist look up the bnumber in the bib service.
       // If it exists there, redirect to classic catalog (it's future URL TBD)
@@ -95,6 +97,7 @@ const expressions = {
 };
 
 async function mapWebPacUrlToSCCURL(path, query) {
+  console.log('mapping');
   let redirectURL;
   for (let pathType of Object.values(expressions)) {
       const match = path.match(pathType.expr);
@@ -105,6 +108,7 @@ async function mapWebPacUrlToSCCURL(path, query) {
       }
   }
   if (!redirectURL) redirectURL = BASE_SCC_URL;
+  console.log('returning: ', redirectURL);
   return redirectURL;
 }
 
@@ -144,7 +148,7 @@ const handler = async (event, context, callback) => {
   }
   catch(err) {
     global.log('err: ', err);
-    console.log(JSON.stringify(global.logArray, null, 2));
+    // console.log(JSON.stringify(global.logArray, null, 2));
     let method = event.multiValueHeaders['x-forwarded-proto'][0] ;
     let mappedUrl = BASE_SCC_URL;
     let redirectLocation = `${method}://${mappedUrl}`;
