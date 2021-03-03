@@ -70,24 +70,34 @@ describe('mapWebPacUrlToSCCURL', async function() {
       .to.eql(`${BASE_SCC_URL}/search?q=The%20Mothers%20&search_scope=title`)
   });
 
-  it.only('should map search pages with search query given as query param', async function() {
+  it('should map search pages with search query given as query param', async function() {
     const path = '/search~S1/a';
     const query = {
       'jac+winspeare%2C': [''],
     };
     const mapped = await mapWebPacUrlToSCCURL(path, query);
     expect(mapped)
-      .to.eql(`${BASE_SCC_URL}/search?q=jac%20winspeare,&search_scope=contributor`)
+      .to.eql(`${BASE_SCC_URL}/search?q=jac%20winspeare%2C&search_scope=contributor`)
   });
 
-  it('should map search pages with search query and search type as query param', () => {
-    expect(mapWebPacUrlToSCCURL('https://catalog.nypl.org/search~S97?/tbrainwash/tbrainwash/1%2C3%2C10%2CB/exact&FF=tbrainwash&1%2C4%2C'))
+  it('should map search pages with search query and search type as query param', async function() {
+    const path = '/search~S97';
+    const query = {
+      '/tbrainwash/tbrainwash/1,3,10,B/exact': [''],
+      'FF': ['tbrainwash'],
+      '1,4,': [''],
+    };
+    const mapped = await(mapWebPacUrlToSCCURL(path, query));
+    expect(mapped)
       .to.eql(`${BASE_SCC_URL}/search?q=brainwash&search_scope=title`)
   });
 
-  it('should return undefined if no match is found', () => {
-    expect(mapWebPacUrlToSCCURL('https://catalog/record=&%!^/'))
-      .to.eql(undefined);
+  it('should return base url if no match is found', async function() {
+    const path = 'record=&%!^/';
+    const query = {};
+    const mapped = await mapWebPacUrlToSCCURL(path, query);
+    expect(mapped)
+      .to.eql('https://discovery.nypl.org');
   });
 });
 

@@ -7,7 +7,7 @@ const {
   BASE_SCC_URL,
   CLASSIC_CATALOG_URL,
   CLIENT_ID,
-  // CLIENT_SECRET,
+  CLIENT_SECRET,
 } = process.env;
 
 
