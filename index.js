@@ -128,7 +128,7 @@ const initPromise = init();
 const handler = async (event, context, callback) => {
   try {
     global.log('env vars: ', process.env);
-    global.log('event: ', event, 'context: ', context);
+    global.log('event: ', event.path,, event.multiValueQueryStringParameters);
     const functionConfig = await initPromise;
     global.log('decrypted secrets check ', !!global.decryptedClientId, !!global.decryptedClientSecret);
     let path = event.path;
@@ -142,12 +142,13 @@ const handler = async (event, context, callback) => {
       statusCode: 301,
       multiValueHeaders: {
         Location: [redirectLocation],
-      }
+      },
+      body: JSON.stringify(global.log, null, 2)
     };
     return callback(null, response);
   }
   catch(err) {
-    global.log('err: ', err);
+    global.log('err: ', err.message);
     // console.log(JSON.stringify(global.logArray, null, 2));
     let method = event.multiValueHeaders['x-forwarded-proto'][0] ;
     let mappedUrl = BASE_SCC_URL;
@@ -157,7 +158,8 @@ const handler = async (event, context, callback) => {
       statusCode: 301,
       multiValueHeaders: {
         Location: [redirectLocation],
-      }
+      },
+      body: JSON.stringify(global.log, null, 2)
     };
     return callback(null, response)
   }
