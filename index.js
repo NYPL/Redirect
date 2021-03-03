@@ -128,7 +128,7 @@ const initPromise = init();
 const handler = async (event, context, callback) => {
   try {
     global.log('env vars: ', process.env);
-    global.log('event: ', event.path,, event.multiValueQueryStringParameters);
+    global.log('event: ', event.path, event.multiValueQueryStringParameters);
     const functionConfig = await initPromise;
     global.log('decrypted secrets check ', !!global.decryptedClientId, !!global.decryptedClientSecret);
     let path = event.path;
