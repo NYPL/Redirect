@@ -2,7 +2,7 @@
   "path": "/record=b22297361?localtestevent=1",
   "multiValueHeaders": {
     "x-forwarded-proto": [
-      "https://"
+      "https"
     ]
   },
   "multiValueQueryStringParameters": {}

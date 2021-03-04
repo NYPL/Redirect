@@ -135,7 +135,7 @@ const handler = async (event, context, callback) => {
     let query = event.multiValueQueryStringParameters;
     let method = event.multiValueHeaders['x-forwarded-proto'][0] ;
     let mappedUrl = await mapWebPacUrlToSCCURL(path, query);
-    let redirectLocation = `${method}${mappedUrl}`;
+    let redirectLocation = `${method}://${mappedUrl}`;
     global.log('location: ', redirectLocation);
     const response = {
       isBase64Encoded: false,
@@ -152,7 +152,7 @@ const handler = async (event, context, callback) => {
     // console.log(JSON.stringify(global.logArray, null, 2));
     let method = event.multiValueHeaders['x-forwarded-proto'][0] ;
     let mappedUrl = BASE_SCC_URL;
-    let redirectLocation = `${method}${mappedUrl}`;
+    let redirectLocation = `${method}://${mappedUrl}`;
     const response = {
       isBase64Encoded: false,
       statusCode: 301,
