@@ -1,6 +1,3 @@
-global.logArray = [];
-global.log = (...args) => { global.logArray = global.logArray.concat(args); console.log(args) }
-
 const { checkRecordSource } = require('./platformUtil.js');
 
 const {
@@ -76,9 +73,9 @@ const expressions = {
     expr: /\/record=(\w+)/,
     handler: async function(match) {
       const bnum = match[1];
-      global.log('record: ', bnum);
+      console.log('record: ', bnum);
       let source = await checkRecordSource(bnum);
-      global.log('checked record source: ', source);
+      console.log('checked record source: ', source);
       // Look it up in Discovery API, if it exists handle it normally.
       if (source === 'discovery') {
         return `${BASE_SCC_URL}/bib/${bnum}`;
@@ -102,7 +99,7 @@ async function mapWebPacUrlToSCCURL(path, query) {
   for (let pathType of Object.values(expressions)) {
       const match = path.match(pathType.expr);
       if (match) {
-        global.log('matching: ', pathType);
+        console.log('matching: ', pathType);
         redirectURL = await pathType.handler(match, query);
         break
       }
@@ -113,13 +110,13 @@ async function mapWebPacUrlToSCCURL(path, query) {
 }
 
 const init = async () => {
-  global.log('init env vars: ', process.env);
+  console.log('init env vars: ', process.env);
   const { decrypt } = require('./kms_util.js');
 
-  global.log('decrypting')
+  console.log('decrypting')
   global.decryptedClientId = await decrypt(CLIENT_ID);
   global.decryptedClientSecret = await decrypt(CLIENT_SECRET);
-  global.log('successfully decrypted');
+  console.log('successfully decrypted');
   return new Promise(resolve => resolve());
 }
 
@@ -127,29 +124,29 @@ const initPromise = init();
 
 const handler = async (event, context, callback) => {
   try {
-    global.log('env vars: ', process.env);
-    global.log('event: ', event.path, event.multiValueQueryStringParameters);
+    console.log('env vars: ', process.env);
+    console.log('event: ', event.path, event.multiValueQueryStringParameters);
     const functionConfig = await initPromise;
-    global.log('decrypted secrets check ', !!global.decryptedClientId, !!global.decryptedClientSecret);
+    console.log('decrypted secrets check ', !!global.decryptedClientId, !!global.decryptedClientSecret);
     let path = event.path;
     let query = event.multiValueQueryStringParameters;
     let method = event.multiValueHeaders['x-forwarded-proto'][0] ;
     let mappedUrl = await mapWebPacUrlToSCCURL(path, query);
     let redirectLocation = `${method}://${mappedUrl}`;
-    global.log('location: ', redirectLocation);
+    console.log('location: ', redirectLocation);
     const response = {
       isBase64Encoded: false,
       statusCode: 301,
       multiValueHeaders: {
         Location: [redirectLocation],
       },
-      body: JSON.stringify(global.log, null, 2)
+      body: JSON.stringify(console.log, null, 2)
     };
     return callback(null, response);
   }
   catch(err) {
-    global.log('err: ', err.message);
-    // console.log(JSON.stringify(global.logArray, null, 2));
+    console.log('err: ', err.message);
+    // console.log(JSON.stringify(console.logArray, null, 2));
     let method = event.multiValueHeaders['x-forwarded-proto'][0] ;
     let mappedUrl = BASE_SCC_URL;
     let redirectLocation = `${method}://${mappedUrl}`;
@@ -159,7 +156,7 @@ const handler = async (event, context, callback) => {
       multiValueHeaders: {
         Location: [redirectLocation],
       },
-      body: JSON.stringify(global.log, null, 2)
+      body: JSON.stringify(console.log, null, 2)
     };
     return callback(null, response)
   }
