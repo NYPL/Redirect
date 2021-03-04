@@ -146,7 +146,6 @@ const handler = async (event, context, callback) => {
   }
   catch(err) {
     console.log('err: ', err.message);
-    // console.log(JSON.stringify(console.logArray, null, 2));
     let method = event.multiValueHeaders['x-forwarded-proto'][0] ;
     let mappedUrl = BASE_SCC_URL;
     let redirectLocation = `${method}://${mappedUrl}`;
