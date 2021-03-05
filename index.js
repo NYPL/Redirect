@@ -1,10 +1,6 @@
-const { checkRecordSource } = require('./platformUtil.js');
-
 const {
   BASE_SCC_URL,
   CLASSIC_CATALOG_URL,
-  CLIENT_ID,
-  CLIENT_SECRET,
 } = process.env;
 
 
@@ -71,24 +67,9 @@ const expressions = {
   },
   recordReg: {
     expr: /\/record=(\w+)/,
-    handler: async function(match) {
+    handler: (match) => {
       const bnum = match[1];
-      console.log('record: ', bnum);
-      let source = await checkRecordSource(bnum);
-      console.log('checked record source: ', source);
-      // Look it up in Discovery API, if it exists handle it normally.
-      if (source === 'discovery') {
-        return `${BASE_SCC_URL}/bib/${bnum}`;
-      }
-      // If it doesn't exist look up the bnumber in the bib service.
-      // If it exists there, redirect to classic catalog (it's future URL TBD)
-      else if (source === 'bib-service'){
-        return `${CLASSIC_CATALOG_URL}/record/${bnum}`;
-      }
-      // If it doesn't exist in either, return a 404
-      else {
-        return `${BASE_SCC_URL}/404`;
-      }
+      return `${BASE_SCC_URL}/bib/${bnum}`;
     }
   },
 };
@@ -109,25 +90,10 @@ async function mapWebPacUrlToSCCURL(path, query) {
   return redirectURL;
 }
 
-const init = async () => {
-  console.log('init env vars: ', process.env);
-  const { decrypt } = require('./kms_util.js');
-
-  console.log('decrypting')
-  global.decryptedClientId = await decrypt(CLIENT_ID);
-  global.decryptedClientSecret = await decrypt(CLIENT_SECRET);
-  console.log('successfully decrypted');
-  return new Promise(resolve => resolve());
-}
-
-const initPromise = init();
-
 const handler = async (event, context, callback) => {
   try {
     console.log('env vars: ', process.env);
     console.log('event: ', event.path, event.multiValueQueryStringParameters);
-    const functionConfig = await initPromise;
-    console.log('decrypted secrets check ', !!global.decryptedClientId, !!global.decryptedClientSecret);
     let path = event.path;
     let query = event.multiValueQueryStringParameters;
     let method = event.multiValueHeaders['x-forwarded-proto'][0] ;
