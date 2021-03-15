@@ -36,4 +36,8 @@ describe('expressions', () => {
     expect(findMatching('http://catalog.nypl.org/search/a')).to.eql('searchWithout');
     expect(findMatching('http://catalog.nypl.org/search~S12/a?Example')).to.eql('searchWithout');
   });
+
+  it('should match research My Account pages to patroninfo', () => {
+    expect(findMatching('https://catalog.nypl.org/patroninfo~S1/1234567/items')).to.eql('patroninfo');
+  });
 });

@@ -99,6 +99,13 @@ describe('mapWebPacUrlToSCCURL', async function() {
     expect(mapped)
       .to.eql('https://discovery.nypl.org');
   });
+
+  it('should return account page for research my account', () => {
+    const path = 'patroninfo/1234567';
+    const query = {};
+    const mapped = mapWebPacUrlToSCCURL(path, query);
+    expect(mapped).to.eql(`${BASE_SCC_URL}/account`);
+  });
 });
 
 describe('handler', () => {

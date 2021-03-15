@@ -63,7 +63,7 @@ const expressions = {
   },
   patroninfoReg: {
     expr: /\/patroninfo[^\/]\/(\d+)/,
-    handler: match => `${BASE_SCC_URL}?fakepatron=${match[1]}`
+    handler: match => `${BASE_SCC_URL}/account`
   },
   recordReg: {
     expr: /\/record=(\w+)/,
