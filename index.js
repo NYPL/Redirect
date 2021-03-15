@@ -74,14 +74,18 @@ const expressions = {
   },
 };
 
-async function mapWebPacUrlToSCCURL(path, query) {
+// The main method to build the redirectURL based on the incoming request
+// Given a path and a query, finds the first expression declared above which matches
+// the path, and returns the corresponding handler with the matchdata and query
+// As a default, returns the BASE_SCC_URL
+function mapWebPacUrlToSCCURL(path, query) {
   console.log('mapping');
   let redirectURL;
   for (let pathType of Object.values(expressions)) {
       const match = path.match(pathType.expr);
       if (match) {
         console.log('matching: ', pathType);
-        redirectURL = await pathType.handler(match, query);
+        redirectURL = pathType.handler(match, query);
         break
       }
   }
@@ -97,7 +101,7 @@ const handler = async (event, context, callback) => {
     let path = event.path;
     let query = event.multiValueQueryStringParameters;
     let method = event.multiValueHeaders['x-forwarded-proto'][0] ;
-    let mappedUrl = await mapWebPacUrlToSCCURL(path, query);
+    let mappedUrl = mapWebPacUrlToSCCURL(path, query);
     let redirectLocation = `${method}://${mappedUrl}`;
     console.log('location: ', redirectLocation);
     const response = {
