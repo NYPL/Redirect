@@ -125,6 +125,7 @@ describe('handler', () => {
   });
 
   it('should call the callback with 301 response for non-matching url', async function () {
+    // the record id here is just nonsense. It shouldn't match anything.
     const event = {
         path: '/record=&%!^/',
         multiValueHeaders: {

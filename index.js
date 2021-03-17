@@ -62,7 +62,7 @@ const expressions = {
     handler: (match, query) => `${BASE_SCC_URL}/search?q=${getQueryFromParams(match[0], query)}${getIndexMapping(match[3])}`
   },
   patroninfoReg: {
-    expr: /\/patroninfo\/(\d+)/,
+    expr: /^\/patroninfo\/(\d+)/,
     handler: match => `${BASE_SCC_URL}/account`
   },
   recordReg: {
