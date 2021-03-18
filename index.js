@@ -110,7 +110,6 @@ const handler = async (event, context, callback) => {
       multiValueHeaders: {
         Location: [redirectLocation],
       },
-      body: JSON.stringify(console.log, null, 2)
     };
     return callback(null, response);
   }
@@ -125,7 +124,6 @@ const handler = async (event, context, callback) => {
       multiValueHeaders: {
         Location: [redirectLocation],
       },
-      body: JSON.stringify(console.log, null, 2)
     };
     return callback(null, response)
   }
