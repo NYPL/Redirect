@@ -93,11 +93,18 @@ describe('mapWebPacUrlToSCCURL', function() {
   });
 
   it('should return base url if no match is found', function() {
-    const path = 'record=&%!^/';
+    const path = '/record=&%!^/';
     const query = {};
     const mapped = mapWebPacUrlToSCCURL(path, query);
     expect(mapped)
       .to.eql('https://discovery.nypl.org');
+  });
+
+  it('should return account page for research my account', () => {
+    const path = '/patroninfo/1234567';
+    const query = {};
+    const mapped = mapWebPacUrlToSCCURL(path, query);
+    expect(mapped).to.eql(`${BASE_SCC_URL}/account`);
   });
 });
 
@@ -118,6 +125,7 @@ describe('handler', () => {
   });
 
   it('should call the callback with 301 response for non-matching url', async function () {
+    // the record id here is just nonsense. It shouldn't match anything.
     const event = {
         path: '/record=&%!^/',
         multiValueHeaders: {

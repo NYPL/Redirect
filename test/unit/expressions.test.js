@@ -36,4 +36,5 @@ describe('expressions', () => {
     expect(findMatching('http://catalog.nypl.org/search/a')).to.eql('searchWithout');
     expect(findMatching('http://catalog.nypl.org/search~S12/a?Example')).to.eql('searchWithout');
   });
+
 });
