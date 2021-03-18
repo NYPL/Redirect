@@ -1,13 +1,6 @@
-global.logArray = [];
-global.log = (...args) => { global.logArray = global.logArray.concat(args); console.log(args) }
-
-const { checkRecordSource } = require('./platformUtil.js');
-
 const {
   BASE_SCC_URL,
   CLASSIC_CATALOG_URL,
-  CLIENT_ID,
-  CLIENT_SECRET,
 } = process.env;
 
 
@@ -69,41 +62,30 @@ const expressions = {
     handler: (match, query) => `${BASE_SCC_URL}/search?q=${getQueryFromParams(match[0], query)}${getIndexMapping(match[3])}`
   },
   patroninfoReg: {
-    expr: /\/patroninfo[^\/]\/(\d+)/,
-    handler: match => `${BASE_SCC_URL}?fakepatron=${match[1]}`
+    expr: /^\/patroninfo/,
+    handler: match => `${BASE_SCC_URL}/account`
   },
   recordReg: {
     expr: /\/record=(\w+)/,
-    handler: async function(match) {
+    handler: (match) => {
       const bnum = match[1];
-      global.log('record: ', bnum);
-      let source = await checkRecordSource(bnum);
-      global.log('checked record source: ', source);
-      // Look it up in Discovery API, if it exists handle it normally.
-      if (source === 'discovery') {
-        return `${BASE_SCC_URL}/bib/${bnum}`;
-      }
-      // If it doesn't exist look up the bnumber in the bib service.
-      // If it exists there, redirect to classic catalog (it's future URL TBD)
-      else if (source === 'bib-service'){
-        return `${CLASSIC_CATALOG_URL}/record/${bnum}`;
-      }
-      // If it doesn't exist in either, return a 404
-      else {
-        return `${BASE_SCC_URL}/404`;
-      }
+      return `${BASE_SCC_URL}/bib/${bnum}`;
     }
   },
 };
 
-async function mapWebPacUrlToSCCURL(path, query) {
+// The main method to build the redirectURL based on the incoming request
+// Given a path and a query, finds the first expression declared above which matches
+// the path, and returns the corresponding handler with the matchdata and query
+// As a default, returns the BASE_SCC_URL
+function mapWebPacUrlToSCCURL(path, query) {
   console.log('mapping');
   let redirectURL;
   for (let pathType of Object.values(expressions)) {
       const match = path.match(pathType.expr);
       if (match) {
-        global.log('matching: ', pathType);
-        redirectURL = await pathType.handler(match, query);
+        console.log('matching: ', pathType);
+        redirectURL = pathType.handler(match, query);
         break
       }
   }
@@ -112,44 +94,27 @@ async function mapWebPacUrlToSCCURL(path, query) {
   return redirectURL;
 }
 
-const init = async () => {
-  global.log('init env vars: ', process.env);
-  const { decrypt } = require('./kms_util.js');
-
-  global.log('decrypting')
-  global.decryptedClientId = await decrypt(CLIENT_ID);
-  global.decryptedClientSecret = await decrypt(CLIENT_SECRET);
-  global.log('successfully decrypted');
-  return new Promise(resolve => resolve());
-}
-
-const initPromise = init();
-
 const handler = async (event, context, callback) => {
   try {
-    global.log('env vars: ', process.env);
-    global.log('event: ', event.path, event.multiValueQueryStringParameters);
-    const functionConfig = await initPromise;
-    global.log('decrypted secrets check ', !!global.decryptedClientId, !!global.decryptedClientSecret);
+    console.log('env vars: ', process.env);
+    console.log('event: ', event.path, event.multiValueQueryStringParameters);
     let path = event.path;
     let query = event.multiValueQueryStringParameters;
     let method = event.multiValueHeaders['x-forwarded-proto'][0] ;
-    let mappedUrl = await mapWebPacUrlToSCCURL(path, query);
+    let mappedUrl = mapWebPacUrlToSCCURL(path, query);
     let redirectLocation = `${method}://${mappedUrl}`;
-    global.log('location: ', redirectLocation);
+    console.log('location: ', redirectLocation);
     const response = {
       isBase64Encoded: false,
       statusCode: 301,
       multiValueHeaders: {
         Location: [redirectLocation],
       },
-      body: JSON.stringify(global.log, null, 2)
     };
     return callback(null, response);
   }
   catch(err) {
-    global.log('err: ', err.message);
-    // console.log(JSON.stringify(global.logArray, null, 2));
+    console.log('err: ', err.message);
     let method = event.multiValueHeaders['x-forwarded-proto'][0] ;
     let mappedUrl = BASE_SCC_URL;
     let redirectLocation = `${method}://${mappedUrl}`;
@@ -159,7 +124,6 @@ const handler = async (event, context, callback) => {
       multiValueHeaders: {
         Location: [redirectLocation],
       },
-      body: JSON.stringify(global.log, null, 2)
     };
     return callback(null, response)
   }
