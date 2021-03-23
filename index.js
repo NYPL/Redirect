@@ -86,34 +86,29 @@ function reconstructOriginalURL(path, query, host, method) {
 // Given a path and a query, finds the first expression declared above which matches
 // the path, and returns the corresponding handler with the matchdata and query
 // As a default, returns the BASE_SCC_URL
-function mapWebPacUrlToSCCURL(path, query, host, method) {
-  console.log('mapping');
+function mapWebPacUrlToSCCURL(path, query) {
   let redirectURL;
   for (let pathType of Object.values(expressions)) {
       const match = path.match(pathType.expr);
       if (match) {
-        console.log('matching: ', pathType);
         redirectURL = pathType.handler(match, query);
         break
       }
   }
   if (!redirectURL) redirectURL = BASE_SCC_URL;
   redirectURL = redirectURL + (redirectURL.includes('?') ? '&' : '?') + 'originalUrl=' + reconstructOriginalURL(path, query, host, method);
-  console.log('returning: ', redirectURL);
   return redirectURL;
 }
 
 const handler = async (event, context, callback) => {
   try {
-    console.log('env vars: ', process.env);
-    console.log('event: ', event.path, event.multiValueQueryStringParameters);
+    console.log('event: ', event);
     let path = event.path;
     let query = event.multiValueQueryStringParameters;
     let method = event.multiValueHeaders['x-forwarded-proto'][0] ;
     let host = event.host[0];
     let mappedUrl = mapWebPacUrlToSCCURL(path, query, host, method);
     let redirectLocation = `${method}://${mappedUrl}`;
-    console.log('location: ', redirectLocation);
     const response = {
       isBase64Encoded: false,
       statusCode: 301,
