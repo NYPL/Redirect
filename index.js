@@ -86,7 +86,7 @@ function reconstructOriginalURL(path, query, host, method) {
 // Given a path and a query, finds the first expression declared above which matches
 // the path, and returns the corresponding handler with the matchdata and query
 // As a default, returns the BASE_SCC_URL
-function mapWebPacUrlToSCCURL(path, query) {
+function mapWebPacUrlToSCCURL(path, query, host, method) {
   let redirectURL;
   for (let pathType of Object.values(expressions)) {
       const match = path.match(pathType.expr);
