@@ -104,7 +104,7 @@ const handler = async (event, context, callback) => {
   try {
     console.log('event: ', event);
     let path = event.path;
-    let query = event.multiValueQueryStringParameters;
+    let query = event.multiValueQueryStringParameters || {};
     let proto = event.multiValueHeaders['x-forwarded-proto'][0] ;
     let host = event.host[0];
     let mappedUrl = mapWebPacUrlToSCCURL(path, query, host, proto);
