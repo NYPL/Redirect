@@ -95,7 +95,7 @@ function mapWebPacUrlToSCCURL(path, query, host, proto) {
         break
       }
   }
-  if (!redirectURL) redirectURL = BASE_SCC_URL;
+  if (!redirectURL) redirectURL = `${BASE_SCC_URL}/404/redirect`;
   redirectURL = redirectURL + (redirectURL.includes('?') ? '&' : '?') + 'originalUrl=' + reconstructOriginalURL(path, query, host, proto);
   return redirectURL;
 }

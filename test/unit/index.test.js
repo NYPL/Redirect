@@ -95,12 +95,12 @@ describe('mapWebPacUrlToSCCURL', function() {
       .to.eql(`${BASE_SCC_URL}/search?q=brainwash&search_scope=title&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch~S97%3F%2Ftbrainwash%2Ftbrainwash%2F1%2C3%2C10%2CB%2Fexact%26FF%3Dtbrainwash%261%2C4%2C`)
   });
 
-  it('should return base url if no match is found', function() {
+  it('should return 404 page if no match is found', function() {
     const path = '/record=&%!^/';
     const query = {};
     const mapped = mapWebPacUrlToSCCURL(path, query, host, method);
     expect(mapped)
-      .to.eql('https://discovery.nypl.org?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Frecord%3D%26%25!%5E%2F');
+      .to.eql('https://discovery.nypl.org/404/redirect?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Frecord%3D%26%25!%5E%2F');
   });
 
   it('should return account page for research my account', () => {
