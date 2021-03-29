@@ -96,7 +96,7 @@ function mapWebPacUrlToSCCURL(path, query, host, proto) {
       }
   }
   if (!redirectURL) redirectURL = BASE_SCC_URL;
-  redirectURL = redirectURL + (redirectURL.includes('?') ? '&' : '?') + 'originalUrl=' + reconstructOriginalURL(path, query, host, method);
+  redirectURL = redirectURL + (redirectURL.includes('?') ? '&' : '?') + 'originalUrl=' + reconstructOriginalURL(path, query, host, proto);
   return redirectURL;
 }
 
