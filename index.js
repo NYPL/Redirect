@@ -74,11 +74,19 @@ const expressions = {
   },
 };
 
+function reconstructOriginalURL(path, query, host, proto) {
+  const reconstructedQuery = Object.entries(query).map(([key, values]) => {
+      return values.map(value => value.length ? `${key}=${value}` : key).join('&')
+    })
+    .join('&');
+  return encodeURIComponent(`${proto}://${host}${path}${reconstructedQuery.length ? '?' : ''}${reconstructedQuery}`);
+}
+
 // The main method to build the redirectURL based on the incoming request
 // Given a path and a query, finds the first expression declared above which matches
 // the path, and returns the corresponding handler with the matchdata and query
 // As a default, returns the BASE_SCC_URL
-function mapWebPacUrlToSCCURL(path, query) {
+function mapWebPacUrlToSCCURL(path, query, host, proto) {
   let redirectURL;
   for (let pathType of Object.values(expressions)) {
       const match = path.match(pathType.expr);
@@ -87,7 +95,8 @@ function mapWebPacUrlToSCCURL(path, query) {
         break
       }
   }
-  if (!redirectURL) redirectURL = BASE_SCC_URL;
+  if (!redirectURL) redirectURL = `${BASE_SCC_URL}/404/redirect`;
+  redirectURL = redirectURL + (redirectURL.includes('?') ? '&' : '?') + 'originalUrl=' + reconstructOriginalURL(path, query, host, proto);
   return redirectURL;
 }
 
@@ -95,10 +104,11 @@ const handler = async (event, context, callback) => {
   try {
     console.log('event: ', event);
     let path = event.path;
-    let query = event.multiValueQueryStringParameters;
-    let method = event.multiValueHeaders['x-forwarded-proto'][0] ;
-    let mappedUrl = mapWebPacUrlToSCCURL(path, query);
-    let redirectLocation = `${method}://${mappedUrl}`;
+    let query = event.multiValueQueryStringParameters || {};
+    let proto = event.multiValueHeaders['x-forwarded-proto'][0] ;
+    let host = event.host[0];
+    let mappedUrl = mapWebPacUrlToSCCURL(path, query, host, proto);
+    let redirectLocation = `${proto}://${mappedUrl}`;
     const response = {
       isBase64Encoded: false,
       statusCode: 301,
@@ -110,9 +120,9 @@ const handler = async (event, context, callback) => {
   }
   catch(err) {
     console.log('err: ', err.message);
-    let method = event.multiValueHeaders['x-forwarded-proto'][0] ;
+    let proto = event.multiValueHeaders['x-forwarded-proto'][0] ;
     let mappedUrl = BASE_SCC_URL;
-    let redirectLocation = `${method}://${mappedUrl}`;
+    let redirectLocation = `${proto}://${mappedUrl}`;
     const response = {
       isBase64Encoded: false,
       statusCode: 301,
