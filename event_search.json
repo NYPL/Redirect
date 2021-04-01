@@ -3,8 +3,8 @@
   "multiValueHeaders": {
     "x-forwarded-proto": [
       "https"
-    ]
+    ],
+    "host": ["catalog.nypl.org"]
   },
-  "multiValueQueryStringParameters": {},
-  "host": ["catalog.nypl.org"]
+  "multiValueQueryStringParameters": {}
 }

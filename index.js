@@ -106,7 +106,7 @@ const handler = async (event, context, callback) => {
     let path = event.path;
     let query = event.multiValueQueryStringParameters || {};
     let proto = event.multiValueHeaders['x-forwarded-proto'][0] ;
-    let host = event.host[0];
+    let host = event.multiValueHeaders.host[0];
     let mappedUrl = mapWebPacUrlToSCCURL(path, query, host, proto);
     let redirectLocation = `${proto}://${mappedUrl}`;
     const response = {
