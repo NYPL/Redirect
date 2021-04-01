@@ -1,0 +1,39 @@
+{
+  "requestContext": {
+    "elb": {
+      "targetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:946183545209:targetgroup/qa-al-ALBTa-A94OW4WLVA9U/ba415806accd24b9"
+    }
+  },
+  "httpMethod": "GET",
+  "path": "/search~S1/aRubina%2C+Dina/arubina+dina/1%2C2%2C84%2CB/exact&FF=arubina+dina+author&1%2C-1%2C/indexsort=-)",
+  "multiValueQueryStringParameters": {},
+  "multiValueHeaders": {
+    "accept": [
+      "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"
+    ],
+    "accept-encoding": [ "gzip, deflate, br" ],
+    "accept-language": [ "en-US,en;q=0.9" ],
+    "cookie": [
+      "SESSION_LANGUAGE=eng; _ga=GA1.2.952615252.1616431686; optimizelyEndUserId=oeu1616431701855r0.3438494920659836; III_ENCORE_PATRON=nypl.org; __utma=50329657.952615252.1616431686.1616706322.1616706322.1; __utmc=50329657; __utmz=50329657.1616706322.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); III_EXPT_FILE=aa14270; ADRUM=s=1617037136864&r=https%3A%2F%2Fbrowse.nypl.org%2Fiii%2Fencore%2F%3F642409064"
+    ],
+    "host": [ "qa-catalog.nypl.org" ],
+    "sec-ch-ua": [
+      "\"Chromium\";v=\"88\", \"Google Chrome\";v=\"88\", \";Not A Brand\";v=\"99\""
+    ],
+    "sec-ch-ua-mobile": [ "?0" ],
+    "sec-fetch-dest": [ "document" ],
+    "sec-fetch-mode": [ "navigate" ],
+    "sec-fetch-site": [ "none" ],
+    "sec-fetch-user": [ "?1" ],
+    "upgrade-insecure-requests": [ "1" ],
+    "user-agent": [
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.182 Safari/537.36"
+    ],
+    "x-amzn-trace-id": [ "Root=1-6065d7f9-6e3eb47f035167901e13bd1b" ],
+    "x-forwarded-for": [ "108.54.107.101" ],
+    "x-forwarded-port": [ "443" ],
+    "x-forwarded-proto": [ "https" ]
+  },
+  "body": "",
+  "isBase64Encoded": false
+}
