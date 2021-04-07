@@ -1,6 +1,7 @@
 const {
   BASE_SCC_URL,
   CLASSIC_CATALOG_URL,
+  LEGACY_CATALOG_URL,
 } = process.env;
 
 
@@ -72,14 +73,28 @@ const expressions = {
       return `${BASE_SCC_URL}/bib/${bnum}`;
     }
   },
+  legacyReg: {
+    expr: /pinreset|selfreg/,
+    handler: (match, query) => {
+        return `${LEGACY_CATALOG_URL}${match.input}${reconstructQuery(query)}`
+    }
+  },
 };
+
+function reconstructQuery(query) {
+  const reconstructedQuery = Object.entries(query).map(([key, values]) => {
+      return values.map(value => value.length ? `${key}=${value}` : key).join('&')
+    })
+    .join('&');
+  return reconstructedQuery.length ? `?${reconstructedQuery}` : ''
+}
 
 function reconstructOriginalURL(path, query, host, proto) {
   const reconstructedQuery = Object.entries(query).map(([key, values]) => {
       return values.map(value => value.length ? `${key}=${value}` : key).join('&')
     })
     .join('&');
-  return encodeURIComponent(`${proto}://${host}${path}${reconstructedQuery.length ? '?' : ''}${reconstructedQuery}`);
+  return encodeURIComponent(`${proto}://${host}${path}${reconstructQuery(query)}`);
 }
 
 // The main method to build the redirectURL based on the incoming request
@@ -96,7 +111,9 @@ function mapWebPacUrlToSCCURL(path, query, host, proto) {
       }
   }
   if (!redirectURL) redirectURL = `${BASE_SCC_URL}/404/redirect`;
-  redirectURL = redirectURL + (redirectURL.includes('?') ? '&' : '?') + 'originalUrl=' + reconstructOriginalURL(path, query, host, proto);
+  if (!redirectURL.includes(LEGACY_CATALOG_URL)) {
+    redirectURL = redirectURL + (redirectURL.includes('?') ? '&' : '?') + 'originalUrl=' + reconstructOriginalURL(path, query, host, proto);
+  }
   return redirectURL;
 }
 
@@ -107,6 +124,7 @@ const handler = async (event, context, callback) => {
     let query = event.multiValueQueryStringParameters || {};
     let proto = event.multiValueHeaders['x-forwarded-proto'][0] ;
     let host = event.multiValueHeaders.host[0];
+
     let mappedUrl = mapWebPacUrlToSCCURL(path, query, host, proto);
     let redirectLocation = `${proto}://${mappedUrl}`;
     const response = {
@@ -142,4 +160,6 @@ module.exports = {
   indexMappings,
   handler,
   BASE_SCC_URL,
+  CLASSIC_CATALOG_URL,
+  LEGACY_CATALOG_URL,
 };

@@ -1,9 +1,9 @@
 const { expect } = require('chai');
 const env = require('./test.js');
-const { mapWebPacUrlToSCCURL, handler, BASE_SCC_URL } = require('../../index.js');
+const { mapWebPacUrlToSCCURL, handler, BASE_SCC_URL, LEGACY_CATALOG_URL, CLASSIC_CATALOG_URL } = require('../../index.js');
 const axios = require('axios');
 
-const host = 'catalog.nypl.org';
+let host = 'catalog.nypl.org';
 const method = 'https';
 
 describe('mapWebPacUrlToSCCURL', function() {
@@ -109,6 +109,24 @@ describe('mapWebPacUrlToSCCURL', function() {
     const mapped = mapWebPacUrlToSCCURL(path, query, host, method);
     expect(mapped).to.eql(`${BASE_SCC_URL}/account?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fpatroninfo%2F1234567`);
   });
+
+  it('should redirect to legacy for pinreset pages', () => {
+    host = CLASSIC_CATALOG_URL;
+    const path = '/pinreset~S1'
+    const query = {};
+    const mappedUrl = mapWebPacUrlToSCCURL(path, query, host, method);
+    expect(mappedUrl)
+      .to.eql('https://catalog.nypl.org/pinreset~S1');
+  });
+
+  it('should redirect to legacy for selfreg pages', () => {
+    host = CLASSIC_CATALOG_URL;
+    const path = '/screens/selfregpick.html'
+    const query = {};
+    const mappedUrl = mapWebPacUrlToSCCURL(path, query, host, method);
+    expect(mappedUrl)
+      .to.eql('https://catalog.nypl.org/screens/selfregpick.html');
+  })
 });
 
 describe('handler', () => {
