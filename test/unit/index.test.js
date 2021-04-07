@@ -133,7 +133,7 @@ describe('handler', () => {
   const context = {};
   const callback = (_, resp) => resp.statusCode;
 
-  it('should call the callback with 301 response for matching url', async function () {
+  it('should call the callback with 302 response for matching url', async function () {
     const event = {
       path: '/',
       multiValueHeaders: {
@@ -142,10 +142,10 @@ describe('handler', () => {
     }
 
     const resp = await handler(event, context, callback);
-    expect(resp).to.eql(301);
+    expect(resp).to.eql(302);
   });
 
-  it('should call the callback with 301 response for non-matching url', async function () {
+  it('should call the callback with 302 response for non-matching url', async function () {
     // the record id here is just nonsense. It shouldn't match anything.
     const event = {
         path: '/record=&%!^/',
@@ -155,6 +155,6 @@ describe('handler', () => {
     }
 
     const resp = await handler(event, context, callback);
-    expect(resp).to.eql(301);
+    expect(resp).to.eql(302);
   });
 })

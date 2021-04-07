@@ -129,7 +129,7 @@ const handler = async (event, context, callback) => {
     let redirectLocation = `${proto}://${mappedUrl}`;
     const response = {
       isBase64Encoded: false,
-      statusCode: 301,
+      statusCode: 302,
       multiValueHeaders: {
         Location: [redirectLocation],
       },
@@ -143,7 +143,7 @@ const handler = async (event, context, callback) => {
     let redirectLocation = `${proto}://${mappedUrl}`;
     const response = {
       isBase64Encoded: false,
-      statusCode: 301,
+      statusCode: 302,
       multiValueHeaders: {
         Location: [redirectLocation],
       },
