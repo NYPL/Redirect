@@ -55,11 +55,11 @@ const expressions = {
     handler: () => BASE_SCC_URL,
   },
   searchRegWith: {
-    expr: /\/search(~S\d*)?\/([a-zA-Z])(([^\/])+)/,
+    expr: /\/search(~S\w*)?\/([a-zA-Z])(([^\/])+)/,
     handler: match => `${BASE_SCC_URL}/search?q=${recodeSearchQuery(match[3])}${getIndexMapping(match[2])}`
   },
   searchRegWithout: {
-    expr: /\/search(~S\d*)?(\/([a-zA-Z]))?/,
+    expr: /\/search(~S\w*)?(\/([a-zA-Z]))?/,
     handler: (match, query) => `${BASE_SCC_URL}/search?q=${getQueryFromParams(match[0], query)}${getIndexMapping(match[3])}`
   },
   patroninfoReg: {
