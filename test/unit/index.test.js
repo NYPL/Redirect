@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 const env = require('./test.js');
-const { mapWebPacUrlToSCCURL, handler, BASE_SCC_URL, LEGACY_CATALOG_URL, CLASSIC_CATALOG_URL } = require('../../index.js');
+const { mapWebPacUrlToSCCURL, handler, BASE_SCC_URL, LEGACY_CATALOG_URL } = require('../../index.js');
 const axios = require('axios');
 
 let host = 'catalog.nypl.org';
@@ -111,7 +111,7 @@ describe('mapWebPacUrlToSCCURL', function() {
   });
 
   it('should redirect to legacy for pinreset pages', () => {
-    host = CLASSIC_CATALOG_URL;
+    host = 'qa-catalog.nypl.org';
     const path = '/pinreset~S1'
     const query = {};
     const mappedUrl = mapWebPacUrlToSCCURL(path, query, host, method);
@@ -120,7 +120,7 @@ describe('mapWebPacUrlToSCCURL', function() {
   });
 
   it('should redirect to legacy for selfreg pages', () => {
-    host = CLASSIC_CATALOG_URL;
+    host = 'qa-catalog.nypl.org';
     const path = '/screens/selfregpick.html'
     const query = {};
     const mappedUrl = mapWebPacUrlToSCCURL(path, query, host, method);

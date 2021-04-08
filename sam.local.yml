@@ -9,7 +9,6 @@ Globals:
     Environment:
       Variables:
         BASE_SCC_URL: qa-discovery.nypl.org/research/collections/shared-collection-catalog
-        CLASSIC_CATALOG_URL: qa-catalog.nypl.org
         LEGACY_CATALOG_URL: catalog.nypl.org
 
 Resources:

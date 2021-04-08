@@ -1,6 +1,5 @@
 const {
   BASE_SCC_URL,
-  CLASSIC_CATALOG_URL,
   LEGACY_CATALOG_URL,
 } = process.env;
 
@@ -160,6 +159,5 @@ module.exports = {
   indexMappings,
   handler,
   BASE_SCC_URL,
-  CLASSIC_CATALOG_URL,
   LEGACY_CATALOG_URL,
 };
