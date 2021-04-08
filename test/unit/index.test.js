@@ -1,9 +1,9 @@
 const { expect } = require('chai');
 const env = require('./test.js');
-const { mapWebPacUrlToSCCURL, handler, BASE_SCC_URL } = require('../../index.js');
+const { mapWebPacUrlToSCCURL, handler, BASE_SCC_URL, LEGACY_CATALOG_URL } = require('../../index.js');
 const axios = require('axios');
 
-const host = 'catalog.nypl.org';
+let host = 'catalog.nypl.org';
 const method = 'https';
 
 describe('mapWebPacUrlToSCCURL', function() {
@@ -32,6 +32,14 @@ describe('mapWebPacUrlToSCCURL', function() {
       .to.eql(`${BASE_SCC_URL}/search?q=Rubina%2C%20Dina&search_scope=contributor&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch~S1%2FaRubina%252C%2BDina%2Farubina%2Bdina%2F1%252C2%252C84%252CB%2Fexact%26FF%3Darubina%2Bdina%2Bauthor%261%252C-1%252C%2Findexsort%3D-)`)
   });
 
+  it('should allow LANG in/Xsearchterm', function() {
+    const path = '/search~S1ENG/aRubina%2C+Dina/arubina+dina/1%2C2%2C84%2CB/exact&FF=arubina+dina+author&1%2C-1%2C/indexsort=-)';
+    const query = {};
+    const mapped = mapWebPacUrlToSCCURL(path, query, host, method);
+    expect(mapped)
+      .to.eql(`${BASE_SCC_URL}/search?q=Rubina%2C%20Dina&search_scope=contributor&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch~S1ENG%2FaRubina%252C%2BDina%2Farubina%2Bdina%2F1%252C2%252C84%252CB%2Fexact%26FF%3Darubina%2Bdina%2Bauthor%261%252C-1%252C%2Findexsort%3D-)`)
+  });
+
   it('should map search pages with index but no search term', function() {
     const path = '/search/t';
     const query = {};
@@ -58,6 +66,26 @@ describe('mapWebPacUrlToSCCURL', function() {
 
     expect(mapped)
       .to.eql(`${BASE_SCC_URL}/search?q=winspeare,%20j&search_scope=contributor&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch~S1%2F%3Fsearchtype%3Da%26searcharg%3Dwinspeare%2C%20j%26searchscope%3D1%26sortdropdown%3D-%26SORT%3DD%26extended%3D0%26SUBMIT%3DSearch%26searchlimits%26searchorigarg%3Ddmystery`)
+  });
+
+  it('should allow LANG as param in searches with searcharg and searchtype given as parameters', function() {
+    const path = '/search~S1ENG/';
+    const query = {
+      searchtype: ['a'],
+      searcharg: ['winspeare, j'],
+      searchscope: ['1'],
+      sortdropdown: ['-'],
+      SORT: ['D'],
+      extended: ['0'],
+      SUBMIT: ['Search'],
+      searchlimits: [''],
+      searchorigarg: ['dmystery'],
+    };
+
+    const mapped = mapWebPacUrlToSCCURL(path, query, host, method);
+
+    expect(mapped)
+      .to.eql(`${BASE_SCC_URL}/search?q=winspeare,%20j&search_scope=contributor&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch~S1ENG%2F%3Fsearchtype%3Da%26searcharg%3Dwinspeare%2C%20j%26searchscope%3D1%26sortdropdown%3D-%26SORT%3DD%26extended%3D0%26SUBMIT%3DSearch%26searchlimits%26searchorigarg%3Ddmystery`)
   });
 
   it('should map search pages with SEARCH given as parameter', function() {
@@ -109,13 +137,31 @@ describe('mapWebPacUrlToSCCURL', function() {
     const mapped = mapWebPacUrlToSCCURL(path, query, host, method);
     expect(mapped).to.eql(`${BASE_SCC_URL}/account?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fpatroninfo%2F1234567`);
   });
+
+  it('should redirect to legacy for pinreset pages', () => {
+    host = 'qa-catalog.nypl.org';
+    const path = '/pinreset~S1'
+    const query = {};
+    const mappedUrl = mapWebPacUrlToSCCURL(path, query, host, method);
+    expect(mappedUrl)
+      .to.eql('https://catalog.nypl.org/pinreset~S1');
+  });
+
+  it('should redirect to legacy for selfreg pages', () => {
+    host = 'qa-catalog.nypl.org';
+    const path = '/screens/selfregpick.html'
+    const query = {};
+    const mappedUrl = mapWebPacUrlToSCCURL(path, query, host, method);
+    expect(mappedUrl)
+      .to.eql('https://catalog.nypl.org/screens/selfregpick.html');
+  })
 });
 
 describe('handler', () => {
   const context = {};
   const callback = (_, resp) => resp.statusCode;
 
-  it('should call the callback with 301 response for matching url', async function () {
+  it('should call the callback with 302 response for matching url', async function () {
     const event = {
       path: '/',
       multiValueHeaders: {
@@ -124,10 +170,10 @@ describe('handler', () => {
     }
 
     const resp = await handler(event, context, callback);
-    expect(resp).to.eql(301);
+    expect(resp).to.eql(302);
   });
 
-  it('should call the callback with 301 response for non-matching url', async function () {
+  it('should call the callback with 302 response for non-matching url', async function () {
     // the record id here is just nonsense. It shouldn't match anything.
     const event = {
         path: '/record=&%!^/',
@@ -137,6 +183,6 @@ describe('handler', () => {
     }
 
     const resp = await handler(event, context, callback);
-    expect(resp).to.eql(301);
+    expect(resp).to.eql(302);
   });
 })

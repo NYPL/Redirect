@@ -9,11 +9,7 @@ Globals:
     Environment:
       Variables:
         BASE_SCC_URL: qa-discovery.nypl.org/research/collections/shared-collection-catalog
-        CLASSIC_CATALOG_URL: https://catalog.nypl.org
-        CLIENT_ID: AQECAHh7ea2tyZ6phZgT4B9BDKwguhlFtRC6hgt+7HbmeFsrsgAAAGkwZwYJKoZIhvcNAQcGoFowWAIBADBTBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDMH033iRCWL2fqZIHgIBEIAmPHu+9wBZjnZSqLa4HMi2U33pHdmVFo2pfx5nrKKYCicoyAUHhJU=
-        CLIENT_SECRET: AQECAHh7ea2tyZ6phZgT4B9BDKwguhlFtRC6hgt+7HbmeFsrsgAAAIcwgYQGCSqGSIb3DQEHBqB3MHUCAQAwcAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAwbvdh+2ByuGqN69hkCARCAQwceJ6Hc6gHSYvPsde6e3zrAXiC676UO1ICVVYRmEGYh6R4wwuEFi5RuQoZXBVIDiwoMM/iE0KkQjoKE7TQghDEp1yM=
-        OAUTH_URL: https://isso.nypl.org/oauth/token
-        PLATFORM_BASE_URL: https://qa-platform.nypl.org/api/v0.1
+        LEGACY_CATALOG_URL: catalog.nypl.org
 
 Resources:
   RedirectService:
