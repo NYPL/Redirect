@@ -1,0 +1,10 @@
+{
+  "path": "/pinreset~S1",
+  "multiValueHeaders": {
+    "x-forwarded-proto": [
+      "https"
+    ],
+    "host": ["qa-catalog.nypl.org"]
+  },
+  "multiValueQueryStringParameters": {}
+}

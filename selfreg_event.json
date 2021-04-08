@@ -1,0 +1,10 @@
+{
+  "path": "/screens/selfregpick.html",
+  "multiValueHeaders": {
+    "x-forwarded-proto": [
+      "https"
+    ],
+    "host": ["qa-catalog.nypl.org"]
+  },
+  "multiValueQueryStringParameters": {}
+}
