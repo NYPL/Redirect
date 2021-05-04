@@ -40,13 +40,27 @@ describe('mapWebPacUrlToSCCURL', function() {
       .to.eql(`${BASE_SCC_URL}/search?q=Rubina%2C%20Dina&search_scope=contributor&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch~S1ENG%2FaRubina%252C%2BDina%2Farubina%2Bdina%2F1%252C2%252C84%252CB%2Fexact%26FF%3Darubina%2Bdina%2Bauthor%261%252C-1%252C%2Findexsort%3D-)`)
   });
 
-  it('should map search pages with index but no search term', function() {
+  it('should map search pages with index but no search term to the base url', function() {
     const path = '/search/t';
     const query = {};
     const mapped = mapWebPacUrlToSCCURL(path, query, host, method);
-    expect(mapped)
-      .to.eql(`${BASE_SCC_URL}/search?q=&search_scope=title&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch%2Ft`)
+    expect(mapped).to.eql(`${BASE_SCC_URL}?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch%2Ft`);
   });
+
+  it('should map search pages with no index and no search term to the base url', function() {
+    const path = '/search';
+    const query = {};
+    const mapped = mapWebPacUrlToSCCURL(path, query, host, method);
+    expect(mapped).to.eql(`${BASE_SCC_URL}?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch`);
+  });
+
+  it('should map search pages with no index and no search term, plus screen type to the base url', function() {
+    const path = '/search~S98';
+    const query = {};
+    const mapped = mapWebPacUrlToSCCURL(path, query, host, method);
+    expect(mapped).to.eql(`${BASE_SCC_URL}?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch~S98`);
+  });
+
 
   it('should map search pages with searcharg and searchtype given as parameters', function() {
     const path = '/search~S1/';
