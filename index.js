@@ -42,6 +42,7 @@ const getQueryFromParams = (url, query) => {
     }
   }
   const q = searchArg || searchArgAlt || searchArgFromQueryParam || '';
+  if (!q.length) return null;
   const searchType = getParam('searchtype') || searchIndex;
   return recodeSearchQuery(q + (searchType ? getIndexMapping(searchType) : ''));
 }
@@ -59,7 +60,11 @@ const expressions = {
   },
   searchRegWithout: {
     expr: /\/search(~S\w*)?(\/([a-zA-Z]))?/,
-    handler: (match, query) => `${BASE_SCC_URL}/search?q=${getQueryFromParams(match[0], query)}${getIndexMapping(match[3])}`
+    handler: (match, query) => {
+      const mappedQuery = getQueryFromParams(match[0], query);
+      if (!mappedQuery) return BASE_SCC_URL;
+      return `${BASE_SCC_URL}/search?q=${mappedQuery}${getIndexMapping(match[3])}`;
+    }
   },
   patroninfoReg: {
     expr: /^\/patroninfo/,
