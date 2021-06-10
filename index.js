@@ -121,10 +121,20 @@ function mapWebPacUrlToSCCURL(path, query, host, proto) {
   return redirectURL;
 }
 
+const healthCheck = () => {
+  const version = require('./package.json').version;
+  return {
+    isBase64Encoded: false,
+    statusCode: 200,
+    body: { version },
+  };
+};
+
 const handler = async (event, context, callback) => {
   try {
     console.log('event: ', event);
     let path = event.path;
+    if (path === '/check') return callback(null, healthCheck());
     let query = event.multiValueQueryStringParameters || {};
     let proto = event.multiValueHeaders['x-forwarded-proto'][0] ;
     let host = event.multiValueHeaders.host[0];
