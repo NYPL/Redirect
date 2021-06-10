@@ -169,11 +169,24 @@ describe('mapWebPacUrlToSCCURL', function() {
     expect(mappedUrl)
       .to.eql('https://catalog.nypl.org/screens/selfregpick.html');
   })
+
 });
 
 describe('handler', () => {
   const context = {};
   const callback = (_, resp) => resp.statusCode;
+
+  it('should respond 200 to /check', async function () {
+    const event ={
+      path: '/check',
+    }
+
+    const version = require('../../package.json').version;
+
+    const resp = await handler(event, context, (_, resp) => resp);
+    expect(resp.statusCode).to.eql(200);
+    expect(resp.body.version).to.eql(version);
+  });
 
   it('should call the callback with 302 response for matching url', async function () {
     const event = {
