@@ -122,7 +122,6 @@ function mapWebPacUrlToSCCURL(path, query, host, proto) {
   for (let pathType of Object.values(expressions)) {
       const match = path.match(pathType.expr);
       if (match) {
-        console.log('expr: ', pathType.expr);
         redirectURL = pathType.handler(match, query);
         break
       }
