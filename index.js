@@ -54,6 +54,18 @@ const expressions = {
     expr: /^\/$/,
     handler: () => BASE_SCC_URL,
   },
+  oclc: {
+    expr: /\/search\/o\=?(\d+)/,
+    handler: match => `${BASE_SCC_URL}/search?oclc=${match[1]}&redirectOnMatch=true`,
+  },
+  issn: {
+    expr: /\/search\/i(\d{4}\-\d{4})/,
+    handler: match => `${BASE_SCC_URL}/search?issn=${match[1]}&redirectOnMatch=true`,
+  },
+  isbn: {
+    expr: /\/search\/i(\w+)/,
+    handler: match => `${BASE_SCC_URL}/search?isbn=${match[1]}&redirectOnMatch=true`,
+  },
   searchRegWith: {
     expr: /\/search(~S\w*)?\/([a-zA-Z])(([^\/])+)/,
     handler: match => `${BASE_SCC_URL}/search?q=${recodeSearchQuery(match[3])}${getIndexMapping(match[2])}`
