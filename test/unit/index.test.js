@@ -137,6 +137,48 @@ describe('mapWebPacUrlToSCCURL', function() {
       .to.eql(`${BASE_SCC_URL}/search?q=brainwash&search_scope=title&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch~S97%3F%2Ftbrainwash%2Ftbrainwash%2F1%2C3%2C10%2CB%2Fexact%26FF%3Dtbrainwash%261%2C4%2C`)
   });
 
+  it('should map search pages for oclc records', () => {
+    const path = '/search/o1081334684';
+    const mapped = mapWebPacUrlToSCCURL(path, {}, host, method);
+    expect(mapped)
+      .to.include(`${BASE_SCC_URL}/search?oclc=1081334684&redirectOnMatch=true`);
+  });
+
+  it('should map search pages for oclc records including =', () => {
+    const path = '/search/o=75307280';
+    const mapped = mapWebPacUrlToSCCURL(path, {}, host, method);
+    expect(mapped)
+      .to.include(`${BASE_SCC_URL}/search?oclc=75307280&redirectOnMatch=true`);
+  });
+
+  it('should map search pages for issn numbers', () => {
+    const path = '/search/i0012-9976';
+    const mapped = mapWebPacUrlToSCCURL(path, {}, host, method);
+    expect(mapped)
+      .to.include(`${BASE_SCC_URL}/search?issn=0012-9976&redirectOnMatch=true`);
+  });
+
+  it('should map search pages for short isbn numbers', () => {
+    const path = '/search/i1465351078';
+    const mapped = mapWebPacUrlToSCCURL(path, {}, host, method);
+    expect(mapped)
+      .to.include(`${BASE_SCC_URL}/search?isbn=1465351078&redirectOnMatch=true`);
+  })
+
+  it('should map search pages for long isbn numbers', () => {
+    const path = '/search/i9781568987873';
+    const mapped = mapWebPacUrlToSCCURL(path, {}, host, method);
+    expect(mapped)
+      .to.include(`${BASE_SCC_URL}/search?isbn=9781568987873&redirectOnMatch=true`);
+  });
+
+  it('should map search pages for isbn numbers including X', () => {
+    const path = '/search/i178694135X';
+    const mapped = mapWebPacUrlToSCCURL(path, {}, host, method);
+    expect(mapped)
+      .to.include(`${BASE_SCC_URL}/search?isbn=178694135X&redirectOnMatch=true`)
+  });
+
   it('should return 404 page if no match is found', function() {
     const path = '/record=&%!^/';
     const query = {};

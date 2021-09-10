@@ -1,0 +1,10 @@
+{
+  "path": "/search/o248718131?fbclid=IwAR3iQaNePz2pd1JgoefSEgEbc9mAHnZiXXqY3BfeKp-kTui5lrlT_NDsSfE",
+  "multiValueHeaders": {
+    "x-forwarded-proto": [
+      "https"
+    ],
+    "host": ["catalog.nypl.org"]
+  },
+  "multiValueQueryStringParameters": {}
+}
