@@ -27,6 +27,19 @@ deploy:
   secret_access_key: "$AWS_SECRET_ACCESS_KEY_QA"
   on:
     branch: qa
+- provider: lambda
+  function_name: Redirect-production
+  description: Redirects old webpac requests to Research Catalog
+  region: us-east-1
+  role: arn:aws:iam::946183545209:role/lambda-full-access
+  runtime: nodejs12.x
+  module_name: index
+  handler_name: handler
+  skip_cleanup: true
+  access_key_id: "$AWS_ACCESS_KEY_ID_PRODUCTION"
+  secret_access_key: "$AWS_SECRET_ACCESS_KEY_PRODUCTION"
+  on:
+    branch: production
 after_deploy:
 - rake set_config
 env:
