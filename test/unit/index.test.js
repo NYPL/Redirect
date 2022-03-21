@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 const env = require('./test.js');
-const { mapWebPacUrlToSCCURL, handler, BASE_SCC_URL, LEGACY_CATALOG_URL } = require('../../index.js');
+const { mapWebPacUrlToSCCURL, handler, reconstructOriginalURL, BASE_SCC_URL, LEGACY_CATALOG_URL } = require('../../index.js');
 const axios = require('axios');
 
 let host = 'catalog.nypl.org';
@@ -210,6 +210,75 @@ describe('mapWebPacUrlToSCCURL', function() {
     const mappedUrl = mapWebPacUrlToSCCURL(path, query, host, method);
     expect(mappedUrl)
       .to.eql('https://catalog.nypl.org/screens/selfregpick.html');
+  })
+
+
+  // {
+  //   requestContext: {
+  //     elb: {
+  //       targetGroupArn: 'arn:aws:elasticloadbalancing:us-east-1:946183545209:targetgroup/qa-al-ALBTa-A94OW4WLVA9U/ba415806accd24b9'
+  //     }
+  //   },
+  //   httpMethod: 'GET',
+  //   path: '/search/X',
+  //   multiValueQueryStringParameters: {
+  //     SEARCH: [
+  //       't:(The%20dark%20is%20rising)and%20a:(Cooper,%20Susan,%201935-)'
+  //     ]
+  //   },
+  //   multiValueHeaders: {
+  //     accept: [
+  //       'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9'
+  //     ],
+  //     'accept-encoding': [ 'gzip' ],
+  //     'accept-language': [ 'en-US,en;q=0.9' ],
+  //     connection: [ 'keep-alive' ],
+  //     cookie: [
+  //       '_ga=GA1.2.77587791.1624993479; SESSION_LANGUAGE=eng; III_EXPT_FILE=aa30115; III_ENCORE_PATRON=nypl.org; optimizelyEndUserId=oeu1625071663619r0.6695455276112785; __utmc=50329657; __utma=50329657.77587791.1624993479.1633032036.1634069652.12; __utmz=50329657.1634069652.12.7.utmcsr=ilsstaff.nypl.org|utmccn=(referral)|utmcmd=referral|utmcct=/; _omra=%7B%22xrjq1iuto8tbvmw54ixe%22%3A%22view%22%2C%22h9ngxfwg6bomgaisagqs%22%3A%22view%22%2C%22nzzvvmsqgf0cuce0thbh%22%3A%22view%22%2C%22lhvhhdhneivisubr7t0g%22%3A%22view%22%7D; III_SESSION_ID=7aee2338c7acd4c3db0fdabf633db084; ADRUM=s=1644865482240&r=https%3A%2F%2Fnypl-encore-test.nypl.org%2Fiii%2Fencore%2F%3F-968485644'
+  //     ],
+  //     host: [ 'qa-catalog.nypl.org' ],
+  //     'incap-client-ip': [ '96.250.7.181' ],
+  //     'incap-proxy-1458': [ 'OK' ],
+  //     'sec-ch-ua': [
+  //       '" Not A;Brand";v="99", "Chromium";v="96", "Google Chrome";v="96"'
+  //     ],
+  //     'sec-ch-ua-mobile': [ '?0' ],
+  //     'sec-ch-ua-platform': [ '"macOS"' ],
+  //     'sec-fetch-dest': [ 'document' ],
+  //     'sec-fetch-mode': [ 'navigate' ],
+  //     'sec-fetch-site': [ 'none' ],
+  //     'sec-fetch-user': [ '?1' ],
+  //     'upgrade-insecure-requests': [ '1' ],
+  //     'user-agent': [
+  //       'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.93 Safari/537.36'
+  //     ],
+  //     'x-amzn-trace-id': [ 'Root=1-6238de15-54399bd13d9a825d752f9996' ],
+  //     'x-forwarded-for': [ '96.250.7.181', '96.250.7.181, 198.143.38.32' ],
+  //     'x-forwarded-port': [ '443' ],
+  //     'x-forwarded-proto': [ 'https' ]
+  //   },
+  //   body: '',
+  //   isBase64Encoded: false
+  // }
+  describe('vega links', () => {
+    it('should handle vega link', () => {
+      let path = '/search/X';
+      let query = {
+        SEARCH: [
+          't:(The%20dark%20is%20rising)and%20a:(Cooper,%20Susan,%201935-)'
+        ]
+      };
+      let host = 'qa-catalog.nypl.org' ;
+      let proto = 'https';
+      let original = reconstructOriginalURL(path, query, host, proto);
+      console.log(path, query, host, proto, original)
+      const mappedUrl = mapWebPacUrlToSCCURL(path, query, host, proto, original);
+      expect(mappedUrl)
+        .to.eql('https://catalog.nypl.org/screens/selfregpick.html')
+
+    })
+    it('should handle case variations')
+    it('should handle spacing variations')
   })
 
 });

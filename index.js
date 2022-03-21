@@ -54,6 +54,10 @@ const expressions = {
     expr: /^\/$/,
     handler: () => BASE_SCC_URL,
   },
+  vega: {
+    custom: (path, query, host, proto, original) => original && original.match(/\/search\/X\?SEARCH=t:\((.*)\)(?:%20|\s*)and(?:%20|\s*)a:\((.*)\)/i),
+    handler: match => `${BASE_SCC_URL}/search?contributor=${match[2]}&title=${match[1]}`
+  },
   oclc: {
     expr: /\/search\/o\=?(\d+)/,
     handler: match => `${BASE_SCC_URL}/search?oclc=${match[1]}&redirectOnMatch=true`,
@@ -117,10 +121,15 @@ function reconstructOriginalURL(path, query, host, proto) {
 // Given a path and a query, finds the first expression declared above which matches
 // the path, and returns the corresponding handler with the matchdata and query
 // As a default, returns the BASE_SCC_URL
-function mapWebPacUrlToSCCURL(path, query, host, proto) {
+function mapWebPacUrlToSCCURL(path, query, host, proto, original) {
   let redirectURL;
   for (let pathType of Object.values(expressions)) {
-      const match = path.match(pathType.expr);
+      let match;
+      if (pathType.expr) {
+        match = path.match(pathType.expr);
+      } else if (pathType.custom) {
+        match = pathType.custom(path, query, host, proto, original)
+      }
       if (match) {
         redirectURL = pathType.handler(match, query);
         break
@@ -151,7 +160,7 @@ const handler = async (event, context, callback) => {
     let proto = event.multiValueHeaders['x-forwarded-proto'][0] ;
     let host = event.multiValueHeaders.host[0];
 
-    let mappedUrl = mapWebPacUrlToSCCURL(path, query, host, proto);
+    let mappedUrl = mapWebPacUrlToSCCURL(path, query, host, proto, reconstructOriginalURL(path, query, host, proto));
     let redirectLocation = `${proto}://${mappedUrl}`;
     const response = {
       isBase64Encoded: false,
@@ -185,6 +194,7 @@ module.exports = {
   getIndexMapping,
   indexMappings,
   handler,
+  reconstructOriginalURL,
   BASE_SCC_URL,
   LEGACY_CATALOG_URL,
 };
