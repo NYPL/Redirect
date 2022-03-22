@@ -55,7 +55,14 @@ const expressions = {
     handler: () => BASE_SCC_URL,
   },
   vega: {
-    custom: (path, query, host, proto, original) => original && original.match(/\/search\/X\?SEARCH=t:\((.*)\)(?:%20|\s*)and(?:%20|\s*)a:\((.*)\)/i),
+    custom: (path, query, host, proto) => {
+      if (!path.match(/\/search\/X/i)) { return null; }
+      let searchKey = Object.keys(query).find(key => key.match(/search/i));
+      if (!searchKey) { return null; }
+      let searchValue = query[searchKey];
+      if (!Array.isArray(searchValue) || !searchValue[0] || (typeof searchValue[0] !== 'string')) { return null; }
+      return searchValue[0].match(/t:\((.*)\)(?:%20|\s*)and(?:%20|\s*)a:\((.*)\)/i)
+    },
     handler: match => `${BASE_SCC_URL}/search?contributor=${match[2]}&title=${match[1]}`
   },
   oclc: {
@@ -121,14 +128,14 @@ function reconstructOriginalURL(path, query, host, proto) {
 // Given a path and a query, finds the first expression declared above which matches
 // the path, and returns the corresponding handler with the matchdata and query
 // As a default, returns the BASE_SCC_URL
-function mapWebPacUrlToSCCURL(path, query, host, proto, original) {
+function mapWebPacUrlToSCCURL(path, query, host, proto) {
   let redirectURL;
   for (let pathType of Object.values(expressions)) {
       let match;
       if (pathType.expr) {
         match = path.match(pathType.expr);
       } else if (pathType.custom) {
-        match = pathType.custom(path, query, host, proto, original)
+        match = pathType.custom(path, query, host, proto)
       }
       if (match) {
         redirectURL = pathType.handler(match, query);
@@ -159,8 +166,7 @@ const handler = async (event, context, callback) => {
     let query = event.multiValueQueryStringParameters || {};
     let proto = event.multiValueHeaders['x-forwarded-proto'][0] ;
     let host = event.multiValueHeaders.host[0];
-
-    let mappedUrl = mapWebPacUrlToSCCURL(path, query, host, proto, reconstructOriginalURL(path, query, host, proto));
+    let mappedUrl = mapWebPacUrlToSCCURL(path, query, host, proto);
     let redirectLocation = `${proto}://${mappedUrl}`;
     const response = {
       isBase64Encoded: false,
