@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 const env = require('./test.js');
-const { mapWebPacUrlToSCCURL, handler, BASE_SCC_URL, LEGACY_CATALOG_URL } = require('../../index.js');
+const { mapWebPacUrlToSCCURL, handler, reconstructOriginalURL, BASE_SCC_URL, LEGACY_CATALOG_URL } = require('../../index.js');
 const axios = require('axios');
 
 let host = 'catalog.nypl.org';
@@ -210,6 +210,78 @@ describe('mapWebPacUrlToSCCURL', function() {
     const mappedUrl = mapWebPacUrlToSCCURL(path, query, host, method);
     expect(mappedUrl)
       .to.eql('https://catalog.nypl.org/screens/selfregpick.html');
+  })
+
+  describe('vega links', () => {
+    it('should handle vega link', () => {
+      let path = '/search/X';
+      let query = {
+        SEARCH: [
+          't:(The%20dark%20is%20rising)and%20a:(Cooper,%20Susan,%201935-)'
+        ]
+      };
+      let host = 'qa-catalog.nypl.org' ;
+      let proto = 'https';
+      const mappedUrl = mapWebPacUrlToSCCURL(path, query, host, proto);
+      expect(mappedUrl)
+        .to.eql('https://discovery.nypl.org/search?contributor=Cooper,%20Susan,%201935-&title=The%20dark%20is%20rising&originalUrl=https%3A%2F%2Fqa-catalog.nypl.org%2Fsearch%2FX%3FSEARCH%3Dt%3A(The%2520dark%2520is%2520rising)and%2520a%3A(Cooper%2C%2520Susan%2C%25201935-)')
+
+    });
+
+    it('should handle case variations', () => {
+      let path = '/SeArCh/x';
+      let query = {
+        sEarCh: [
+          'T:(The%20dark%20is%20rising)and%20a:(Cooper,%20Susan,%201935-)'
+        ]
+      };
+      let host = 'qa-catalog.nypl.org' ;
+      let proto = 'https';
+      const mappedUrl = mapWebPacUrlToSCCURL(path, query, host, proto);
+      expect(mappedUrl)
+        .to.eql('https://discovery.nypl.org/search?contributor=Cooper,%20Susan,%201935-&title=The%20dark%20is%20rising&originalUrl=https%3A%2F%2Fqa-catalog.nypl.org%2FSeArCh%2Fx%3FsEarCh%3DT%3A(The%2520dark%2520is%2520rising)and%2520a%3A(Cooper%2C%2520Susan%2C%25201935-)')
+    });
+
+    it('should handle spacing variations', () => {
+      let path = '/search/X';
+      let host = 'qa-catalog.nypl.org';
+      let proto = 'https';
+      let query1 = {
+        SEARCH: [
+          't:(The%20dark%20is%20rising) and%20a:(Cooper,%20Susan,%201935-)'
+        ]
+      };
+
+      let query2 = {
+        SEARCH: [
+          't:(The%20dark%20is%20rising)and a:(Cooper,%20Susan,%201935-)'
+        ]
+      }
+
+      let query3 = {
+        SEARCH: [
+          't:(The%20dark%20is%20rising)anda:(Cooper,%20Susan,%201935-)'
+        ]
+      }
+
+      let query4 = {
+        SEARCH: [
+          't:(The%20dark%20is%20rising)%20and%20a:(Cooper,%20Susan,%201935-)'
+        ]
+      }
+
+      expect(mapWebPacUrlToSCCURL(path, query1, host, proto))
+        .to.eql('https://discovery.nypl.org/search?contributor=Cooper,%20Susan,%201935-&title=The%20dark%20is%20rising&originalUrl=https%3A%2F%2Fqa-catalog.nypl.org%2Fsearch%2FX%3FSEARCH%3Dt%3A(The%2520dark%2520is%2520rising)%20and%2520a%3A(Cooper%2C%2520Susan%2C%25201935-)')
+
+      expect(mapWebPacUrlToSCCURL(path, query2, host, proto))
+        .to.eql('https://discovery.nypl.org/search?contributor=Cooper,%20Susan,%201935-&title=The%20dark%20is%20rising&originalUrl=https%3A%2F%2Fqa-catalog.nypl.org%2Fsearch%2FX%3FSEARCH%3Dt%3A(The%2520dark%2520is%2520rising)and%20a%3A(Cooper%2C%2520Susan%2C%25201935-)')
+
+      expect(mapWebPacUrlToSCCURL(path, query3, host, proto))
+        .to.eql('https://discovery.nypl.org/search?contributor=Cooper,%20Susan,%201935-&title=The%20dark%20is%20rising&originalUrl=https%3A%2F%2Fqa-catalog.nypl.org%2Fsearch%2FX%3FSEARCH%3Dt%3A(The%2520dark%2520is%2520rising)anda%3A(Cooper%2C%2520Susan%2C%25201935-)')
+
+      expect(mapWebPacUrlToSCCURL(path, query4, host, proto))
+        .to.eql('https://discovery.nypl.org/search?contributor=Cooper,%20Susan,%201935-&title=The%20dark%20is%20rising&originalUrl=https%3A%2F%2Fqa-catalog.nypl.org%2Fsearch%2FX%3FSEARCH%3Dt%3A(The%2520dark%2520is%2520rising)%2520and%2520a%3A(Cooper%2C%2520Susan%2C%25201935-)')
+    })
   })
 
 });
