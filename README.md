@@ -30,7 +30,7 @@ npm i
 
 To test an event locally:
 ```
-sam local invoke --region us-east-1 --template sam.local.yml --profile nypl-digital-dev --event event.json
+sam local invoke --region us-east-1 --template sam.local.yml --profile nypl-digital-dev --event events/event.json
 ```
 
 The main function is `mapWebPacUrlToSCCURL`. It may be more convenient to `require` the exported module in the node repl and test this function than to run `sam local invoke`
