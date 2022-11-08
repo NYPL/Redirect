@@ -3,6 +3,7 @@ const { getIndexMapping, reconstructQuery, reconstructOriginalURL, getQueryFromP
 const {
   BASE_SCC_URL,
   LEGACY_CATALOG_URL,
+  ENCORE_URL,
   VEGA_URL
 } = process.env;
 
@@ -31,7 +32,8 @@ function mapToRedirectURL (path, query, host, proto) {
 
   }
   // if there is actually a redirect happening (not 404, pinreset, or selfreg endpoint)
-  if (!redirectURL.includes(host)) {
+  // as determined by there being a legacy or encore url
+  if (!(redirectURL.includes(LEGACY_CATALOG_URL) || redirectURL.includes(ENCORE_URL))) {
     redirectURL = redirectURL + (redirectURL.includes('?') ? '&' : '?') + 'originalUrl=' + reconstructOriginalURL(path, query, host, proto);
   }
   return redirectURL;
