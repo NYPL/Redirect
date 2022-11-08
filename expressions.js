@@ -6,10 +6,13 @@ const {
 } = process.env;
 const { getQueryFromParams, recodeSearchQuery, reconstructQuery, getIndexMapping } = require('./utils')
 
+const homeHandler = (match, query, host) => LEGACY_CATALOG_URL.includes(host) ? BASE_SCC_URL : VEGA_URL
+
 module.exports = {
   nothingReg: {
-    expr: /^\/$/,
-    handler: (match, query, host) => LEGACY_CATALOG_URL.includes(host) ? BASE_SCC_URL : VEGA_URL,
+    // empty path or /bookcart, /home endpoint (from encore)
+    expr: /(?:^\/$)|bookcart$|home$/,
+    handler: (match, query, host) => LEGACY_CATALOG_URL.includes(host) ? BASE_SCC_URL : VEGA_URL
   },
   vega: {
     custom: (path, query, host, proto) => {
@@ -26,6 +29,15 @@ module.exports = {
   encoreBibPage: {
     expr: /C__Rb(\d{8})/,
     handler: (match) => `${VEGA_URL}/search/card?recordId=${match[1]}`
+  },
+  encoreSearch: {
+    expr: /\/search\/C__S(.*)__O/,
+    handler: () => console.log('poopybutts'
+    )
+  },
+  encoreAccountPage: {
+    expr: /\/myaccount/,
+    handler: () => `${VEGA_URL}/?openAccount=Checkouts:`
   },
   // WebPac => SCC redirects
   oclc: {

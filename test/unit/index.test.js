@@ -303,11 +303,36 @@ describe('mapToRedirectURL', function () {
 
     it('should map bib pages correctly', function () {
       const path = '/record/C__Rb18225028SkindredOrightresultU_X7?lang=eng&suite=def'
-      axios.post = () => ({ data: { access_token: '' } });
-      axios.get = () => ({ data: { uri: 'b12172157' } });
       const mapped = mapToRedirectURL(path, {}, encoreHost, method);
       expect(mapped)
         .to.eql(`${VEGA_URL}/search/card?recordId=18225028` + '&originalUrl=https%3A%2F%2Fbrowse.nypl.org%2Frecord%2FC__Rb18225028SkindredOrightresultU_X7%3Flang%3Deng%26suite%3Ddef')
+    })
+    xit('should redirect keyword search properly', () => {
+      const path = '/search/C__SAncient%20Greece__Orightresult__U?lang=eng&suite=def'
+      const mapped = mapToRedirectURL(path, {}, encoreHost, method);
+      expect(mapped)
+        .to.include(`${VEGA_URL}/search?query=Ancient%20Greece&searchType=everything&pageSize=10`)
+    })
+    it('/bookcart redirects to /', () => {
+      const path = '/bookcart'
+      const query = {};
+      const mapped = mapToRedirectURL(path, query, encoreHost, method);
+      expect(mapped)
+        .to.eql(VEGA_URL + '?originalUrl=https%3A%2F%2Fbrowse.nypl.org%2Fbookcart')
+    })
+    it('/home redirects to /', () => {
+      const path = '/home'
+      const query = {};
+      const mapped = mapToRedirectURL(path, query, encoreHost, method);
+      expect(mapped)
+        .to.eql(VEGA_URL + '?originalUrl=https%3A%2F%2Fbrowse.nypl.org%2Fhome')
+    })
+    it('should redirect account page', () => {
+      const path = '/myaccount'
+      const query = {};
+      const mapped = mapToRedirectURL(path, query, encoreHost, method);
+      expect(mapped)
+        .to.eql(VEGA_URL + '/?openAccount=Checkouts:&originalUrl=https%3A%2F%2Fbrowse.nypl.org%2Fmyaccount')
     })
   })
 });

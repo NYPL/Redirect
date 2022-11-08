@@ -31,7 +31,7 @@ function mapToRedirectURL (path, query, host, proto) {
 
   }
   // if there is actually a redirect happening (not 404, pinreset, or selfreg endpoint)
-  // as determined by there being a legacy or encore url
+  // as determined by there not being a legacy or encore url, include original url
   if (!(redirectURL.includes(LEGACY_CATALOG_URL) || redirectURL.includes(ENCORE_URL))) {
     redirectURL = redirectURL + (redirectURL.includes('?') ? '&' : '?') + 'originalUrl=' + reconstructOriginalURL(path, query, host, proto);
   }
