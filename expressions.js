@@ -7,16 +7,9 @@ const {
 const { getQueryFromParams, recodeSearchQuery, reconstructQuery, getIndexMapping } = require('./utils')
 
 module.exports = {
-  // Encore => Vega redirects
-  bibPage: {
-    expr: /C__Rb(\d{8})/,
-    handler: (match) => `${VEGA_URL}/search/card?recordId=${match[1]}`
-  },
-
-  // WebPac => SCC redirects
   nothingReg: {
     expr: /^\/$/,
-    handler: () => BASE_SCC_URL,
+    handler: (host) => host.includes(LEGACY_CATALOG_URL) ? BASE_SCC_URL : VEGA_URL,
   },
   vega: {
     custom: (path, query, host, proto) => {
@@ -29,6 +22,12 @@ module.exports = {
     },
     handler: match => `${BASE_SCC_URL}/search?contributor=${match[2]}&title=${match[1]}`
   },
+  // Encore => Vega redirects
+  encoreBibPage: {
+    expr: /C__Rb(\d{8})/,
+    handler: (match) => `${VEGA_URL}/search/card?recordId=${match[1]}`
+  },
+  // WebPac => SCC redirects
   oclc: {
     expr: /\/search\/o\=?(\d+)/,
     handler: match => `${BASE_SCC_URL}/search?oclc=${match[1]}&redirectOnMatch=true`,

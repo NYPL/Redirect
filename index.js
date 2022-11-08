@@ -7,7 +7,6 @@ const {
   VEGA_URL
 } = process.env;
 
-
 // The main method to build the redirectURL based on the incoming request
 // Given a path and a query, finds the first expression declared above which matches
 // the path, and returns the corresponding handler with the matchdata and query
@@ -93,4 +92,6 @@ module.exports = {
   reconstructQuery,
   BASE_SCC_URL,
   LEGACY_CATALOG_URL,
+  VEGA_URL,
+  ENCORE_URL
 };
