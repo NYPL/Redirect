@@ -9,7 +9,7 @@ const { getQueryFromParams, recodeSearchQuery, reconstructQuery, getIndexMapping
 module.exports = {
   nothingReg: {
     expr: /^\/$/,
-    handler: (host) => host.includes(LEGACY_CATALOG_URL) ? BASE_SCC_URL : VEGA_URL,
+    handler: (match, query, host) => LEGACY_CATALOG_URL.includes(host) ? BASE_SCC_URL : VEGA_URL,
   },
   vega: {
     custom: (path, query, host, proto) => {

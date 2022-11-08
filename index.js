@@ -21,7 +21,7 @@ function mapToRedirectURL (path, query, host, proto) {
       match = pathType.custom(path, query, host, proto)
     }
     if (match) {
-      redirectURL = pathType.handler(match, query);
+      redirectURL = pathType.handler(match, query, host);
       break
     }
   }
