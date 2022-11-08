@@ -4,6 +4,7 @@ const {
   ENCORE_URL,
   VEGA_URL
 } = process.env;
+const { getQueryFromParams, recodeSearchQuery, reconstructQuery, getIndexMapping } = require('./utils')
 
 module.exports = {
   // Encore => Vega redirects
