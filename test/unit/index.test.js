@@ -291,7 +291,7 @@ describe('mapToRedirectURL', function () {
         .to.eql('https://discovery.nypl.org/search?contributor=Cooper,%20Susan,%201935-&title=The%20dark%20is%20rising&originalUrl=https%3A%2F%2Fqa-catalog.nypl.org%2Fsearch%2FX%3FSEARCH%3Dt%3A(The%2520dark%2520is%2520rising)%2520and%2520a%3A(Cooper%2C%2520Susan%2C%25201935-)')
     })
   })
-  describe.only('encore links', () => {
+  describe('encore links', () => {
     let encoreHost = 'browse.nypl.org'
     it('should map the base URL correctly', function () {
       const path = '/';
