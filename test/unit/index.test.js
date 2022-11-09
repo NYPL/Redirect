@@ -291,48 +291,54 @@ describe('mapToRedirectURL', function () {
         .to.eql('https://discovery.nypl.org/search?contributor=Cooper,%20Susan,%201935-&title=The%20dark%20is%20rising&originalUrl=https%3A%2F%2Fqa-catalog.nypl.org%2Fsearch%2FX%3FSEARCH%3Dt%3A(The%2520dark%2520is%2520rising)%2520and%2520a%3A(Cooper%2C%2520Susan%2C%25201935-)')
     })
   })
-  describe('encore links', () => {
+  describe.only('encore links', () => {
     let encoreHost = 'browse.nypl.org'
     it('should map the base URL correctly', function () {
       const path = '/';
       const query = {};
       const mapped = mapToRedirectURL(path, query, encoreHost, method);
       expect(mapped)
-        .to.eql(VEGA_URL + '?originalUrl=https%3A%2F%2Fbrowse.nypl.org%2F')
+        .to.eql(VEGA_URL)
     });
 
     it('should map bib pages correctly', function () {
       const path = '/record/C__Rb18225028SkindredOrightresultU_X7?lang=eng&suite=def'
       const mapped = mapToRedirectURL(path, {}, encoreHost, method);
       expect(mapped)
-        .to.eql(`${VEGA_URL}/search/card?recordId=18225028` + '&originalUrl=https%3A%2F%2Fbrowse.nypl.org%2Frecord%2FC__Rb18225028SkindredOrightresultU_X7%3Flang%3Deng%26suite%3Ddef')
+        .to.eql(`${VEGA_URL}/search/card?recordId=18225028`)
     })
-    xit('should redirect keyword search properly', () => {
+    it('should redirect keyword search properly', () => {
       const path = '/search/C__SAncient%20Greece__Orightresult__U?lang=eng&suite=def'
       const mapped = mapToRedirectURL(path, {}, encoreHost, method);
       expect(mapped)
-        .to.include(`${VEGA_URL}/search?query=Ancient%20Greece&searchType=everything&pageSize=10`)
+        .to.equal(`${VEGA_URL}/search?query=Ancient%20Greece&searchType=everything&pageSize=10`)
+    })
+    it('should not include anything but the keyword search', () => {
+      const path = '/search/C__Schopped%20cheese__Ff%3Afacetmediatype%3Az%3Az%3AE-BOOK%3A%3A__Oauthor__U__X0?lang=eng&suite=def'
+      const mapped = mapToRedirectURL(path, {}, encoreHost, method);
+      expect(mapped)
+        .to.include(`${VEGA_URL}/search?query=chopped%20cheese&searchType=everything&pageSize=10`)
     })
     it('/bookcart redirects to /', () => {
       const path = '/bookcart'
       const query = {};
       const mapped = mapToRedirectURL(path, query, encoreHost, method);
       expect(mapped)
-        .to.eql(VEGA_URL + '?originalUrl=https%3A%2F%2Fbrowse.nypl.org%2Fbookcart')
+        .to.eql(VEGA_URL)
     })
     it('/home redirects to /', () => {
       const path = '/home'
       const query = {};
       const mapped = mapToRedirectURL(path, query, encoreHost, method);
       expect(mapped)
-        .to.eql(VEGA_URL + '?originalUrl=https%3A%2F%2Fbrowse.nypl.org%2Fhome')
+        .to.eql(VEGA_URL)
     })
     it('should redirect account page', () => {
       const path = '/myaccount'
       const query = {};
       const mapped = mapToRedirectURL(path, query, encoreHost, method);
       expect(mapped)
-        .to.eql(VEGA_URL + '/?openAccount=Checkouts:&originalUrl=https%3A%2F%2Fbrowse.nypl.org%2Fmyaccount')
+        .to.eql(VEGA_URL + '/?openAccount=Checkouts:')
     })
   })
 });

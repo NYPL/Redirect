@@ -31,9 +31,8 @@ module.exports = {
     handler: (match) => `${VEGA_URL}/search/card?recordId=${match[1]}`
   },
   encoreSearch: {
-    expr: /\/search\/C__S(.*)__O/,
-    handler: () => console.log('poopybutts'
-    )
+    expr: /\/search\/C__S(.*?)__/,
+    handler: (match) => `${VEGA_URL}/search?query=${match[1]}&searchType=everything&pageSize=10`
   },
   encoreAccountPage: {
     expr: /\/myaccount/,
