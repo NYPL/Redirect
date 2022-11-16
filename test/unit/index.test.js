@@ -302,7 +302,7 @@ describe('mapToRedirectURL', function () {
     });
 
     it('should map bib pages correctly', function () {
-      const path = '/record/C__Rb18225028S__kindredOrightresultU__X7?lang=eng&suite=def'
+      const path = '/record/C__Rb18225028__Skindred__Orightresult__U__X7?lang=eng&suite=def'
       const mapped = mapToRedirectURL(path, {}, encoreHost, method);
       expect(mapped)
         .to.eql(`${VEGA_URL}/search/card?recordId=18225028`)
