@@ -1,5 +1,5 @@
 const expressions = require('./expressions')
-const { getIndexMapping, reconstructQuery, reconstructOriginalURL, getQueryFromParams } = require('./utils')
+const { getIndexMapping, reconstructQuery, reconstructOriginalURL, getQueryFromParams, homeHandler } = require('./utils')
 const {
   BASE_SCC_URL,
   LEGACY_CATALOG_URL,
@@ -26,9 +26,8 @@ function mapToRedirectURL (path, query, host, proto) {
     }
   }
   if (!redirectURL) {
-    redirectHost = LEGACY_CATALOG_URL.includes(host) ? BASE_SCC_URL : VEGA_URL
+    redirectHost = homeHandler(null, null, host)
     redirectURL = `${redirectHost}/404/redirect`
-
   }
   // if there is actually a redirect happening (not 404, pinreset, or selfreg endpoint)
   // as determined by there not being a legacy or encore url, include original url

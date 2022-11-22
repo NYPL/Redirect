@@ -4,15 +4,14 @@ const {
   ENCORE_URL,
   VEGA_URL
 } = process.env;
-const { getQueryFromParams, recodeSearchQuery, reconstructQuery, getIndexMapping } = require('./utils')
 
-const homeHandler = (match, query, host) => LEGACY_CATALOG_URL.includes(host) ? BASE_SCC_URL : VEGA_URL
+const { getQueryFromParams, recodeSearchQuery, reconstructQuery, getIndexMapping, homeHandler } = require('./utils')
 
 module.exports = {
   nothingReg: {
     // empty path or /bookcart, /home endpoint (from encore)
     expr: /(?:^\/$)|bookcart$|home$/,
-    handler: (match, query, host) => LEGACY_CATALOG_URL.includes(host) ? BASE_SCC_URL : VEGA_URL
+        handler: homeHandler
   },
   vega: {
     custom: (path, query, host, proto) => {
@@ -27,7 +26,7 @@ module.exports = {
   },
   // Encore => Vega redirects
   encoreBibPage: {
-    expr: /C__Rb(\d{8})/,
+      expr: /C__Rb(\d{8})__/,
     handler: (match) => `${VEGA_URL}/search/card?recordId=${match[1]}`
   },
   encoreSearch: {

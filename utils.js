@@ -1,3 +1,9 @@
+const {
+  BASE_SCC_URL,
+  LEGACY_CATALOG_URL,
+  VEGA_URL
+} = process.env;
+
 const indexMappings = {
   // X: '',
   // Y: '',
@@ -9,6 +15,7 @@ const indexMappings = {
   i: '&search_scope=standard_number', // what to do with these?
   c: '&search_scope=standard_number',
 }
+const homeHandler = (match, query, host) => LEGACY_CATALOG_URL.includes(host) ? BASE_SCC_URL : VEGA_URL
 
 const getIndexMapping = index => indexMappings[index] || '';
 
@@ -52,4 +59,11 @@ const getQueryFromParams = (url, query) => {
 }
 const recodeSearchQuery = query => query.split(/\+|\s/).join("%20");
 
-module.exports = { getIndexMapping, reconstructQuery, reconstructOriginalURL, getQueryFromParams, recodeSearchQuery }
+module.exports = {
+  getIndexMapping,
+  reconstructQuery,
+  reconstructOriginalURL,
+  getQueryFromParams,
+  recodeSearchQuery,
+  homeHandler
+}
