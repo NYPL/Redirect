@@ -13,7 +13,8 @@ module.exports = {
     expr: /(?:^\/$)|bookcart$|home$/,
         handler: homeHandler
   },
-  vega: {
+  rc_from_vega: {
+    // handling for legacy author/title search URLs in redirect service
     custom: (path, query, host, proto) => {
       if (!path.match(/\/search\/X/i)) { return null; }
       let searchKey = Object.keys(query).find(key => key.match(/search/i));
