@@ -307,6 +307,12 @@ describe('mapToRedirectURL', function () {
       expect(mapped)
         .to.eql(`${VEGA_URL}/search/card?recordId=18225028`)
     })
+    it('should skip something close to a bib page', () => {
+      const path = '/record/C__Rb18225028kindred__Orightresult__U__X7?lang=eng&suite=def'
+      const mapped = mapToRedirectURL(path, {}, encoreHost, method);
+      expect(mapped)
+        .to.eql(VEGA_URL + '/404/redirect')
+    })
     it('should redirect keyword search properly', () => {
       const path = '/search/C__SAncient%20Greece__Orightresult__U?lang=eng&suite=def'
       const mapped = mapToRedirectURL(path, {}, encoreHost, method);
