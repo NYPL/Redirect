@@ -68,7 +68,6 @@ describe('mapToRedirectURL', function () {
       expect(mapped).to.eql(`${BASE_SCC_URL}?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch~S98`);
     });
 
-
     it('should map search pages with searcharg and searchtype given as parameters', function () {
       const path = '/search~S1/';
       const query = {
