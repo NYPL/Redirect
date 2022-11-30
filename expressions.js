@@ -1,57 +1,83 @@
 const {
-  getQueryFromParams,
-  recodeSearchQuery,
-  getIndexMapping,
-} = require('./util.js');
+  BASE_SCC_URL,
+  LEGACY_CATALOG_URL,
+  ENCORE_URL,
+  VEGA_URL
+} = process.env;
 
-BASE_SCC_URL = 'http://discovery.nypl.org/research/collections/shared-collection-catalog/';
-
-const expressions = [
-  // used to match the homepage
-  // matches path '/', full url e.g. 'http://catalog.nypl.org/'
-  {
-    name: 'homepage',
-    expr: /^\/$/,
-    handler: () => BASE_SCC_URL,
-  },
-  // matches path /iii/cas/login
-  {
-    name: 'auth',
-    expr: /\/iii\/cas\/login/,
-    handler: (match, parsedURL) => parsedURL.href.replace('catalog.nypl.org', 'ilsstaff.nypl.org'),
-  },
-  // matches search pages that include the search term in the path e.g.
-  // /search~S1234/tProgramming+in+Javascript
-  {
-    name: 'searchWith',
-    expr: /\/search(?:~S\d*)?\/([a-zA-Z])([^/]+)/,
-    handler: match => `${BASE_SCC_URL}search?q=${recodeSearchQuery(match[2])}${getIndexMapping(match[1])}`
-  },
-  // matches search pages without search terms in the path,
-  // but that may put the search terms in the query e.g.
-  // /search~S1234/t?/Programming+in+Javascript
-  {
-    name: 'searchWithout',
-    expr: /\/search(?:~S\d*)?(?:\/([a-zA-Z]))?/,
-    handler: (match, parsedURL) => `${BASE_SCC_URL}search?q=${getQueryFromParams(match[0], parsedURL)}${getIndexMapping(match[1])}`
-  },
-  // matches patron info pages, which we haven't finished implementing yet in SCC
-  // e.g. /patroninfo/12345
-  {
-    name: 'patron',
-    expr: /\/patroninfo[^\/]*\/(\d+)/,
-    handler: match => `${BASE_SCC_URL}?fakepatron=${match[1]}`
-  },
-  // matches bib record pages,
-  // e.g. /record=b123456789
-  {
-    name: 'record',
-    expr: /\/record=(\w+)/,
-    handler: match => `${BASE_SCC_URL}bib/${match[1]}`
-  },
-];
+const { getQueryFromParams, recodeSearchQuery, reconstructQuery, getIndexMapping, homeHandler } = require('./utils')
 
 module.exports = {
-  expressions,
-  BASE_SCC_URL,
+  nothingReg: {
+    // empty path or /bookcart, /home endpoint (from encore)
+    expr: /(?:^\/$)|bookcart$|home$/,
+        handler: homeHandler
+  },
+  rc_from_vega: {
+    // handling for legacy author/title search URLs in redirect service
+    custom: (path, query, host, proto) => {
+      if (!path.match(/\/search\/X/i)) { return null; }
+      let searchKey = Object.keys(query).find(key => key.match(/search/i));
+      if (!searchKey) { return null; }
+      let searchValue = query[searchKey];
+      if (!Array.isArray(searchValue) || !searchValue[0] || (typeof searchValue[0] !== 'string')) { return null; }
+      return searchValue[0].match(/t:\((.*)\)(?:%20|\s*)and(?:%20|\s*)a:\((.*)\)/i)
+    },
+    handler: match => `${BASE_SCC_URL}/search?contributor=${match[2]}&title=${match[1]}`
+  },
+  // Encore => Vega redirects
+  encoreBibPage: {
+      expr: /C__Rb(\d{8})__/,
+    handler: (match) => `${VEGA_URL}/search/card?recordId=${match[1]}`
+  },
+  encoreSearch: {
+    expr: /\/search\/C__S(.*?)__/,
+    handler: (match) => `${VEGA_URL}/search?query=${match[1]}&searchType=everything&pageSize=10`
+  },
+  encoreAccountPage: {
+    expr: /\/myaccount/,
+    handler: () => `${VEGA_URL}/?openAccount=Checkouts:`
+  },
+  // WebPac => SCC redirects
+  oclc: {
+    expr: /\/search\/o\=?(\d+)/,
+    handler: match => `${BASE_SCC_URL}/search?oclc=${match[1]}&redirectOnMatch=true`,
+  },
+  issn: {
+    expr: /\/search\/i(\d{4}\-\d{4})/,
+    handler: match => `${BASE_SCC_URL}/search?issn=${match[1]}&redirectOnMatch=true`,
+  },
+  isbn: {
+    expr: /\/search\/i(\w+)/,
+    handler: match => `${BASE_SCC_URL}/search?isbn=${match[1]}&redirectOnMatch=true`,
+  },
+  searchRegWith: {
+    expr: /\/search(~S\w*)?\/([a-zA-Z])(([^\/])+)/,
+    handler: match => `${BASE_SCC_URL}/search?q=${recodeSearchQuery(match[3])}${getIndexMapping(match[2])}`
+  },
+  searchRegWithout: {
+    expr: /\/search(~S\w*)?(\/([a-zA-Z]))?/,
+    handler: (match, query) => {
+      const mappedQuery = getQueryFromParams(match[0], query);
+      if (!mappedQuery) return BASE_SCC_URL;
+      return `${BASE_SCC_URL}/search?q=${mappedQuery}${getIndexMapping(match[3])}`;
+    }
+  },
+  patroninfoReg: {
+    expr: /^\/patroninfo/,
+    handler: match => `${BASE_SCC_URL}/account`
+  },
+  recordReg: {
+    expr: /\/record=(\w+)/,
+    handler: (match) => {
+      const bnum = match[1];
+      return `${BASE_SCC_URL}/bib/${bnum}`;
+    }
+  },
+  legacyReg: {
+    expr: /pinreset|selfreg/,
+    handler: (match, query) => {
+      return `${LEGACY_CATALOG_URL}${match.input}${reconstructQuery(query)}`
+    }
+  },
 };
