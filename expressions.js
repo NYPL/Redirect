@@ -10,7 +10,7 @@ const { getQueryFromParams, recodeSearchQuery, reconstructQuery, getIndexMapping
 module.exports = {
   nothingReg: {
     // empty path or /bookcart, /home endpoint (from encore)
-    expr: /(?:^\/$)|bookcart$|home$/,
+    expr: /(?:^\/$)|(?:^\/iii\/encore$)|bookcart$|home$/,
         handler: homeHandler
   },
   rc_from_vega: {
