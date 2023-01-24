@@ -293,7 +293,7 @@ describe('mapToRedirectURL', function () {
   describe('encore links', () => {
     let encoreHost = 'browse.nypl.org'
     it('should map the base URL correctly', function () {
-      const path = '/';
+      const path = '/iii/encore';
       const query = {};
       const mapped = mapToRedirectURL(path, query, encoreHost, method);
       expect(mapped)
