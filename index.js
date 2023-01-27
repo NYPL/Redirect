@@ -26,8 +26,11 @@ function mapToRedirectURL (path, query, host, proto) {
     }
   }
   if (!redirectURL) {
-    redirectHost = homeHandler(null, null, host)
-    redirectURL = `${redirectHost}/404/redirect`
+    redirectURL = homeHandler(null, null, host)
+    // if its a vega redirect, we are sending everything to /search, no 404 or redirect
+    //   needed in any case.
+    if (redirectURL.includes(VEGA_URL)) return redirectURL
+    redirectURL += `/404/redirect`
   }
   // if there is actually a redirect happening (not 404, pinreset, or selfreg endpoint)
   // as determined by there not being a legacy or encore url, include original url
