@@ -303,10 +303,14 @@ describe('mapToRedirectURL', function () {
     });
 
     it('should map bib pages correctly', function () {
-      const path = '/record/C__Rb18225028__Skindred__Orightresult__U__X7?lang=eng&suite=def'
-      const mapped = mapToRedirectURL(path, {}, encoreHost, method);
+      const paths = ['/record/C__Rb18225028__Skindred__Orightresult__U__X7?lang=eng&suite=def',
+        '/record/C__Rb18225028',
+        '/record/C__Rb18225028~$1']
+      paths.forEach((path) => {
+        const mapped = mapToRedirectURL(path, {}, encoreHost, method);
       expect(mapped)
         .to.eql(`${VEGA_URL}/search/card?recordId=18225028`)
+      })
     })
     it('should skip something close to a bib page', () => {
       const path = '/record/C__Rb18225028kindred__Orightresult__U__X7?lang=eng&suite=def'

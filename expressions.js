@@ -27,7 +27,7 @@ module.exports = {
   },
   // Encore => Vega redirects
   encoreBibPage: {
-      expr: /C__Rb(\d{8})__/,
+    expr: /C__Rb(\d{8})(__|~\$1|$)/,
     handler: (match) => `${VEGA_URL}/search/card?recordId=${match[1]}`
   },
   encoreSearch: {
