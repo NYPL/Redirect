@@ -228,7 +228,7 @@ describe('mapToRedirectURL', function () {
           't:(The%20dark%20is%20rising)and%20a:(Cooper,%20Susan,%201935-)'
         ]
       };
-      let host = 'qa-catalog.nypl.org' ;
+      let host = 'qa-catalog.nypl.org';
       let proto = 'https';
       const mappedUrl = mapToRedirectURL(path, query, host, proto);
       expect(mappedUrl)
@@ -243,7 +243,7 @@ describe('mapToRedirectURL', function () {
           'T:(The%20dark%20is%20rising)and%20a:(Cooper,%20Susan,%201935-)'
         ]
       };
-      let host = 'qa-catalog.nypl.org' ;
+      let host = 'qa-catalog.nypl.org';
       let proto = 'https';
       const mappedUrl = mapToRedirectURL(path, query, host, proto);
       expect(mappedUrl)
@@ -292,11 +292,11 @@ describe('mapToRedirectURL', function () {
     })
   })
   describe('encore links', () => {
+    const query = {}
     let searchRedirect = VEGA_URL + '/search'
     let encoreHost = 'browse.nypl.org'
     it('should map the base URL correctly', function () {
       const path = '/iii/encore';
-      const query = {};
       const mapped = mapToRedirectURL(path, query, encoreHost, method);
       expect(mapped)
         .to.eql(searchRedirect)
@@ -307,49 +307,55 @@ describe('mapToRedirectURL', function () {
         '/record/C__Rb18225028',
         '/record/C__Rb18225028~$1']
       paths.forEach((path) => {
-        const mapped = mapToRedirectURL(path, {}, encoreHost, method);
-      expect(mapped)
-        .to.eql(`${VEGA_URL}/search/card?recordId=18225028`)
+        const mapped = mapToRedirectURL(path, query, encoreHost, method);
+        expect(mapped)
+          .to.eql(`${VEGA_URL}/search/card?recordId=18225028`)
       })
     })
     it('should skip something close to a bib page', () => {
       const path = '/record/C__Rb18225028kindred__Orightresult__U__X7?lang=eng&suite=def'
-      const mapped = mapToRedirectURL(path, {}, encoreHost, method);
+      const mapped = mapToRedirectURL(path, query, encoreHost, method);
       expect(mapped)
         .to.eql(searchRedirect)
     })
     it('should redirect keyword search properly', () => {
       const path = '/search/C__SAncient%20Greece__Orightresult__U?lang=eng&suite=def'
-      const mapped = mapToRedirectURL(path, {}, encoreHost, method);
+      const mapped = mapToRedirectURL(path, query, encoreHost, method);
       expect(mapped)
         .to.equal(`${VEGA_URL}/search?query=Ancient%20Greece&searchType=everything&pageSize=10`)
     })
     it('should not include anything but the keyword search', () => {
       const path = '/search/C__Schopped%20cheese__Ff%3Afacetmediatype%3Az%3Az%3AE-BOOK%3A%3A__Oauthor__U__X0?lang=eng&suite=def'
-      const mapped = mapToRedirectURL(path, {}, encoreHost, method);
+      const mapped = mapToRedirectURL(path, query, encoreHost, method);
       expect(mapped)
         .to.include(`${VEGA_URL}/search?query=chopped%20cheese&searchType=everything&pageSize=10`)
     })
     it('/bookcart redirects to /', () => {
       const path = '/bookcart'
-      const query = {};
       const mapped = mapToRedirectURL(path, query, encoreHost, method);
       expect(mapped)
         .to.eql(searchRedirect)
     })
     it('/home redirects to /', () => {
       const path = '/home'
-      const query = {};
       const mapped = mapToRedirectURL(path, query, encoreHost, method);
       expect(mapped)
         .to.eql(searchRedirect)
     })
     it('should redirect account page', () => {
       const path = '/myaccount'
-      const query = {};
       const mapped = mapToRedirectURL(path, query, encoreHost, method);
       expect(mapped)
         .to.eql(VEGA_URL + '/?openAccount=Checkouts:')
+    })
+    it('languages other than english links', () => {
+      const paths = ['/search/C__Sf:(a%20|%20u)%20c:(96)%20l:hat__O-date__U__X0?lang=eng&suite=def', '/search/C__Sf:(v%20|%20y)%20c:(96)%20l:spas__Orightresult__U?lang=eng&suite=def']
+      const results = ['/search?query=*&searchType=everything&pageSize=10&languageIds=hat&pageNum=0&materialTypeIds=a,u&sorting=publicationDate&sortOrder=desc',
+        '/search?query=*&searchType=everything&pageSize=10&languageIds=spa&pageNum=0&materialTypeIds=v,y&sorting=publicationDate&sortOrder=desc']
+      paths.forEach((path, i) => {
+        const mapped = mapToRedirectURL(paths[i], query, encoreHost, method);
+        expect(mapped).to.eql(VEGA_URL + results[i])
+      })
     })
   })
 });
@@ -359,7 +365,7 @@ describe('handler', () => {
   const callback = (_, resp) => resp.statusCode;
 
   it('should respond 200 to /check', async function () {
-    const event ={
+    const event = {
       path: '/check',
     }
 
@@ -385,10 +391,10 @@ describe('handler', () => {
   it('should call the callback with 302 response for non-matching url', async function () {
     // the record id here is just nonsense. It shouldn't match anything.
     const event = {
-        path: '/record=&%!^/',
-        multiValueHeaders: {
-          'x-forwarded-proto': ['https']
-        }
+      path: '/record=&%!^/',
+      multiValueHeaders: {
+        'x-forwarded-proto': ['https']
+      }
     }
 
     const resp = await handler(event, context, callback);
