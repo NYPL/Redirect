@@ -349,12 +349,17 @@ describe('mapToRedirectURL', function () {
         .to.eql(VEGA_URL + '/?openAccount=Checkouts:')
     })
     it('languages other than english links', () => {
-      const paths = ['/search/C__Sf:(a%20|%20u)%20c:(96)%20l:hat__O-date__U__X0?lang=eng&suite=def', '/search/C__Sf:(v%20|%20y)%20c:(96)%20l:spas__Orightresult__U?lang=eng&suite=def']
-      const results = ['/search?query=*&searchType=everything&pageSize=10&languageIds=hat&pageNum=0&materialTypeIds=a,u&sorting=publicationDate&sortOrder=desc',
-        '/search?query=*&searchType=everything&pageSize=10&languageIds=spa&pageNum=0&materialTypeIds=v,y&sorting=publicationDate&sortOrder=desc']
+      const pathsAndResultsMap = {
+        // a/u, no parens around language code
+        '/search/C__Sf:(a%20|%20u)%20c:(96)%20l:hat__O-date__U__X0?lang=eng&suite=def': '/search?query=*&searchType=everything&pageSize=10&languageIds=hat&pageNum=0&materialTypeIds=a,u&sorting=publicationDate&sortOrder=desc',
+        // v/y, parens around language code
+        '/search/C__Sf:(v%20|%20y)%20c:(96)%20l:(spa)s__Orightresult__U?lang=eng&suite=def': '/search?query=*&searchType=everything&pageSize=10&languageIds=spa&pageNum=0&materialTypeIds=v,y&sorting=publicationDate&sortOrder=desc',
+
+      }
+      const paths = Object.keys(pathsAndResultsMap)
       paths.forEach((path, i) => {
-        const mapped = mapToRedirectURL(paths[i], query, encoreHost, method);
-        expect(mapped).to.eql(VEGA_URL + results[i])
+        const mapped = mapToRedirectURL(path, query, encoreHost, method);
+        expect(mapped).to.eql(VEGA_URL + pathsAndResultsMap[path])
       })
     })
   })

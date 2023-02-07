@@ -31,7 +31,7 @@ module.exports = {
     handler: (match) => `${VEGA_URL}/search/card?recordId=${match[1]}`
   },
   languagesOtherThanEnglish: {
-    expr: /C__Sf:\((a|v)%20\|%20(u|y)\)(?:.*?)l:([a-z]{3})/,
+    expr: /C__Sf:\((a|v)%20\|%20(u|y)\)(?:.*?)l:\(?([a-z]{3})\)?/,
     handler: (match) => {
       const materialTypes = match[1] + ',' + match[2]
       const languageId = match[3]
