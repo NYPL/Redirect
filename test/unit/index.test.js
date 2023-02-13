@@ -362,7 +362,7 @@ describe('mapToRedirectURL', function () {
         expect(mapped).to.eql(VEGA_URL + pathsAndResultsMap[path])
       })
     })
-    it.only('author and title searches', () => {
+    it('author and title searches', () => {
       const pathsAndResultsMap = {
         '/search/C__S%28Didion%2C%20Joan.%29%20t%3A%28%28play%20it%20as%20it%20lays%29%20-1960s%29__Orightresult__U?lang=eng&suite=def': '/search?query=%22Didion,%20Joan.%22%20%22play%20it%20as%20it%20lays%22&searchType=everything&pageSize=10',
         '/search/C__S%28Didion%2C%20Joan.%29%20t%3A%28democracy%20-1980s%20-%28golden%20age%29%29__Orightresult__U?lang=eng&suite=def': '/search?query=%22Didion,%20Joan.%22%20%22democracy%20%22&searchType=everything&pageSize=10',
