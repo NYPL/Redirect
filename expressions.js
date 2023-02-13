@@ -38,6 +38,19 @@ module.exports = {
       return `${VEGA_URL}/search?query=*&searchType=everything&pageSize=10&languageIds=${languageId}&pageNum=0&materialTypeIds=${materialTypes}&sorting=publicationDate&sortOrder=desc`
     }
   },
+  authorOrTitleSearch: {
+    custom: (path) => {
+      const decodedPath = decodeURIComponent(path)
+      const regEx = /(?:[(]+([^-)]+)[^)]*)/g
+      const matches = [...decodedPath.matchAll(regEx)]
+      const searchTerms = encodeURI(matches
+        .map((match) => `"${match[1]}"`).join(' '))
+      return searchTerms
+    },
+    handler: (match) => {
+      return `${VEGA_URL}/search?query=${match}&searchType=everything&pageSize=10`
+    }
+  },
   encoreSearch: {
     expr: /\/search\/C__S(.*?)__/,
     handler: (match) => `${VEGA_URL}/search?query=${match[1]}&searchType=everything&pageSize=10`
