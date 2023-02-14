@@ -40,19 +40,12 @@ module.exports = {
   },
   authorOrTitleSearch: {
     custom: (path) => {
-      console.log(path)
-      try {
       const decodedPath = decodeURIComponent(path)
       const regEx = /(?:[(]+([^-)]+)[^)]*)/g
       const matches = [...decodedPath.matchAll(regEx)]
       const searchTerms = encodeURI(matches
         .map((match) => `"${match[1]}"`).join(' '))
-        return searchTerms
-      } catch (e) {
-        // this is here because one of the tests was causing a malformed URI error
-        //   if such an error appears in the wild, it probably doesn't match this case
-        if (e.message.includes('URI')) return false
-      }
+      return searchTerms
     },
     handler: (match) => {
       return `${VEGA_URL}/search?query=${match}&searchType=everything&pageSize=10`
