@@ -89,7 +89,7 @@ module.exports = {
     handler: match => `${BASE_SCC_URL}/account`
   },
   recordReg: {
-    expr: /\/record=(\w+)/,
+    expr: /\/record=(b\d{8})/,
     handler: (match) => {
       const bnum = match[1];
       return `${BASE_SCC_URL}/bib/${bnum}`;

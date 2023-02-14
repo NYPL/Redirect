@@ -187,11 +187,11 @@ describe('mapToRedirectURL', function () {
     });
 
     it('should return 404 page if no match is found', function () {
-      const path = '/record=&!^/';
+      const path = '/record=fishsticks';
       const query = {};
       const mapped = mapToRedirectURL(path, query, host, method);
       expect(mapped)
-        .to.eql('https://discovery.nypl.org/404/redirect?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Frecord%3D%26!%5E%2F');
+        .to.eql('https://discovery.nypl.org/404/redirect?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Frecord%3Dfishsticks');
     });
 
     it('should return account page for research my account', () => {
