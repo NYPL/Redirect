@@ -27,6 +27,7 @@ function mapToRedirectURL (path, query, host, proto) {
       break
     }
   }
+  // instead of a 404, we are just sending them to the landing page
   if (redirectingFromEncore && !redirectURL) {
     redirectURL = VEGA_URL + '/search'
   }
