@@ -9,11 +9,12 @@ const axios = require('axios');
 
 
 
-let host = 'catalog.nypl.org';
+
 const method = 'https';
 
 describe('mapToRedirectURL', function () {
   describe('legacy catalog links', () => {
+    let host = process.env.LEGACY_CATALOG_URL.replace(/https:\/\//, '')
     it('should map the base URL correctly', function () {
       const path = '/';
       const query = {};
@@ -294,7 +295,7 @@ describe('mapToRedirectURL', function () {
   describe('encore links', () => {
     const query = {}
     let searchRedirect = VEGA_URL + '/search'
-    let encoreHost = 'browse.nypl.org'
+    let encoreHost = process.env.ENCORE_URL
     it('should map the base URL correctly', function () {
       const path = '/iii/encore';
       const mapped = mapToRedirectURL(path, query, encoreHost, method);

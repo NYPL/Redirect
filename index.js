@@ -12,6 +12,8 @@ const {
 // the path, and returns the corresponding handler with the matchdata and query
 // As a default, returns the BASE_SCC_URL
 function mapToRedirectURL (path, query, host, proto) {
+  const redirectingFromEncore = host === ENCORE_URL
+  const redirectingFromLegacyOrVegaToSCC = !redirectingFromEncore
   let redirectURL;
   for (let pathType of Object.values(expressions)) {
     let match;
@@ -25,19 +27,17 @@ function mapToRedirectURL (path, query, host, proto) {
       break
     }
   }
-  if (!redirectURL) {
-    redirectURL = homeHandler(null, null, host)
-    // if its a vega redirect, we are sending everything to /search, no 404 or redirect
-    //   needed in any case.
-    if (redirectURL.includes(VEGA_URL)) return redirectURL
-    redirectURL += `/404/redirect`
+  if (redirectingFromEncore && !redirectURL) {
+    redirectURL = VEGA_URL + '/search'
   }
-  // if there is actually a redirect happening (not 404, pinreset, or selfreg endpoint)
-  // as determined by there not being a legacy or encore url, include original url
-  if (!redirectURL.includes(LEGACY_CATALOG_URL) && !redirectURL.includes(VEGA_URL)) {
-    redirectURL = redirectURL + (redirectURL.includes('?') ? '&' : '?') + 'originalUrl=' + reconstructOriginalURL(path, query, host, proto);
+  if (redirectingFromLegacyOrVegaToSCC) {
+    if (!redirectURL) redirectURL = `${BASE_SCC_URL}/404/redirect`;
+    // if a redirect transformation was made, add original url to the redirect url
+    if (!redirectURL.includes(LEGACY_CATALOG_URL)) {
+      redirectURL = redirectURL + (redirectURL.includes('?') ? '&' : '?') + 'originalUrl=' + reconstructOriginalURL(path, query, host, proto);
+    }
   }
-  return redirectURL;
+  return redirectURL
 }
 
 const healthCheck = () => {
