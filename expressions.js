@@ -16,6 +16,7 @@ module.exports = {
   rc_from_vega: {
     // handling for legacy author/title search URLs in redirect service
     custom: (path, query, host, proto) => {
+      if (host === VEGA_URL)
       if (!path.match(/\/search\/X/i)) { return null; }
       let searchKey = Object.keys(query).find(key => key.match(/search/i));
       if (!searchKey) { return null; }

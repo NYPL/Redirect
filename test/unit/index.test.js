@@ -362,6 +362,11 @@ describe('mapToRedirectURL', function () {
         expect(mapped).to.eql(VEGA_URL + pathsAndResultsMap[path])
       })
     })
+    it('ampersand in url', () => {
+      const path = '/search/C__St:(Yotsuba&!)%20a:(Kiyohiko%20Azuma)__Orightresult__U?lang=eng&suite=def&ivts=zutuA%2FQzFQ7zF9VYDrWRJQ%3D%3D&casts=R56ZSWFQjofaBF62y8o1mQ%3D%3D'
+      const mapped = mapToRedirectURL(path, query, encoreHost, method)
+      expect(mapped).to.eql(VEGA_URL + '/search?query=%22Yotsuba&!%22%20%22Kiyohiko%20Azuma%22&searchType=everything&pageSize=10')
+    })
     it('author and title searches', () => {
       const pathsAndResultsMap = {
         '/search/C__S%28Didion%2C%20Joan.%29%20t%3A%28%28play%20it%20as%20it%20lays%29%20-1960s%29__Orightresult__U?lang=eng&suite=def': '/search?query=%22Didion,%20Joan.%22%20%22play%20it%20as%20it%20lays%22&searchType=everything&pageSize=10',
