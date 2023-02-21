@@ -32,9 +32,6 @@ function mapToRedirectURL (path, query, host, proto) {
     redirectURL = VEGA_URL + '/search'
   }
   if (redirectingFromLegacyOrVegaToSCC) {
-    console.log(
-      'not encore??????'
-    )
     if (!redirectURL) redirectURL = `${BASE_SCC_URL}/404/redirect`;
     // if a redirect transformation was made, add original url to the redirect url
     if (!redirectURL.includes(LEGACY_CATALOG_URL)) {
