@@ -365,16 +365,17 @@ describe('mapToRedirectURL', function () {
     })
     it('ampersand in url', () => {
       const path = '/search/C__St:(Yotsuba&!)%20a:(Kiyohiko%20Azuma)__Orightresult__U?lang=eng&suite=def&ivts=zutuA%2FQzFQ7zF9VYDrWRJQ%3D%3D&casts=R56ZSWFQjofaBF62y8o1mQ%3D%3D'
+      console.log(encoreHost, path)
       const mapped = mapToRedirectURL(path, query, encoreHost, method)
-      expect(mapped).to.eql(VEGA_URL + '/search?query=%22Yotsuba&!%22%20%22Kiyohiko%20Azuma%22&searchType=everything&pageSize=10')
+      expect(mapped).to.eql(VEGA_URL + '/search?query=%22Yotsuba%26!%22%20%22Kiyohiko%20Azuma%22&searchType=everything&pageSize=10')
     })
     it('author and title searches', () => {
       const pathsAndResultsMap = {
-        '/search/C__S%28Didion%2C%20Joan.%29%20t%3A%28%28play%20it%20as%20it%20lays%29%20-1960s%29__Orightresult__U?lang=eng&suite=def': '/search?query=%22Didion,%20Joan.%22%20%22play%20it%20as%20it%20lays%22&searchType=everything&pageSize=10',
-        '/search/C__S%28Didion%2C%20Joan.%29%20t%3A%28democracy%20-1980s%20-%28golden%20age%29%29__Orightresult__U?lang=eng&suite=def': '/search?query=%22Didion,%20Joan.%22%20%22democracy%20%22&searchType=everything&pageSize=10',
-        '/search/C__St%3A%28love%20is%20loud%3A%20how%20diane%20nash%29%20a%3A%28wallace%29__Orightresult__U?lang=eng&suite=def': '/search?query=%22love%20is%20loud:%20how%20diane%20nash%22%20%22wallace%22&searchType=everything&pageSize=10',
+        '/search/C__S%28Didion%2C%20Joan.%29%20t%3A%28%28play%20it%20as%20it%20lays%29%20-1960s%29__Orightresult__U?lang=eng&suite=def': '/search?query=%22Didion%2C%20Joan.%22%20%22play%20it%20as%20it%20lays%22&searchType=everything&pageSize=10',
+        '/search/C__S%28Didion%2C%20Joan.%29%20t%3A%28democracy%20-1980s%20-%28golden%20age%29%29__Orightresult__U?lang=eng&suite=def': '/search?query=%22Didion%2C%20Joan.%22%20%22democracy%20%22&searchType=everything&pageSize=10',
+        '/search/C__St%3A%28love%20is%20loud%3A%20how%20diane%20nash%29%20a%3A%28wallace%29__Orightresult__U?lang=eng&suite=def': '/search?query=%22love%20is%20loud%3A%20how%20diane%20nash%22%20%22wallace%22&searchType=everything&pageSize=10',
         '/search/C__St%3A%28%28slouching%20towards%20bethlehem%29%20-collected%20-river%29%20a%3A%28didion%29__Orightresult__U?lang=eng&suite=def': '/search?query=%22slouching%20towards%20bethlehem%22%20%22didion%22&searchType=everything&pageSize=10',
-        '/search/C__Sa%3A%28Didion%2C%20Joan%29%20t%3A%28%28where%20i%20was%20from%29%20-collected%29__Orightresult__U?lang=eng&suite=def': '/search?query=%22Didion,%20Joan%22%20%22where%20i%20was%20from%22&searchType=everything&pageSize=10',
+        '/search/C__Sa%3A%28Didion%2C%20Joan%29%20t%3A%28%28where%20i%20was%20from%29%20-collected%29__Orightresult__U?lang=eng&suite=def': '/search?query=%22Didion%2C%20Joan%22%20%22where%20i%20was%20from%22&searchType=everything&pageSize=10',
         '/search/C__St%3A%28killers%20of%20a%20certain%20age%29__Orightresult__U?lang=eng&suite=def':
           '/search?query=%22killers%20of%20a%20certain%20age%22&searchType=everything&pageSize=10'
       }
