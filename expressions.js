@@ -44,8 +44,8 @@ module.exports = {
       const decodedPath = decodeURIComponent(path)
       const regEx = /(?:[(]+([^-)]+)[^)]*)/g
       const matches = [...decodedPath.matchAll(regEx)]
-      const searchTerms = encodeURI(matches
-        .map((match) => `"${match[1]}"`).join(' '))
+      const searchTerms = encodeURIComponent(matches
+        .map((match) => `${match[1]}`).join(' '))
       return searchTerms
     },
     handler: (match) => {
