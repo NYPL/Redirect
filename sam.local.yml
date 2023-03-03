@@ -10,6 +10,8 @@ Globals:
       Variables:
         BASE_SCC_URL: qa-discovery.nypl.org/research/collections/shared-collection-catalog
         LEGACY_CATALOG_URL: catalog.nypl.org
+        VEGA_URL: nypl.na2.iiivega.com
+        ENCORE_URL: browse.nypl.org
 
 Resources:
   RedirectService:
