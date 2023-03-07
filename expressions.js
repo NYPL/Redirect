@@ -53,7 +53,7 @@ module.exports = {
     }
   },
   encoreSearch: {
-    expr: /\/search\/C__S(.*?)__/,
+    expr: /\/search\/C__S(.*?)(__|[?]|$)/,
     handler: (match) => `${VEGA_URL}/search?query=${match[1]}&searchType=everything&pageSize=10`
   },
   encoreAccountPage: {
