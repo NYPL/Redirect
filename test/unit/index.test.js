@@ -324,6 +324,18 @@ describe('mapToRedirectURL', function () {
       expect(mapped)
         .to.equal(`${VEGA_URL}/search?query=Ancient%20Greece&searchType=everything&pageSize=10`)
     })
+    it('should redirect keyword search properly without a double undercore', () => {
+      const path = '/search/C__SAncient%20Greece?lang=eng&suite=def'
+      const mapped = mapToRedirectURL(path, query, encoreHost, method);
+      expect(mapped)
+        .to.equal(`${VEGA_URL}/search?query=Ancient%20Greece&searchType=everything&pageSize=10`)
+    })
+    it('should redirect keyword search properly without a double undercore nor query string', () => {
+      const path = '/search/C__SAncient%20Greece'
+      const mapped = mapToRedirectURL(path, query, encoreHost, method);
+      expect(mapped)
+        .to.equal(`${VEGA_URL}/search?query=Ancient%20Greece&searchType=everything&pageSize=10`)
+    })
     it('should not include anything but the keyword search', () => {
       const path = '/search/C__Schopped%20cheese__Ff%3Afacetmediatype%3Az%3Az%3AE-BOOK%3A%3A__Oauthor__U__X0?lang=eng&suite=def'
       const mapped = mapToRedirectURL(path, query, encoreHost, method);
