@@ -58,7 +58,7 @@ module.exports = {
   },
   encoreAccountPage: {
     expr: /\/myaccount/,
-    handler: () => `${VEGA_URL}/?openAccount=Checkouts:`
+    handler: () => `${VEGA_URL}/?openAccount=checkouts`
   },
   // WebPac => SCC redirects
   oclc: {

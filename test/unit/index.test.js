@@ -358,7 +358,7 @@ describe('mapToRedirectURL', function () {
       const path = '/myaccount'
       const mapped = mapToRedirectURL(path, query, encoreHost, method);
       expect(mapped)
-        .to.eql(VEGA_URL + '/?openAccount=Checkouts:')
+        .to.eql(VEGA_URL + '/?openAccount=checkouts')
     })
     it('languages other than english links', () => {
       const pathsAndResultsMap = {
