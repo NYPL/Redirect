@@ -9,14 +9,14 @@ const method = 'https';
 
 describe('mapToRedirectURL', function () {
   describe('legacy catalog links', () => {
-    let host = process.env.LEGACY_CATALOG_URL.replace(/https:\/\//, '')
+    let host = 'catalog.nypl.org'
 
     it('should map the base URL correctly', function () {
       const path = '/';
       const query = {};
       const mapped = mapToRedirectURL(path, query, host, method);
       expect(mapped)
-        .to.eql(BASE_SCC_URL + '?originalUrl=https%3A%2F%2Flegacycatalog.nypl.org%2F')
+        .to.eql(BASE_SCC_URL + '?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2F')
     });
 
     it('should map bib pages correctly', function () {
@@ -25,7 +25,7 @@ describe('mapToRedirectURL', function () {
       axios.get = () => ({ data: { uri: 'b12172157' } });
       const mapped = mapToRedirectURL(path, {}, host, method);
       expect(mapped)
-        .to.eql(`${BASE_SCC_URL}/bib/b12172157?originalUrl=https%3A%2F%2Flegacycatalog.nypl.org%2Frecord%3Db12172157~S1`)
+        .to.eql(`${BASE_SCC_URL}/bib/b12172157?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Frecord%3Db12172157~S1`)
     })
 
     it('should map search pages using the format /Xsearchterm', function () {
@@ -33,7 +33,7 @@ describe('mapToRedirectURL', function () {
       const query = {};
       const mapped = mapToRedirectURL(path, query, host, method);
       expect(mapped)
-        .to.eql(`${BASE_SCC_URL}/search?q=Rubina%2C%20Dina&search_scope=contributor&originalUrl=https%3A%2F%2Flegacycatalog.nypl.org%2Fsearch~S1%2FaRubina%252C%2BDina%2Farubina%2Bdina%2F1%252C2%252C84%252CB%2Fexact%26FF%3Darubina%2Bdina%2Bauthor%261%252C-1%252C%2Findexsort%3D-)`)
+        .to.eql(`${BASE_SCC_URL}/search?q=Rubina%2C%20Dina&search_scope=contributor&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch~S1%2FaRubina%252C%2BDina%2Farubina%2Bdina%2F1%252C2%252C84%252CB%2Fexact%26FF%3Darubina%2Bdina%2Bauthor%261%252C-1%252C%2Findexsort%3D-)`)
     });
 
     it('should allow LANG in/Xsearchterm', function () {
@@ -41,28 +41,28 @@ describe('mapToRedirectURL', function () {
       const query = {};
       const mapped = mapToRedirectURL(path, query, host, method);
       expect(mapped)
-        .to.eql(`${BASE_SCC_URL}/search?q=Rubina%2C%20Dina&search_scope=contributor&originalUrl=https%3A%2F%2Flegacycatalog.nypl.org%2Fsearch~S1ENG%2FaRubina%252C%2BDina%2Farubina%2Bdina%2F1%252C2%252C84%252CB%2Fexact%26FF%3Darubina%2Bdina%2Bauthor%261%252C-1%252C%2Findexsort%3D-)`)
+        .to.eql(`${BASE_SCC_URL}/search?q=Rubina%2C%20Dina&search_scope=contributor&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch~S1ENG%2FaRubina%252C%2BDina%2Farubina%2Bdina%2F1%252C2%252C84%252CB%2Fexact%26FF%3Darubina%2Bdina%2Bauthor%261%252C-1%252C%2Findexsort%3D-)`)
     });
 
     it('should map search pages with index but no search term to the base url', function () {
       const path = '/search/t';
       const query = {};
       const mapped = mapToRedirectURL(path, query, host, method);
-      expect(mapped).to.eql(`${BASE_SCC_URL}?originalUrl=https%3A%2F%2Flegacycatalog.nypl.org%2Fsearch%2Ft`);
+      expect(mapped).to.eql(`${BASE_SCC_URL}?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch%2Ft`);
     });
 
     it('should map search pages with no index and no search term to the base url', function () {
       const path = '/search';
       const query = {};
       const mapped = mapToRedirectURL(path, query, host, method);
-      expect(mapped).to.eql(`${BASE_SCC_URL}?originalUrl=https%3A%2F%2Flegacycatalog.nypl.org%2Fsearch`);
+      expect(mapped).to.eql(`${BASE_SCC_URL}?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch`);
     });
 
     it('should map search pages with no index and no search term, plus screen type to the base url', function () {
       const path = '/search~S98';
       const query = {};
       const mapped = mapToRedirectURL(path, query, host, method);
-      expect(mapped).to.eql(`${BASE_SCC_URL}?originalUrl=https%3A%2F%2Flegacycatalog.nypl.org%2Fsearch~S98`);
+      expect(mapped).to.eql(`${BASE_SCC_URL}?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch~S98`);
     });
 
     it('should map search pages with searcharg and searchtype given as parameters', function () {
@@ -82,7 +82,7 @@ describe('mapToRedirectURL', function () {
       const mapped = mapToRedirectURL(path, query, host, method);
 
       expect(mapped)
-        .to.eql(`${BASE_SCC_URL}/search?q=winspeare,%20j&search_scope=contributor&originalUrl=https%3A%2F%2Flegacycatalog.nypl.org%2Fsearch~S1%2F%3Fsearchtype%3Da%26searcharg%3Dwinspeare%2C%20j%26searchscope%3D1%26sortdropdown%3D-%26SORT%3DD%26extended%3D0%26SUBMIT%3DSearch%26searchlimits%26searchorigarg%3Ddmystery`)
+        .to.eql(`${BASE_SCC_URL}/search?q=winspeare,%20j&search_scope=contributor&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch~S1%2F%3Fsearchtype%3Da%26searcharg%3Dwinspeare%2C%20j%26searchscope%3D1%26sortdropdown%3D-%26SORT%3DD%26extended%3D0%26SUBMIT%3DSearch%26searchlimits%26searchorigarg%3Ddmystery`)
     });
 
     it('should allow LANG as param in searches with searcharg and searchtype given as parameters', function () {
@@ -102,7 +102,7 @@ describe('mapToRedirectURL', function () {
       const mapped = mapToRedirectURL(path, query, host, method);
 
       expect(mapped)
-        .to.eql(`${BASE_SCC_URL}/search?q=winspeare,%20j&search_scope=contributor&originalUrl=https%3A%2F%2Flegacycatalog.nypl.org%2Fsearch~S1ENG%2F%3Fsearchtype%3Da%26searcharg%3Dwinspeare%2C%20j%26searchscope%3D1%26sortdropdown%3D-%26SORT%3DD%26extended%3D0%26SUBMIT%3DSearch%26searchlimits%26searchorigarg%3Ddmystery`)
+        .to.eql(`${BASE_SCC_URL}/search?q=winspeare,%20j&search_scope=contributor&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch~S1ENG%2F%3Fsearchtype%3Da%26searcharg%3Dwinspeare%2C%20j%26searchscope%3D1%26sortdropdown%3D-%26SORT%3DD%26extended%3D0%26SUBMIT%3DSearch%26searchlimits%26searchorigarg%3Ddmystery`)
     });
 
     it('should map search pages with SEARCH given as parameter', function () {
@@ -115,7 +115,7 @@ describe('mapToRedirectURL', function () {
       const mapped = mapToRedirectURL(path, query, host, method);
 
       expect(mapped)
-        .to.eql(`${BASE_SCC_URL}/search?q=The%20Mothers%20&search_scope=title&originalUrl=https%3A%2F%2Flegacycatalog.nypl.org%2Fsearch%2Ft%3FSEARCH%3DThe%2BMothers%2B%26sortdropdown%3D-%26searchscope%3D1`)
+        .to.eql(`${BASE_SCC_URL}/search?q=The%20Mothers%20&search_scope=title&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch%2Ft%3FSEARCH%3DThe%2BMothers%2B%26sortdropdown%3D-%26searchscope%3D1`)
     });
 
     it('should map search pages with search query given as query param', function () {
@@ -125,7 +125,7 @@ describe('mapToRedirectURL', function () {
       };
       const mapped = mapToRedirectURL(path, query, host, method);
       expect(mapped)
-        .to.eql(`${BASE_SCC_URL}/search?q=jac%20winspeare%2C&search_scope=contributor&originalUrl=https%3A%2F%2Flegacycatalog.nypl.org%2Fsearch~S1%2Fa%3Fjac%2Bwinspeare%252C`)
+        .to.eql(`${BASE_SCC_URL}/search?q=jac%20winspeare%2C&search_scope=contributor&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch~S1%2Fa%3Fjac%2Bwinspeare%252C`)
     });
 
     it('should map search pages with search query and search type as query param', function () {
@@ -137,7 +137,7 @@ describe('mapToRedirectURL', function () {
       };
       const mapped = mapToRedirectURL(path, query, host, method);
       expect(mapped)
-        .to.eql(`${BASE_SCC_URL}/search?q=brainwash&search_scope=title&originalUrl=https%3A%2F%2Flegacycatalog.nypl.org%2Fsearch~S97%3F%2Ftbrainwash%2Ftbrainwash%2F1%2C3%2C10%2CB%2Fexact%26FF%3Dtbrainwash%261%2C4%2C`)
+        .to.eql(`${BASE_SCC_URL}/search?q=brainwash&search_scope=title&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch~S97%3F%2Ftbrainwash%2Ftbrainwash%2F1%2C3%2C10%2CB%2Fexact%26FF%3Dtbrainwash%261%2C4%2C`)
     });
 
     it('should map search pages for oclc records', () => {
@@ -187,14 +187,14 @@ describe('mapToRedirectURL', function () {
       const query = {};
       const mapped = mapToRedirectURL(path, query, host, method);
       expect(mapped)
-        .to.eql(`${BASE_SCC_URL}/404/redirect?originalUrl=https%3A%2F%2Flegacycatalog.nypl.org%2Frecord%3Dfishsticks`);
+        .to.eql(`${BASE_SCC_URL}/404/redirect?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Frecord%3Dfishsticks`);
     });
 
     it('should return account page for research my account', () => {
       const path = '/patroninfo/1234567';
       const query = {};
       const mapped = mapToRedirectURL(path, query, host, method);
-      expect(mapped).to.eql(`${BASE_SCC_URL}/account?originalUrl=https%3A%2F%2Flegacycatalog.nypl.org%2Fpatroninfo%2F1234567`);
+      expect(mapped).to.eql(`${BASE_SCC_URL}/account?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fpatroninfo%2F1234567`);
     });
 
     it('should redirect to legacy for pinreset pages', () => {
