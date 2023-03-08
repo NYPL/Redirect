@@ -52,7 +52,6 @@ const healthCheck = () => {
 
 const handler = async (event, context, callback) => {
   try {
-    console.log('event: ', event);
     let path = event.path;
     if (path === '/check') return callback(null, healthCheck());
     let query = event.multiValueQueryStringParameters || {};
