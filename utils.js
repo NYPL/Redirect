@@ -1,7 +1,8 @@
 const {
   BASE_SCC_URL,
   LEGACY_CATALOG_URL,
-  VEGA_URL
+  VEGA_URL,
+  ENCORE_URL
 } = process.env;
 
 const indexMappings = {
@@ -59,11 +60,25 @@ const getQueryFromParams = (url, query) => {
 }
 const recodeSearchQuery = query => query.split(/\+|\s/).join("%20");
 
+/**
+ *  Given a URL, returns true if the URL we should redirect there (i.e. is a
+ *  known catalog URL)
+ */
+function validRedirectUrl (url) {
+  if (!url) return false
+
+  const wwwDomain = BASE_SCC_URL.split('/')[0]
+  return [wwwDomain, ENCORE_URL, LEGACY_CATALOG_URL, VEGA_URL]
+    .map((domain) => `https://${domain}/`)
+    .some((baseUrl) => url.indexOf(baseUrl) === 0)
+}
+
 module.exports = {
   getIndexMapping,
   reconstructQuery,
   reconstructOriginalURL,
   getQueryFromParams,
   recodeSearchQuery,
-  homeHandler
+  homeHandler,
+  validRedirectUrl
 }
