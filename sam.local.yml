@@ -8,14 +8,21 @@ Globals:
     Timeout: 300
     Environment:
       Variables:
-        BASE_SCC_URL: qa-discovery.nypl.org/research/collections/shared-collection-catalog
-        LEGACY_CATALOG_URL: catalog.nypl.org
+        BASE_SCC_URL: qa-www.nypl.org/research/research-catalog
+        LEGACY_CATALOG_URL: legacycatalog.nypl.org
+        ENCORE_URL: browse.nypl.org
         VEGA_URL: nypl.na2.iiivega.com
         ENCORE_URL: browse.nypl.org
-
+        CAS_SERVER_DOMAIN: ilsstaff.nypl.org
 Resources:
   RedirectService:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       Handler: index.handler
       Runtime: nodejs12.x
+      Events:
+        RedirectServiceCatchAll:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: any
