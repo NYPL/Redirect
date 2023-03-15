@@ -51,15 +51,28 @@ const healthCheck = () => {
 };
 
 const handler = async (event, context, callback) => {
+  const headers = event.multiValueHeaders || {}
+  const proto = Array.isArray(headers['x-forwarded-proto'])
+    ? headers['x-forwarded-proto'][0]
+    : 'https';
   try {
-    console.log('event: ', event);
-    let path = event.path;
+    const path = event.path;
     if (path === '/check') return callback(null, healthCheck());
-    let query = event.multiValueQueryStringParameters || {};
-    let proto = event.multiValueHeaders['x-forwarded-proto'][0];
-    let host = event.multiValueHeaders.host[0];
-    let mappedUrl = mapToRedirectURL(path, query, host, proto);
-    let redirectLocation = `${proto}://${mappedUrl}`;
+
+    const query = event.multiValueQueryStringParameters || {};
+    const host = Array.isArray(headers.host) ? headers.host[0] : ENCORE_URL;
+    const mappedUrl = mapToRedirectURL(path, query, host, proto);
+    const redirectLocation = `${proto}://${mappedUrl}`;
+
+    // Support debug param to display incoming values and result:
+    if (query && query['redirect-service-debug']) {
+      return callback(null, {
+        statusCode: 200,
+        headers: { 'Content-type': 'application/json' },
+        body: JSON.stringify({ input: { query, proto, host, path, event }, redirectLocation })
+      })
+    }
+
     const response = {
       isBase64Encoded: false,
       statusCode: 302,
@@ -71,7 +84,6 @@ const handler = async (event, context, callback) => {
   }
   catch (err) {
     console.log('err: ', err.message);
-    let proto = event.multiValueHeaders['x-forwarded-proto'][0];
     let mappedUrl = BASE_SCC_URL;
     let redirectLocation = `${proto}://${mappedUrl}`;
     const response = {

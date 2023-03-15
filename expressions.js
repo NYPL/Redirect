@@ -2,10 +2,14 @@ const {
   BASE_SCC_URL,
   LEGACY_CATALOG_URL,
   ENCORE_URL,
-  VEGA_URL
+  VEGA_URL,
+  CAS_SERVER_DOMAIN
 } = process.env;
 
-const { getQueryFromParams, recodeSearchQuery, reconstructQuery, getIndexMapping, homeHandler } = require('./utils')
+const {
+  getQueryFromParams, recodeSearchQuery, reconstructQuery, getIndexMapping,
+  homeHandler, validRedirectUrl
+} = require('./utils')
 
 module.exports = {
   nothingReg: {
@@ -53,12 +57,12 @@ module.exports = {
     }
   },
   encoreSearch: {
-    expr: /\/search\/C__S(.*?)__/,
+    expr: /\/search\/C__S(.*?)(__|[?]|$)/,
     handler: (match) => `${VEGA_URL}/search?query=${match[1]}&searchType=everything&pageSize=10`
   },
   encoreAccountPage: {
     expr: /\/myaccount/,
-    handler: () => `${VEGA_URL}/?openAccount=Checkouts:`
+    handler: () => `${VEGA_URL}/?openAccount=checkouts`
   },
   // WebPac => SCC redirects
   oclc: {
@@ -102,4 +106,20 @@ module.exports = {
       return `${LEGACY_CATALOG_URL}${match.input}${reconstructQuery(query)}`
     }
   },
+  /**
+   *  Handle requests on //browse.nypl.org/iii/encore/logoutFilterRedirect
+   *  Emulate Encore behavior by redirecting to the CAS logout endpoint,
+   *  passing either the given service= param or Vega Home.
+   *  (The service= param controls where CAS redirects to after logout.)
+   */
+  encoreLogoutFilterRedirect: {
+    expr: /^\/iii\/encore\/logoutFilterRedirect\b/,
+    handler: (match, query) => {
+      const redirectUri = Array.isArray(query.redirect_uri) ? query.redirect_uri[0] : null
+      const redirectToAfterLogout = validRedirectUrl(redirectUri)
+        ? redirectUri
+        : `https://${VEGA_URL}/search`
+      return `${CAS_SERVER_DOMAIN}/iii/cas/logout?service=${redirectToAfterLogout}`
+    }
+  }
 };
