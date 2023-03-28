@@ -68,7 +68,8 @@ function validRedirectUrl (url) {
   if (!url) return false
 
   const wwwDomain = BASE_SCC_URL.split('/')[0]
-  return [wwwDomain, ENCORE_URL, LEGACY_CATALOG_URL, VEGA_URL]
+  const vegaAuthDomain = VEGA_URL.replace(/^nypl\./, 'auth.')
+  return [wwwDomain, ENCORE_URL, LEGACY_CATALOG_URL, VEGA_URL, vegaAuthDomain]
     .map((domain) => `https://${domain}/`)
     .some((baseUrl) => url.indexOf(baseUrl) === 0)
 }

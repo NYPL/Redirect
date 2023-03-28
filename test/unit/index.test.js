@@ -458,15 +458,24 @@ describe('handler', () => {
       })
     })
 
-    it('should respect redirect_uri param', async function () {
-      const rcUrl = 'https://www.nypl.org/research/research-catalog'
-      const eventWithRedirect = Object.assign( {}, baseEvent,
-        { multiValueQueryStringParameters: { redirect_uri: [ rcUrl ] } }
-      )
-      const resp = await handler(eventWithRedirect, context, (_, resp) => resp);
-      expect(resp).to.deep.include({
-        statusCode: 302,
-        multiValueHeaders: { Location: [ `https://ilsstaff.nypl.org/iii/cas/logout?service=${rcUrl}` ] }
+    // Test several allowed redirect_uris:
+    ; [
+      'https://www.nypl.org/',
+      'https://browse.nypl.org/',
+      'https://legacycatalog.nypl.org/',
+      'https://nypl.na2.iiivega.com/',
+      'https://www.nypl.org/research/research-catalog',
+      'https://auth.na2.iiivega.com/auth/realms/nypl/protocol/openid-connect/logout?redirect_uri=https://www.nypl.org/research/research-catalog/bib/b11373666'
+    ].forEach((validUrl) => {
+      it(`should respect redirect_uri=${validUrl}`, async function () {
+        const eventWithRedirect = Object.assign( {}, baseEvent,
+          { multiValueQueryStringParameters: { redirect_uri: [ validUrl ] } }
+        )
+        const resp = await handler(eventWithRedirect, context, (_, resp) => resp);
+        expect(resp).to.deep.include({
+          statusCode: 302,
+          multiValueHeaders: { Location: [ `https://ilsstaff.nypl.org/iii/cas/logout?service=${validUrl}` ] }
+        })
       })
     })
 
@@ -480,6 +489,5 @@ describe('handler', () => {
         multiValueHeaders: { Location: [ 'https://ilsstaff.nypl.org/iii/cas/logout?service=https://nypl.na2.iiivega.com/search' ] }
       })
     })
-
   })
 })
