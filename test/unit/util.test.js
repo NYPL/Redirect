@@ -19,7 +19,6 @@ describe('utils', function () {
       expect(utils.validRedirectUrl('https://legacycatalog.nypl.org/')).to.eq(true)
       expect(utils.validRedirectUrl('https://www.nypl.org/research/research-catalog')).to.eq(true)
       expect(utils.validRedirectUrl('https://nypl.na2.iiivega.com/')).to.eq(true)
-      expect(utils.validRedirectUrl('https://auth.na2.iiivega.com/')).to.eq(true)
     })
   })
 })

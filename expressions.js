@@ -3,7 +3,6 @@ const {
   LEGACY_CATALOG_URL,
   ENCORE_URL,
   VEGA_URL,
-  CAS_SERVER_DOMAIN,
   VEGA_AUTH_DOMAIN
 } = process.env;
 

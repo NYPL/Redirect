@@ -13,7 +13,6 @@ Globals:
         ENCORE_URL: browse.nypl.org
         VEGA_URL: nypl.na2.iiivega.com
         ENCORE_URL: browse.nypl.org
-        CAS_SERVER_DOMAIN: ilsstaff.nypl.org
         VEGA_AUTH_DOMAIN: auth.na2.iiivega.com
 Resources:
   RedirectService:
