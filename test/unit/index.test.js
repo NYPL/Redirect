@@ -449,12 +449,12 @@ describe('handler', () => {
       }
     }
 
-    it('should redirect Encore logout URL to CAS logout endpoint', async function () {
+    it('should redirect Encore logout URL to Vega Auth logout endpoint', async function () {
       const resp = await handler(baseEvent, context, (_, resp) => resp);
       expect(resp).to.deep.eql({
         isBase64Encoded: false,
         statusCode: 302,
-        multiValueHeaders: { Location: [ 'https://ilsstaff.nypl.org/iii/cas/logout?service=https://nypl.na2.iiivega.com/search' ] }
+        multiValueHeaders: { Location: [ 'https://auth.na2.iiivega.com/auth/realms/nypl/protocol/openid-connect/logout?redirect_uri=https://nypl.na2.iiivega.com/search' ] }
       })
     })
 
@@ -474,7 +474,7 @@ describe('handler', () => {
         const resp = await handler(eventWithRedirect, context, (_, resp) => resp);
         expect(resp).to.deep.include({
           statusCode: 302,
-          multiValueHeaders: { Location: [ `https://ilsstaff.nypl.org/iii/cas/logout?service=${validUrl}` ] }
+          multiValueHeaders: { Location: [ `https://auth.na2.iiivega.com/auth/realms/nypl/protocol/openid-connect/logout?redirect_uri=${validUrl}` ] }
         })
       })
     })
@@ -486,7 +486,7 @@ describe('handler', () => {
       const resp = await handler(eventWithRedirect, context, (_, resp) => resp);
       expect(resp).to.deep.include({
         statusCode: 302,
-        multiValueHeaders: { Location: [ 'https://ilsstaff.nypl.org/iii/cas/logout?service=https://nypl.na2.iiivega.com/search' ] }
+        multiValueHeaders: { Location: [ 'https://auth.na2.iiivega.com/auth/realms/nypl/protocol/openid-connect/logout?redirect_uri=https://nypl.na2.iiivega.com/search' ] }
       })
     })
   })

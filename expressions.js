@@ -3,7 +3,8 @@ const {
   LEGACY_CATALOG_URL,
   ENCORE_URL,
   VEGA_URL,
-  CAS_SERVER_DOMAIN
+  CAS_SERVER_DOMAIN,
+  VEGA_AUTH_DOMAIN
 } = process.env;
 
 const {
@@ -108,9 +109,8 @@ module.exports = {
   },
   /**
    *  Handle requests on //browse.nypl.org/iii/encore/logoutFilterRedirect
-   *  Emulate Encore behavior by redirecting to the CAS logout endpoint,
-   *  passing either the given service= param or Vega Home.
-   *  (The service= param controls where CAS redirects to after logout.)
+   *  Redirect requests to the Vega Auth logout endpoint (which in turn should
+   *  redirect the patron through the CAS Logout endpoint)
    */
   encoreLogoutFilterRedirect: {
     expr: /^\/iii\/encore\/logoutFilterRedirect\b/,
@@ -119,7 +119,7 @@ module.exports = {
       const redirectToAfterLogout = validRedirectUrl(redirectUri)
         ? redirectUri
         : `https://${VEGA_URL}/search`
-      return `${CAS_SERVER_DOMAIN}/iii/cas/logout?service=${redirectToAfterLogout}`
+      return `${VEGA_AUTH_DOMAIN}/auth/realms/nypl/protocol/openid-connect/logout?redirect_uri=${redirectToAfterLogout}`
     }
   }
 };
