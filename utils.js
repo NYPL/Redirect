@@ -2,6 +2,7 @@ const {
   BASE_SCC_URL,
   LEGACY_CATALOG_URL,
   VEGA_URL,
+  VEGA_AUTH_DOMAIN,
   ENCORE_URL
 } = process.env;
 
@@ -68,7 +69,7 @@ function validRedirectUrl (url) {
   if (!url) return false
 
   const wwwDomain = BASE_SCC_URL.split('/')[0]
-  return [wwwDomain, ENCORE_URL, LEGACY_CATALOG_URL, VEGA_URL]
+  return [wwwDomain, ENCORE_URL, LEGACY_CATALOG_URL, VEGA_URL, VEGA_AUTH_DOMAIN]
     .map((domain) => `https://${domain}/`)
     .some((baseUrl) => url.indexOf(baseUrl) === 0)
 }
