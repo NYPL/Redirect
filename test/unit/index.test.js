@@ -289,13 +289,13 @@ describe('mapToRedirectURL', function () {
   })
   describe('encore links', () => {
     const query = {}
-    let searchRedirect = VEGA_URL + '/search'
+    let homepage = VEGA_URL + '/'
     let encoreHost = process.env.ENCORE_URL
     it('should map the base URL correctly', function () {
       const path = '/iii/encore';
       const mapped = mapToRedirectURL(path, query, encoreHost, method);
       expect(mapped)
-        .to.eql(searchRedirect)
+        .to.eql(homepage)
     });
 
     it('should map bib pages correctly', function () {
@@ -312,7 +312,7 @@ describe('mapToRedirectURL', function () {
       const path = '/record/C__Rb18225028kindred__Orightresult__U__X7?lang=eng&suite=def'
       const mapped = mapToRedirectURL(path, query, encoreHost, method);
       expect(mapped)
-        .to.eql(searchRedirect)
+        .to.eql(homepage)
     })
     it('should redirect keyword search properly', () => {
       const path = '/search/C__SAncient%20Greece__Orightresult__U?lang=eng&suite=def'
@@ -342,13 +342,13 @@ describe('mapToRedirectURL', function () {
       const path = '/bookcart'
       const mapped = mapToRedirectURL(path, query, encoreHost, method);
       expect(mapped)
-        .to.eql(searchRedirect)
+        .to.eql(homepage)
     })
     it('/home redirects to /', () => {
       const path = '/home'
       const mapped = mapToRedirectURL(path, query, encoreHost, method);
       expect(mapped)
-        .to.eql(searchRedirect)
+        .to.eql(homepage)
     })
     it('should redirect account page', () => {
       const path = '/myaccount'
