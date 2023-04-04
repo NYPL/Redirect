@@ -74,6 +74,17 @@ function validRedirectUrl (url) {
     .some((baseUrl) => url.indexOf(baseUrl) === 0)
 }
 
+/**
+ *  Given a query hash, extracts and validates the request_uri, returning the
+ *  request_uri or a sensible default if it's invalid/missing.
+ */
+function getRedirectUri (query) {
+  const redirectUri = Array.isArray(query.redirect_uri) ? query.redirect_uri[0] : null
+  return validRedirectUrl(redirectUri)
+    ? redirectUri
+    : `https://${VEGA_URL}/`
+}
+
 module.exports = {
   getIndexMapping,
   reconstructQuery,
@@ -81,5 +92,6 @@ module.exports = {
   getQueryFromParams,
   recodeSearchQuery,
   homeHandler,
-  validRedirectUrl
+  validRedirectUrl,
+  getRedirectUri
 }
