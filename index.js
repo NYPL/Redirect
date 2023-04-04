@@ -4,7 +4,8 @@ const {
   BASE_SCC_URL,
   LEGACY_CATALOG_URL,
   ENCORE_URL,
-  VEGA_URL
+  VEGA_URL,
+  REDIRECT_SERVICE_DOMAIN
 } = process.env;
 
 // The main method to build the redirectURL based on the incoming request
@@ -13,7 +14,7 @@ const {
 // As a default, returns the BASE_SCC_URL
 function mapToRedirectURL (path, query, host, proto) {
   const redirectingFromEncore = host === ENCORE_URL
-  const redirectingFromLegacyOrVegaToSCC = !redirectingFromEncore
+  const redirectingFromLegacyOrVegaToSCC = !redirectingFromEncore && host !== REDIRECT_SERVICE_DOMAIN
   let redirectURL;
   for (let pathType of Object.values(expressions)) {
     let match;
@@ -68,7 +69,7 @@ const handler = async (event, context, callback) => {
     if (query && query['redirect-service-debug']) {
       return callback(null, {
         statusCode: 200,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ input: { query, proto, host, path, event }, redirectLocation })
       })
     }
@@ -77,8 +78,8 @@ const handler = async (event, context, callback) => {
       isBase64Encoded: false,
       statusCode: 302,
       multiValueHeaders: {
-        Location: [redirectLocation],
-      },
+        Location: [redirectLocation]
+      }
     };
     return callback(null, response);
   }
