@@ -370,6 +370,21 @@ describe('mapToRedirectURL', function () {
         expect(mapped).to.eql(VEGA_URL + pathsAndResultsMap[path])
       })
     })
+
+    it('handles pipe queries whether URI encoded or not', () => {
+      [
+        // First, a language scoped Encore query with a '|'
+        '/iii/encore/search/C__Sf:(a%20|%20u)%20c:(96)%20l:ita__O-date__U__X0?lang=eng&suite=def',
+        // Next, a language scoped Encore query where the '|' is URI encoded
+        // (such as Chrome likes to do):
+        '/iii/encore/search/C__Sf:(a%20%7C%20u)%20c:(96)%20l:ita__O-date__U__X0?lang=eng&suite=def'
+      ].forEach((path) => {
+        const mapped = mapToRedirectURL(path, query, encoreHost, 'GET')
+        // Both forms should resolve to this language scoped Vega search:
+        expect(mapped).to.eql(VEGA_URL + '/search?query=*&searchType=everything&pageSize=10&languageIds=ita&pageNum=0&materialTypeIds=a,u&sorting=publicationDate&sortOrder=desc')
+      })
+    })
+
     it('ampersand in url', () => {
       const path = '/search/C__St:(Yotsuba&!)%20a:(Kiyohiko%20Azuma)__Orightresult__U?lang=eng&suite=def&ivts=zutuA%2FQzFQ7zF9VYDrWRJQ%3D%3D&casts=R56ZSWFQjofaBF62y8o1mQ%3D%3D'
       const mapped = mapToRedirectURL(path, query, encoreHost, method)
