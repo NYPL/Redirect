@@ -79,7 +79,8 @@ function validRedirectUrl (url) {
  *  request_uri or a sensible default if it's invalid/missing.
  */
 function getRedirectUri (query) {
-  const redirectUri = Array.isArray(query.redirect_uri) ? query.redirect_uri[0] : null
+  let redirectUri = Array.isArray(query.redirect_uri) ? query.redirect_uri[0] : null
+  if (redirectUri) redirectUri = decodeURIComponent(redirectUri)
   return validRedirectUrl(redirectUri)
     ? redirectUri
     : `https://${VEGA_URL}/`
