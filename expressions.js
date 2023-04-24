@@ -101,7 +101,7 @@ module.exports = {
       const { collection } = query;
       console.log("query", query);
       const bnum = match[1];
-      if (collection && Array.isArray(collection) && collection.includes("circ")) {
+      if (Array.isArray(collection) && collection.includes("circ")) {
         return `${VEGA_URL}/search/card?recordId=${bnum.replace(/\D/g, '')}`;
       }
       return `${BASE_SCC_URL}/bib/${bnum}`;
