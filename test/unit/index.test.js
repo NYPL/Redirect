@@ -491,6 +491,24 @@ describe('handler', () => {
     })
   })
 
+  it('should redirect to research catalog when anything other than "circ" is in collection query params', async function () {
+    const event = {
+      path: '/record=b22297361',
+      multiValueHeaders: {
+        'x-forwarded-proto': ['https'],
+        host: ['catalog.nypl.org']
+      },
+      multiValueQueryStringParameters: {
+        "collection": ["research"]
+      }
+    }
+    const resp = await handler(event, context, (_, resp) => resp);
+    expect(resp).to.deep.include({
+      statusCode: 302,
+      multiValueHeaders: { Location: [ "https://www.nypl.org/research/research-catalog/bib/b22297361?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Frecord%3Db22297361%3Fcollection%3Dresearch" ] }
+    })
+  })
+
   describe('encore logout redirect', () => {
     const baseEvent = {
       path: '/iii/encore/logoutFilterRedirect',
