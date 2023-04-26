@@ -52,7 +52,6 @@ const healthCheck = () => {
 };
 
 const handler = async (event, context, callback) => {
-  console.log(event);
   const headers = event.multiValueHeaders || {}
   const proto = Array.isArray(headers['x-forwarded-proto'])
     ? headers['x-forwarded-proto'][0]

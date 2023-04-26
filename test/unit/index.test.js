@@ -455,6 +455,62 @@ describe('handler', () => {
     })
   });
 
+  describe('collection query param redirect', () => {
+    it('should redirect to vega with converted bib id when "circ" set as collection query param', async function () {
+      const event = {
+        path: '/record=b22297361',
+        multiValueHeaders: {
+          'x-forwarded-proto': ['https'],
+          host: ['catalog.nypl.org']
+        },
+        multiValueQueryStringParameters: {
+          "collection": ["circ"]
+        }
+      }
+      const resp = await handler(event, context, (_, resp) => resp);
+      expect(resp).to.deep.include({
+        statusCode: 302,
+        multiValueHeaders: { Location: [ "https://nypl.na2.iiivega.com/search/card?recordId=22297361&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Frecord%3Db22297361%3Fcollection%3Dcirc" ] }
+      })
+    })
+  
+    it('should redirect to vega when "circ" is included in multiple collection query params', async function () {
+      const event = {
+        path: '/record=b22297361',
+        multiValueHeaders: {
+          'x-forwarded-proto': ['https'],
+          host: ['catalog.nypl.org']
+        },
+        multiValueQueryStringParameters: {
+          "collection": ["circ", "research"]
+        }
+      }
+      const resp = await handler(event, context, (_, resp) => resp);
+      expect(resp).to.deep.include({
+        statusCode: 302,
+        multiValueHeaders: { Location: [ "https://nypl.na2.iiivega.com/search/card?recordId=22297361&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Frecord%3Db22297361%3Fcollection%3Dcirc%26collection%3Dresearch" ] }
+      })
+    })
+
+    it('should redirect to research catalog when anything other than "circ" is in collection query params', async function () {
+      const event = {
+        path: '/record=b22297361',
+        multiValueHeaders: {
+          'x-forwarded-proto': ['https'],
+          host: ['catalog.nypl.org']
+        },
+        multiValueQueryStringParameters: {
+          "collection": ["research"]
+        }
+      }
+      const resp = await handler(event, context, (_, resp) => resp);
+      expect(resp).to.deep.include({
+        statusCode: 302,
+        multiValueHeaders: { Location: [ "https://www.nypl.org/research/research-catalog/bib/b22297361?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Frecord%3Db22297361%3Fcollection%3Dresearch" ] }
+      })
+    })
+  })
+
   describe('encore logout redirect', () => {
     const baseEvent = {
       path: '/iii/encore/logoutFilterRedirect',
