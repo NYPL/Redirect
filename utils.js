@@ -68,6 +68,8 @@ const recodeSearchQuery = query => query.split(/\+|\s/).join("%20");
 function validRedirectUrl (url) {
   if (!url) return false
 
+  console.log('valid url: ', url)
+
   const wwwDomain = BASE_SCC_URL.split('/')[0]
   return [wwwDomain, ENCORE_URL, LEGACY_CATALOG_URL, VEGA_URL, VEGA_AUTH_DOMAIN]
     .map((domain) => `https://${domain}/`)
@@ -80,7 +82,7 @@ function validRedirectUrl (url) {
  */
 function getRedirectUri (query) {
   let redirectUri = Array.isArray(query.redirect_uri) ? query.redirect_uri[0] : null
-  if (redirectUri) redirectUri = decodeURIComponent(redirectUri)
+  if (redirectUri) redirectUri = decodeURIComponent(redirectUri).replace(/(www\.)?discovery\.nypl\.org/, 'www.nypl.org')
   return validRedirectUrl(redirectUri)
     ? redirectUri
     : `https://${VEGA_URL}/`
