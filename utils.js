@@ -68,8 +68,6 @@ const recodeSearchQuery = query => query.split(/\+|\s/).join("%20");
 function validRedirectUrl (url) {
   if (!url) return false
 
-  console.log('valid url: ', url)
-
   const wwwDomain = BASE_SCC_URL.split('/')[0]
   return [wwwDomain, ENCORE_URL, LEGACY_CATALOG_URL, VEGA_URL, VEGA_AUTH_DOMAIN]
     .map((domain) => `https://${domain}/`)
