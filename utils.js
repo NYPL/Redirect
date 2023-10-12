@@ -80,7 +80,7 @@ function validRedirectUrl (url) {
  */
 function getRedirectUri (query) {
   let redirectUri = Array.isArray(query.redirect_uri) ? query.redirect_uri[0] : null
-  if (redirectUri) redirectUri = decodeURIComponent(redirectUri)
+  if (redirectUri) redirectUri = decodeURIComponent(redirectUri).replace(/(www\.)?discovery\.nypl\.org/, 'www.nypl.org')
   return validRedirectUrl(redirectUri)
     ? redirectUri
     : `https://${VEGA_URL}/`

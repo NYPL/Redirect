@@ -97,8 +97,13 @@ module.exports = {
   },
   recordReg: {
     expr: /\/record=(b\d{8})/,
-    handler: (match) => {
+    handler: (match, query) => {
+      const { collection } = query;
+      console.log("query", query);
       const bnum = match[1];
+      if (Array.isArray(collection) && collection.includes("circ")) {
+        return `${VEGA_URL}/search/card?recordId=${bnum.replace(/\D/g, '')}`;
+      }
       return `${BASE_SCC_URL}/bib/${bnum}`;
     }
   },
@@ -116,6 +121,13 @@ module.exports = {
   encoreLogoutFilterRedirect: {
     expr: /^\/iii\/encore\/logoutFilterRedirect\b/,
     handler: (match, query) => {
+      // Optionally skip Vega Auth redirect:
+      if (process.env.SKIP_VEGA_LOGOUT === 'true') {
+        // Send patron straight to CAS logout endpoint, which would normally
+        // happen after hitting the Vega Auth logout endpoint.
+        return module.exports.vegaLogoutHandler.handler(match, query)
+      }
+
       const redirectToAfterLogout = getRedirectUri(query)
       const vegaLogoutHandlerRedirect = `https://${REDIRECT_SERVICE_DOMAIN}/vega-logout-handler?redirect_uri=${encodeURIComponent(redirectToAfterLogout)}`
       return `${VEGA_AUTH_DOMAIN}/auth/realms/nypl/protocol/openid-connect/logout?redirect_uri=${encodeURIComponent(vegaLogoutHandlerRedirect)}`
