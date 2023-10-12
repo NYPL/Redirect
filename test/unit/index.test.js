@@ -559,7 +559,7 @@ describe('handler', () => {
 
     // Test replacing discovery.nypl.org with nypl.org in redirect
 
-    ;[
+    ; [
       'https://www.discovery.nypl.org/',
       'https://discovery.nypl.org/'
     ].forEach((validUrl) => {

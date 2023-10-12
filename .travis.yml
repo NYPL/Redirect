@@ -1,6 +1,4 @@
 language: node_js
-node_js:
-- 12
 rvm: 2.7.0
 before_install:
 - npm install
@@ -19,7 +17,7 @@ deploy:
   description: Redirects old webpac requests to Research Catalog
   region: us-east-1
   role: arn:aws:iam::946183545209:role/lambda-full-access
-  runtime: nodejs12.x
+  runtime: nodejs14.x
   module_name: index
   handler_name: handler
   skip_cleanup: true
@@ -32,7 +30,7 @@ deploy:
   description: Redirects old webpac requests to Research Catalog
   region: us-east-1
   role: arn:aws:iam::946183545209:role/lambda-full-access
-  runtime: nodejs12.x
+  runtime: nodejs14.x
   module_name: index
   handler_name: handler
   skip_cleanup: true
