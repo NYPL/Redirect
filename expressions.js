@@ -99,7 +99,6 @@ module.exports = {
     expr: /\/record=(b\d{8})/,
     handler: (match, query) => {
       const { collection } = query;
-      console.log("query", query);
       const bnum = match[1];
       if (Array.isArray(collection) && collection.includes("circ")) {
         return `${VEGA_URL}/search/card?recordId=${bnum.replace(/\D/g, '')}`;
