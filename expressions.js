@@ -99,7 +99,6 @@ module.exports = {
     expr: /\/record=(b\d{8})/,
     handler: (match, query) => {
       const { collection } = query;
-      console.log("query", query);
       const bnum = match[1];
       if (Array.isArray(collection) && collection.includes("circ")) {
         return `${VEGA_URL}/search/card?recordId=${bnum.replace(/\D/g, '')}`;
@@ -120,17 +119,28 @@ module.exports = {
    */
   encoreLogoutFilterRedirect: {
     expr: /^\/iii\/encore\/logoutFilterRedirect\b/,
-    handler: (match, query) => {
+    handler: (match, query, host, proto) => {
+      const casLogout = module.exports.vegaLogoutHandler.handler(match, query)
       // Optionally skip Vega Auth redirect:
       if (process.env.SKIP_VEGA_LOGOUT === 'true') {
         // Send patron straight to CAS logout endpoint, which would normally
         // happen after hitting the Vega Auth logout endpoint.
-        return module.exports.vegaLogoutHandler.handler(match, query)
+        return casLogout
       }
 
+      // Get requested (i.e. ultimate) redirect_uri:
       const redirectToAfterLogout = getRedirectUri(query)
+
+      // Set up Vega-logout route (for JS-enabled users):
       const vegaLogoutHandlerRedirect = `https://${REDIRECT_SERVICE_DOMAIN}/vega-logout-handler?redirect_uri=${encodeURIComponent(redirectToAfterLogout)}`
-      return `${VEGA_AUTH_DOMAIN}/auth/realms/nypl/protocol/openid-connect/logout?redirect_uri=${encodeURIComponent(vegaLogoutHandlerRedirect)}`
+      const vegaLogoutUri = `https://${VEGA_AUTH_DOMAIN}/logout?redirect_uri=${encodeURIComponent(vegaLogoutHandlerRedirect)}`
+
+      // Send user through js-conditional redirect:
+      // - JS-enabled users will pass through Vega logout (which includes CAS)
+      // - NOSCRIPT users will skip Vega and go straight to CAS logout
+      const jsRedirectUri = encodeURIComponent(vegaLogoutUri)
+      const noscriptRedirectUri = encodeURIComponent(`https://${casLogout}`)
+      return `${REDIRECT_SERVICE_DOMAIN}/js-conditional-redirect?redirect_uri=${jsRedirectUri}&noscript_redirect_uri=${noscriptRedirectUri}`
     }
   },
   /**

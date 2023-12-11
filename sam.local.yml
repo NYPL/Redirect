@@ -8,14 +8,16 @@ Globals:
     Timeout: 300
     Environment:
       Variables:
-        BASE_SCC_URL: www.nypl.org/research/research-catalog
+        BASE_SCC_URL: qa-www.nypl.org/research/research-catalog
         LEGACY_CATALOG_URL: legacycatalog.nypl.org
         ENCORE_URL: browse.nypl.org
         VEGA_URL: nypl.na2.iiivega.com
         ENCORE_URL: browse.nypl.org
         VEGA_AUTH_DOMAIN: auth.na2.iiivega.com
         CAS_SERVER_DOMAIN: ilsstaff.nypl.org
-        REDIRECT_SERVICE_DOMAIN: redir-browse.nypl.org
+        # REDIRECT_SERVICE_DOMAIN: redir-browse.nypl.org
+        REDIRECT_SERVICE_DOMAIN: local.nypl.org:3010
+        # SKIP_VEGA_LOGOUT: true
 Resources:
   RedirectService:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
