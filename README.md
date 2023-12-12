@@ -58,6 +58,12 @@ This repo follows a [PRS-Target-Master Git Workflow](https://github.com/NYPL/eng
 
 `npm test`
 
+To test the app's performance against the [redirect targets sheet](https://docs.google.com/spreadsheets/d/1055Y98c_4l-NXWyzoiUhBSkay4SYZMeKEc9-LGhGoqw/edit#gid=234726655), run:
+
+```
+node test/test-deployment-redirects
+```
+
 ## Deployment
 
 CI/CD is configured in `.travis.yml` for the following branches:

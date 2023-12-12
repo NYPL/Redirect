@@ -2,6 +2,7 @@ const {
   BASE_SCC_URL,
   LEGACY_CATALOG_URL,
   VEGA_URL,
+  VEGA_AUTH_DOMAIN,
   ENCORE_URL
 } = process.env;
 
@@ -16,7 +17,7 @@ const indexMappings = {
   i: '&search_scope=standard_number', // what to do with these?
   c: '&search_scope=standard_number',
 }
-const homeHandler = (match, query, host) => LEGACY_CATALOG_URL.includes(host) ? BASE_SCC_URL : VEGA_URL + '/search'
+const homeHandler = (match, query, host) => LEGACY_CATALOG_URL.includes(host) ? BASE_SCC_URL : VEGA_URL + '/'
 
 const getIndexMapping = index => indexMappings[index] || '';
 
@@ -68,9 +69,21 @@ function validRedirectUrl (url) {
   if (!url) return false
 
   const wwwDomain = BASE_SCC_URL.split('/')[0]
-  return [wwwDomain, ENCORE_URL, LEGACY_CATALOG_URL, VEGA_URL]
+  return [wwwDomain, ENCORE_URL, LEGACY_CATALOG_URL, VEGA_URL, VEGA_AUTH_DOMAIN]
     .map((domain) => `https://${domain}/`)
     .some((baseUrl) => url.indexOf(baseUrl) === 0)
+}
+
+/**
+ *  Given a query hash, extracts and validates the request_uri, returning the
+ *  request_uri or a sensible default if it's invalid/missing.
+ */
+function getRedirectUri (query) {
+  let redirectUri = Array.isArray(query.redirect_uri) ? query.redirect_uri[0] : null
+  if (redirectUri) redirectUri = decodeURIComponent(redirectUri).replace(/(www\.)?discovery\.nypl\.org/, 'www.nypl.org')
+  return validRedirectUrl(redirectUri)
+    ? redirectUri
+    : `https://${VEGA_URL}/`
 }
 
 module.exports = {
@@ -80,5 +93,6 @@ module.exports = {
   getQueryFromParams,
   recodeSearchQuery,
   homeHandler,
-  validRedirectUrl
+  validRedirectUrl,
+  getRedirectUri
 }

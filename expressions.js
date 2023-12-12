@@ -3,12 +3,14 @@ const {
   LEGACY_CATALOG_URL,
   ENCORE_URL,
   VEGA_URL,
-  CAS_SERVER_DOMAIN
+  VEGA_AUTH_DOMAIN,
+  CAS_SERVER_DOMAIN,
+  REDIRECT_SERVICE_DOMAIN
 } = process.env;
 
 const {
   getQueryFromParams, recodeSearchQuery, reconstructQuery, getIndexMapping,
-  homeHandler, validRedirectUrl
+  homeHandler, getRedirectUri
 } = require('./utils')
 
 module.exports = {
@@ -36,10 +38,10 @@ module.exports = {
     handler: (match) => `${VEGA_URL}/search/card?recordId=${match[1]}`
   },
   languagesOtherThanEnglish: {
-    expr: /C__Sf:\((a|v)%20\|%20(u|y)\)(?:.*?)l:\(?([a-z]{3})\)?/,
+    expr: /C__Sf:\((a|v)%20(\||%7C)%20(u|y)\)(?:.*?)l:\(?([a-z]{3})\)?/,
     handler: (match) => {
-      const materialTypes = match[1] + ',' + match[2]
-      const languageId = match[3]
+      const materialTypes = match[1] + ',' + match[3]
+      const languageId = match[4]
       return `${VEGA_URL}/search?query=*&searchType=everything&pageSize=10&languageIds=${languageId}&pageNum=0&materialTypeIds=${materialTypes}&sorting=publicationDate&sortOrder=desc`
     }
   },
@@ -95,8 +97,12 @@ module.exports = {
   },
   recordReg: {
     expr: /\/record=(b\d{8})/,
-    handler: (match) => {
+    handler: (match, query) => {
+      const { collection } = query;
       const bnum = match[1];
+      if (Array.isArray(collection) && collection.includes("circ")) {
+        return `${VEGA_URL}/search/card?recordId=${bnum.replace(/\D/g, '')}`;
+      }
       return `${BASE_SCC_URL}/bib/${bnum}`;
     }
   },
@@ -108,18 +114,33 @@ module.exports = {
   },
   /**
    *  Handle requests on //browse.nypl.org/iii/encore/logoutFilterRedirect
-   *  Emulate Encore behavior by redirecting to the CAS logout endpoint,
-   *  passing either the given service= param or Vega Home.
-   *  (The service= param controls where CAS redirects to after logout.)
+   *  Redirect requests to the Vega Auth logout endpoint (which in turn should
+   *  redirect the patron through the CAS Logout endpoint)
    */
   encoreLogoutFilterRedirect: {
     expr: /^\/iii\/encore\/logoutFilterRedirect\b/,
     handler: (match, query) => {
-      const redirectUri = Array.isArray(query.redirect_uri) ? query.redirect_uri[0] : null
-      const redirectToAfterLogout = validRedirectUrl(redirectUri)
-        ? redirectUri
-        : `https://${VEGA_URL}/search`
-      return `${CAS_SERVER_DOMAIN}/iii/cas/logout?service=${redirectToAfterLogout}`
+      // Optionally skip Vega Auth redirect:
+      if (process.env.SKIP_VEGA_LOGOUT === 'true') {
+        // Send patron straight to CAS logout endpoint, which would normally
+        // happen after hitting the Vega Auth logout endpoint.
+        return module.exports.vegaLogoutHandler.handler(match, query)
+      }
+
+      const redirectToAfterLogout = getRedirectUri(query)
+      const vegaLogoutHandlerRedirect = `https://${REDIRECT_SERVICE_DOMAIN}/vega-logout-handler?redirect_uri=${encodeURIComponent(redirectToAfterLogout)}`
+      return `${VEGA_AUTH_DOMAIN}/auth/realms/nypl/protocol/openid-connect/logout?redirect_uri=${encodeURIComponent(vegaLogoutHandlerRedirect)}`
+    }
+  },
+  /**
+   *  Handler for post-Vega logout. Doubly assures the patron is logged out of
+   *  CAS after logging out of Vega.
+   */
+  vegaLogoutHandler: {
+    expr: /^\/vega-logout-handler\b/,
+    handler: (match, query) => {
+      const redirectToAfterLogout = getRedirectUri(query)
+      return `${CAS_SERVER_DOMAIN}/iii/cas/logout?service=${encodeURIComponent(redirectToAfterLogout)}`
     }
   }
 };

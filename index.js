@@ -4,7 +4,8 @@ const {
   BASE_SCC_URL,
   LEGACY_CATALOG_URL,
   ENCORE_URL,
-  VEGA_URL
+  VEGA_URL,
+  REDIRECT_SERVICE_DOMAIN
 } = process.env;
 
 // The main method to build the redirectURL based on the incoming request
@@ -13,7 +14,7 @@ const {
 // As a default, returns the BASE_SCC_URL
 function mapToRedirectURL (path, query, host, proto) {
   const redirectingFromEncore = host === ENCORE_URL
-  const redirectingFromLegacyOrVegaToSCC = !redirectingFromEncore
+  const redirectingFromLegacyOrVegaToSCC = !redirectingFromEncore && host !== REDIRECT_SERVICE_DOMAIN
   let redirectURL;
   for (let pathType of Object.values(expressions)) {
     let match;
@@ -29,7 +30,7 @@ function mapToRedirectURL (path, query, host, proto) {
   }
   // instead of a 404, we are just sending them to the landing page
   if (redirectingFromEncore && !redirectURL) {
-    redirectURL = VEGA_URL + '/search'
+    redirectURL = VEGA_URL + '/'
   }
   if (redirectingFromLegacyOrVegaToSCC) {
     if (!redirectURL) redirectURL = `${BASE_SCC_URL}/404/redirect`;
@@ -51,6 +52,7 @@ const healthCheck = () => {
 };
 
 const handler = async (event, context, callback) => {
+  console.log(event);
   const headers = event.multiValueHeaders || {}
   const proto = Array.isArray(headers['x-forwarded-proto'])
     ? headers['x-forwarded-proto'][0]
@@ -68,7 +70,7 @@ const handler = async (event, context, callback) => {
     if (query && query['redirect-service-debug']) {
       return callback(null, {
         statusCode: 200,
-        headers: { 'Content-type': 'application/json' },
+        headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ input: { query, proto, host, path, event }, redirectLocation })
       })
     }
@@ -77,8 +79,8 @@ const handler = async (event, context, callback) => {
       isBase64Encoded: false,
       statusCode: 302,
       multiValueHeaders: {
-        Location: [redirectLocation],
-      },
+        Location: [redirectLocation]
+      }
     };
     return callback(null, response);
   }
