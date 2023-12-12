@@ -459,9 +459,9 @@ describe('handler', () => {
     it('should redirect to vega with converted bib id when "circ" set as collection query param', async function () {
       const event = {
         path: '/record=b22297361',
-        multiValueHeaders: {
-          'x-forwarded-proto': ['https'],
-          host: ['catalog.nypl.org']
+        headers: {
+          'x-forwarded-proto': 'https',
+          host: 'catalog.nypl.org'
         },
         multiValueQueryStringParameters: {
           "collection": ["circ"]
@@ -477,9 +477,9 @@ describe('handler', () => {
     it('should redirect to vega when "circ" is included in multiple collection query params', async function () {
       const event = {
         path: '/record=b22297361',
-        multiValueHeaders: {
-          'x-forwarded-proto': ['https'],
-          host: ['catalog.nypl.org']
+        headers: {
+          'x-forwarded-proto': 'https',
+          host: 'catalog.nypl.org'
         },
         multiValueQueryStringParameters: {
           "collection": ["circ", "research"]
@@ -495,9 +495,9 @@ describe('handler', () => {
     it('should redirect to research catalog when anything other than "circ" is in collection query params', async function () {
       const event = {
         path: '/record=b22297361',
-        multiValueHeaders: {
-          'x-forwarded-proto': ['https'],
-          host: ['catalog.nypl.org']
+        headers: {
+          'x-forwarded-proto': 'https',
+          host: 'catalog.nypl.org'
         },
         multiValueQueryStringParameters: {
           "collection": ["research"]
