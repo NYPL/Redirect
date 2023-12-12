@@ -61,7 +61,7 @@ const healthCheck = () => {
 /**
 *   Special handler to serve a page that performs a conditionanl client-side redirect:
 *    - If JS is enabled, JS redirects the user to `jsRedirect`
-*    - If JS is disabled, a META tag redirets the user to `noscriptRedirect`
+*    - If JS is disabled, a META tag redirects the user to `noscriptRedirect`
 */
 const jsConditionalRedirect = (jsRedirect, noscriptRedirect) => {
   return {
