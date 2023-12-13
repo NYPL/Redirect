@@ -68,7 +68,7 @@ const jsConditionalRedirect = (jsRedirect, noscriptRedirect) => {
     isBase64Encoded: false,
     statusCode: 200,
     headers: {
-      'Content-Type': 'text/html; charset=utf-8',
+      'Content-Type': 'text/html',
       'Access-Control-Allow-Origin': "'*'",
       'Access-Control-Allow-Methods': 'GET'
     },
