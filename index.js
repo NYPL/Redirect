@@ -65,12 +65,9 @@ const healthCheck = () => {
 */
 const jsConditionalRedirect = (jsRedirect, noscriptRedirect) => {
   return {
-    isBase64Encoded: false,
     statusCode: 200,
     headers: {
-      'Content-Type': 'text/html',
-      'Access-Control-Allow-Origin': "'*'",
-      'Access-Control-Allow-Methods': 'GET'
+      'Content-Type': 'text/html'
     },
     body: `<html>
         <head>
