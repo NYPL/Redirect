@@ -67,7 +67,11 @@ const jsConditionalRedirect = (jsRedirect, noscriptRedirect) => {
   return {
     isBase64Encoded: false,
     statusCode: 200,
-    headers: { 'Content-Type': 'text/html; charset=utf-8' },
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Access-Control-Allow-Origin': "'*'",
+      'Access-Control-Allow-Methods': 'GET'
+    },
     body: `<html>
         <head>
           <script type="text/javascript">window.location.replace("${jsRedirect}");</script>
