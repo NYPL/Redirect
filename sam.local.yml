@@ -16,6 +16,7 @@ Globals:
         VEGA_AUTH_DOMAIN: auth.na2.iiivega.com
         CAS_SERVER_DOMAIN: ilsstaff.nypl.org
         REDIRECT_SERVICE_DOMAIN: redir-browse.nypl.org
+        # SKIP_VEGA_LOGOUT: true
 Resources:
   RedirectService:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
