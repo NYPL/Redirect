@@ -108,7 +108,7 @@ const handler = async (event, context, callback) => {
       return callback(null, {
         statusCode: 200,
         multiValueHeaders: { 'content-type': ['application/json'] },
-        body: JSON.stringify({ input: { query, proto, host, path, event }, redirectLocation })
+        body: JSON.stringify({ input: { query, proto, host, path, event }, redirectLocation }, null, 2)
       })
     }
 
