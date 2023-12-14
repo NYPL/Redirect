@@ -53,6 +53,9 @@ const healthCheck = () => {
   const version = require('./package.json').version;
   return {
     isBase64Encoded: false,
+    multiValueHeaders: {
+      'Content-Type': ['application/json']
+    },
     statusCode: 200,
     body: JSON.stringify({ version })
   };
@@ -66,8 +69,9 @@ const healthCheck = () => {
 const jsConditionalRedirect = (jsRedirect, noscriptRedirect) => {
   return {
     statusCode: 200,
-    headers: {
-      'Content-Type': 'text/html'
+    isBase64Encoded: false,
+    multiValueHeaders: {
+      'Content-Type': ['text/html']
     },
     body: `<html>
         <head>
