@@ -107,7 +107,7 @@ const handler = async (event, context, callback) => {
     if (query && query['redirect-service-debug']) {
       return callback(null, {
         statusCode: 200,
-        headers: { 'content-type': 'application/json' },
+        multiValueHeaders: { 'content-type': ['application/json'] },
         body: JSON.stringify({ input: { query, proto, host, path, event }, redirectLocation })
       })
     }
