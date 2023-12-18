@@ -133,7 +133,7 @@ module.exports = {
 
       // Set up Vega-logout route (for JS-enabled users):
       const vegaLogoutHandlerRedirect = `https://${REDIRECT_SERVICE_DOMAIN}/vega-logout-handler?redirect_uri=${encodeURIComponent(redirectToAfterLogout)}`
-      const vegaLogoutUri = `https://${VEGA_AUTH_DOMAIN}/logout?redirect_uri=${encodeURIComponent(vegaLogoutHandlerRedirect)}`
+      const vegaLogoutUri = `https://${VEGA_URL}/logout?redirect_uri=${encodeURIComponent(vegaLogoutHandlerRedirect)}`
 
       // Send user through js-conditional redirect:
       // - JS-enabled users will pass through Vega logout (which includes CAS)
