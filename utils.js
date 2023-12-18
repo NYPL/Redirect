@@ -86,7 +86,7 @@ function getRedirectUri (query, param = 'redirect_uri') {
   let redirectUri = Array.isArray(query[param]) ? query[param][0] : null
   if (redirectUri) redirectUri = redirectUri.replace(/(www\.)?discovery\.nypl\.org/, 'www.nypl.org')
   // Query string values arrive decoded through sam; They are not decoded when
-  // when arriving via ELB integration (i.e. deployed). So attempt to detect:
+  // arriving via ELB integration (i.e. deployed). So attempt to detect:
   if (redirectUri && /^https?%3A/.test(redirectUri)) redirectUri = decodeURIComponent(redirectUri)
   return validRedirectUrl(redirectUri)
     ? redirectUri

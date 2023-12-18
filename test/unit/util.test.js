@@ -38,6 +38,11 @@ describe('utils', function () {
       expect(utils.getRedirectUri({ custom_param: ['https://www.nypl.org/'] }, 'custom_param'))
             .to.eq('https://www.nypl.org/')
     })
+
+    it('decodes encoded redirect_uri value', () => {
+      expect(utils.getRedirectUri({ redirect_uri: [encodeURIComponent('https://www.nypl.org/')] }))
+            .to.eq('https://www.nypl.org/')
+    })
   })
 })
  
