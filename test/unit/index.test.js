@@ -526,7 +526,7 @@ describe('handler', () => {
       const resp = await handler(baseEvent, context, (_, resp) => resp);
       const url = jsConditionalRedirect
         + '?redirect_uri=' + encodeURIComponent(
-          'https://auth.na2.iiivega.com/logout'
+          'https://nypl.na2.iiivega.com/logout'
             + '?redirect_uri='
             + encodeURIComponent(
               'https://redir-browse.nypl.org/vega-logout-handler?redirect_uri='
@@ -551,7 +551,7 @@ describe('handler', () => {
       'https://legacycatalog.nypl.org/',
       'https://nypl.na2.iiivega.com/',
       'https://www.nypl.org/research/research-catalog',
-      'https://auth.na2.iiivega.com/auth/realms/nypl/protocol/openid-connect/logout?redirect_uri=https://www.nypl.org/research/research-catalog/bib/b11373666'
+      'https://nypl.na2.iiivega.com/logout?redirect_uri=https://www.nypl.org/research/research-catalog/bib/b11373666'
     ].forEach((validUrl) => {
       it(`should respect redirect_uri=${validUrl}`, async function () {
         const eventWithRedirect = Object.assign( {}, baseEvent,
@@ -560,7 +560,7 @@ describe('handler', () => {
         const resp = await handler(eventWithRedirect, context, (_, resp) => resp);
         const url = jsConditionalRedirect
           + '?redirect_uri=' + encodeURIComponent(
-            'https://auth.na2.iiivega.com/logout?redirect_uri=' + encodeURIComponent(
+            'https://nypl.na2.iiivega.com/logout?redirect_uri=' + encodeURIComponent(
                'https://redir-browse.nypl.org/vega-logout-handler?redirect_uri=' + encodeURIComponent(validUrl)
             )
           )
@@ -588,7 +588,7 @@ describe('handler', () => {
         const resp = await handler(eventWithRedirect, context, (_, resp) => resp);
 
         const url = jsConditionalRedirect
-         + '?redirect_uri=' + encodeURIComponent('https://auth.na2.iiivega.com/logout?redirect_uri=https%3A%2F%2Fredir-browse.nypl.org%2Fvega-logout-handler%3Fredirect_uri%3D' + encodeURIComponent(encodeURIComponent('https://www.nypl.org/')))
+         + '?redirect_uri=' + encodeURIComponent('https://nypl.na2.iiivega.com/logout?redirect_uri=https%3A%2F%2Fredir-browse.nypl.org%2Fvega-logout-handler%3Fredirect_uri%3D' + encodeURIComponent(encodeURIComponent('https://www.nypl.org/')))
          + '&noscript_redirect_uri=https%3A%2F%2Filsstaff.nypl.org%2Fiii%2Fcas%2Flogout%3Fservice%3Dhttps%253A%252F%252Fwww.nypl.org%252F'
         expect(resp).to.deep.include({
           statusCode: 302,
@@ -603,7 +603,7 @@ describe('handler', () => {
       )
       const resp = await handler(eventWithRedirect, context, (_, resp) => resp);
       const url = jsConditionalRedirect
-        + '?redirect_uri=' + encodeURIComponent('https://auth.na2.iiivega.com/logout?redirect_uri=https%3A%2F%2Fredir-browse.nypl.org%2Fvega-logout-handler%3Fredirect_uri%3D' + encodeURIComponent(encodeURIComponent('https://nypl.na2.iiivega.com/')))
+        + '?redirect_uri=' + encodeURIComponent('https://nypl.na2.iiivega.com/logout?redirect_uri=https%3A%2F%2Fredir-browse.nypl.org%2Fvega-logout-handler%3Fredirect_uri%3D' + encodeURIComponent(encodeURIComponent('https://nypl.na2.iiivega.com/')))
         + '&noscript_redirect_uri=https%3A%2F%2Filsstaff.nypl.org%2Fiii%2Fcas%2Flogout%3Fservice%3Dhttps%253A%252F%252Fnypl.na2.iiivega.com%252F'
       expect(resp).to.deep.include({
         statusCode: 302,

@@ -53,6 +53,9 @@ const healthCheck = () => {
   const version = require('./package.json').version;
   return {
     isBase64Encoded: false,
+    multiValueHeaders: {
+      'Content-Type': ['application/json']
+    },
     statusCode: 200,
     body: JSON.stringify({ version })
   };
@@ -65,9 +68,11 @@ const healthCheck = () => {
 */
 const jsConditionalRedirect = (jsRedirect, noscriptRedirect) => {
   return {
-    isBase64Encoded: false,
     statusCode: 200,
-    headers: { 'Content-Type': 'text/html; charset=utf-8' },
+    isBase64Encoded: false,
+    multiValueHeaders: {
+      'Content-Type': ['text/html']
+    },
     body: `<html>
         <head>
           <script type="text/javascript">window.location.replace("${jsRedirect}");</script>
@@ -102,8 +107,8 @@ const handler = async (event, context, callback) => {
     if (query && query['redirect-service-debug']) {
       return callback(null, {
         statusCode: 200,
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ input: { query, proto, host, path, event }, redirectLocation })
+        multiValueHeaders: { 'content-type': ['application/json'] },
+        body: JSON.stringify({ input: { query, proto, host, path, event }, redirectLocation }, null, 2)
       })
     }
 
