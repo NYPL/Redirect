@@ -1,5 +1,12 @@
 const expressions = require('./expressions')
-const { getIndexMapping, reconstructQuery, reconstructOriginalURL, getQueryFromParams, homeHandler } = require('./utils')
+const {
+  getIndexMapping,
+  reconstructQuery,
+  reconstructOriginalURL,
+  getQueryFromParams,
+  homeHandler,
+  getRedirectUri
+} = require('./utils')
 const {
   BASE_SCC_URL,
   LEGACY_CATALOG_URL,
@@ -24,7 +31,7 @@ function mapToRedirectURL (path, query, host, proto) {
       match = pathType.custom(path, query, host, proto)
     }
     if (match) {
-      redirectURL = pathType.handler(match, query, host);
+      redirectURL = pathType.handler(match, query, host, proto);
       break
     }
   }
@@ -46,23 +53,53 @@ const healthCheck = () => {
   const version = require('./package.json').version;
   return {
     isBase64Encoded: false,
+    multiValueHeaders: {
+      'Content-Type': ['application/json']
+    },
     statusCode: 200,
-    body: { version },
+    body: JSON.stringify({ version })
   };
 };
 
+/**
+*   Special handler to serve a page that performs a conditionanl client-side redirect:
+*    - If JS is enabled, JS redirects the user to `jsRedirect`
+*    - If JS is disabled, a META tag redirects the user to `noscriptRedirect`
+*/
+const jsConditionalRedirect = (jsRedirect, noscriptRedirect) => {
+  return {
+    statusCode: 200,
+    isBase64Encoded: false,
+    multiValueHeaders: {
+      'Content-Type': ['text/html']
+    },
+    body: `<html>
+        <head>
+          <script type="text/javascript">window.location.replace("${jsRedirect}");</script>
+          <meta http-equiv="refresh" content="1;url=${noscriptRedirect}" />
+        </head>
+      </html>`
+  }
+}
+
 const handler = async (event, context, callback) => {
-  console.log(event);
-  const headers = event.multiValueHeaders || {}
-  const proto = Array.isArray(headers['x-forwarded-proto'])
-    ? headers['x-forwarded-proto'][0]
-    : 'https';
+  const headers = event.headers || {}
+  const proto = headers['X-Forwarded-Proto'] || headers['x-forwarded-proto'] || 'https'
   try {
     const path = event.path;
     if (path === '/check') return callback(null, healthCheck());
 
     const query = event.multiValueQueryStringParameters || {};
-    const host = Array.isArray(headers.host) ? headers.host[0] : ENCORE_URL;
+
+    if (path === '/js-conditional-redirect') {
+      const redirectUri = getRedirectUri(query)
+      const noscriptRedirectUri = getRedirectUri(query, 'noscript_redirect_uri')
+      if (redirectUri && noscriptRedirectUri) {
+        return callback(null, jsConditionalRedirect(redirectUri, noscriptRedirectUri));
+      }
+    }
+
+    const host = headers.host || ENCORE_URL;
     const mappedUrl = mapToRedirectURL(path, query, host, proto);
     const redirectLocation = `${proto}://${mappedUrl}`;
 
@@ -70,8 +107,8 @@ const handler = async (event, context, callback) => {
     if (query && query['redirect-service-debug']) {
       return callback(null, {
         statusCode: 200,
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ input: { query, proto, host, path, event }, redirectLocation })
+        multiValueHeaders: { 'content-type': ['application/json'] },
+        body: JSON.stringify({ input: { query, proto, host, path, event }, redirectLocation }, null, 2)
       })
     }
 

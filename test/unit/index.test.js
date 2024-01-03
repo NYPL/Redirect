@@ -421,15 +421,15 @@ describe('handler', () => {
 
     const resp = await handler(event, context, (_, resp) => resp);
     expect(resp.statusCode).to.eql(200);
-    expect(resp.body.version).to.eql(version);
+    expect(JSON.parse(resp.body).version).to.eql(version);
   });
 
   it('should call the callback with 302 response for matching url', async function () {
     const event = {
       path: '/',
-      multiValueHeaders: {
-        'x-forwarded-proto': ['https'],
-        host: ['catalog.nypl.org']
+      headers: {
+        'x-forwarded-proto': 'https',
+        host: 'catalog.nypl.org'
       }
     }
 
@@ -442,9 +442,9 @@ describe('handler', () => {
     // fall through to a 404 page:
     const event = {
       path: '/record=bsomeid/',
-      multiValueHeaders: {
-        'x-forwarded-proto': ['https'],
-        host: ['catalog.nypl.org']
+      headers: {
+        'x-forwarded-proto': 'https',
+        host: 'catalog.nypl.org'
       }
     }
 
@@ -459,9 +459,9 @@ describe('handler', () => {
     it('should redirect to vega with converted bib id when "circ" set as collection query param', async function () {
       const event = {
         path: '/record=b22297361',
-        multiValueHeaders: {
-          'x-forwarded-proto': ['https'],
-          host: ['catalog.nypl.org']
+        headers: {
+          'x-forwarded-proto': 'https',
+          host: 'catalog.nypl.org'
         },
         multiValueQueryStringParameters: {
           "collection": ["circ"]
@@ -477,9 +477,9 @@ describe('handler', () => {
     it('should redirect to vega when "circ" is included in multiple collection query params', async function () {
       const event = {
         path: '/record=b22297361',
-        multiValueHeaders: {
-          'x-forwarded-proto': ['https'],
-          host: ['catalog.nypl.org']
+        headers: {
+          'x-forwarded-proto': 'https',
+          host: 'catalog.nypl.org'
         },
         multiValueQueryStringParameters: {
           "collection": ["circ", "research"]
@@ -495,9 +495,9 @@ describe('handler', () => {
     it('should redirect to research catalog when anything other than "circ" is in collection query params', async function () {
       const event = {
         path: '/record=b22297361',
-        multiValueHeaders: {
-          'x-forwarded-proto': ['https'],
-          host: ['catalog.nypl.org']
+        headers: {
+          'x-forwarded-proto': 'https',
+          host: 'catalog.nypl.org'
         },
         multiValueQueryStringParameters: {
           "collection": ["research"]
@@ -512,27 +512,35 @@ describe('handler', () => {
   })
 
   describe('encore logout redirect', () => {
+    const jsConditionalRedirect = 'https://redir-browse.nypl.org/js-conditional-redirect'
+
     const baseEvent = {
       path: '/iii/encore/logoutFilterRedirect',
-      multiValueHeaders: {
-        'x-forwarded-proto': ['https'],
-        host: ['browse.nypl.org']
+      headers: {
+        'x-forwarded-proto': 'https',
+        host: 'browse.nypl.org'
       }
     }
 
     it('should redirect Encore logout URL to Vega Auth logout endpoint', async function () {
       const resp = await handler(baseEvent, context, (_, resp) => resp);
+      const url = jsConditionalRedirect
+        + '?redirect_uri=' + encodeURIComponent(
+          'https://nypl.na2.iiivega.com/logout'
+            + '?redirect_uri='
+            + encodeURIComponent(
+              'https://redir-browse.nypl.org/vega-logout-handler?redirect_uri='
+              + encodeURIComponent('https://nypl.na2.iiivega.com/')
+            )
+        )
+        + '&noscript_redirect_uri=' + encodeURIComponent(
+          'https://ilsstaff.nypl.org/iii/cas/logout?service='
+          + encodeURIComponent('https://nypl.na2.iiivega.com/')
+        )
       expect(resp).to.deep.eql({
         isBase64Encoded: false,
         statusCode: 302,
-        multiValueHeaders: { Location: [
-          'https://auth.na2.iiivega.com/auth/realms/nypl/protocol/openid-connect/logout'
-          + '?redirect_uri='
-          + encodeURIComponent(
-            'https://redir-browse.nypl.org/vega-logout-handler?redirect_uri='
-            + encodeURIComponent('https://nypl.na2.iiivega.com/')
-          )
-        ] }
+        multiValueHeaders: { Location: [ url ] }
       })
     })
 
@@ -543,16 +551,26 @@ describe('handler', () => {
       'https://legacycatalog.nypl.org/',
       'https://nypl.na2.iiivega.com/',
       'https://www.nypl.org/research/research-catalog',
-      'https://auth.na2.iiivega.com/auth/realms/nypl/protocol/openid-connect/logout?redirect_uri=https://www.nypl.org/research/research-catalog/bib/b11373666'
+      'https://nypl.na2.iiivega.com/logout?redirect_uri=https://www.nypl.org/research/research-catalog/bib/b11373666'
     ].forEach((validUrl) => {
       it(`should respect redirect_uri=${validUrl}`, async function () {
         const eventWithRedirect = Object.assign( {}, baseEvent,
           { multiValueQueryStringParameters: { redirect_uri: [ validUrl ] } }
         )
         const resp = await handler(eventWithRedirect, context, (_, resp) => resp);
+        const url = jsConditionalRedirect
+          + '?redirect_uri=' + encodeURIComponent(
+            'https://nypl.na2.iiivega.com/logout?redirect_uri=' + encodeURIComponent(
+               'https://redir-browse.nypl.org/vega-logout-handler?redirect_uri=' + encodeURIComponent(validUrl)
+            )
+          )
+          + '&noscript_redirect_uri=' + encodeURIComponent(
+            'https://ilsstaff.nypl.org/iii/cas/logout?service=' + encodeURIComponent(validUrl)
+          )
+
         expect(resp).to.deep.include({
           statusCode: 302,
-          multiValueHeaders: { Location: [ 'https://auth.na2.iiivega.com/auth/realms/nypl/protocol/openid-connect/logout?redirect_uri=https%3A%2F%2Fredir-browse.nypl.org%2Fvega-logout-handler%3Fredirect_uri%3D' + encodeURIComponent(encodeURIComponent(validUrl)) ] }
+          multiValueHeaders: { Location: [ url ] }
         })
       })
     })
@@ -568,9 +586,13 @@ describe('handler', () => {
           { multiValueQueryStringParameters: { redirect_uri: [ validUrl ] } }
         )
         const resp = await handler(eventWithRedirect, context, (_, resp) => resp);
+
+        const url = jsConditionalRedirect
+         + '?redirect_uri=' + encodeURIComponent('https://nypl.na2.iiivega.com/logout?redirect_uri=https%3A%2F%2Fredir-browse.nypl.org%2Fvega-logout-handler%3Fredirect_uri%3D' + encodeURIComponent(encodeURIComponent('https://www.nypl.org/')))
+         + '&noscript_redirect_uri=https%3A%2F%2Filsstaff.nypl.org%2Fiii%2Fcas%2Flogout%3Fservice%3Dhttps%253A%252F%252Fwww.nypl.org%252F'
         expect(resp).to.deep.include({
           statusCode: 302,
-          multiValueHeaders: { Location: [ 'https://auth.na2.iiivega.com/auth/realms/nypl/protocol/openid-connect/logout?redirect_uri=https%3A%2F%2Fredir-browse.nypl.org%2Fvega-logout-handler%3Fredirect_uri%3D' + encodeURIComponent(encodeURIComponent('https://www.nypl.org/')) ] }
+          multiValueHeaders: { Location: [ url ] }
         })
       })
     })
@@ -580,9 +602,12 @@ describe('handler', () => {
         { multiValueQueryStringParameters: { redirect_uri: [ 'https://duckduckgo.com' ] } }
       )
       const resp = await handler(eventWithRedirect, context, (_, resp) => resp);
+      const url = jsConditionalRedirect
+        + '?redirect_uri=' + encodeURIComponent('https://nypl.na2.iiivega.com/logout?redirect_uri=https%3A%2F%2Fredir-browse.nypl.org%2Fvega-logout-handler%3Fredirect_uri%3D' + encodeURIComponent(encodeURIComponent('https://nypl.na2.iiivega.com/')))
+        + '&noscript_redirect_uri=https%3A%2F%2Filsstaff.nypl.org%2Fiii%2Fcas%2Flogout%3Fservice%3Dhttps%253A%252F%252Fnypl.na2.iiivega.com%252F'
       expect(resp).to.deep.include({
         statusCode: 302,
-        multiValueHeaders: { Location: [ 'https://auth.na2.iiivega.com/auth/realms/nypl/protocol/openid-connect/logout?redirect_uri=https%3A%2F%2Fredir-browse.nypl.org%2Fvega-logout-handler%3Fredirect_uri%3Dhttps%253A%252F%252Fnypl.na2.iiivega.com%252F' ] }
+        multiValueHeaders: { Location: [ url ] }
       })
     })
   })
@@ -590,9 +615,9 @@ describe('handler', () => {
   describe('vega logout handler', function () {
     const baseEvent = {
       path: '/vega-logout-handler',
-      multiValueHeaders: {
-        'x-forwarded-proto': ['https'],
-        host: ['redir-browse.nypl.org']
+      headers: {
+        'x-forwarded-proto': 'https',
+        host: 'redir-browse.nypl.org'
       }
     }
     it('should send user through CAS, passing valid redirect', async function () {
@@ -620,4 +645,20 @@ describe('handler', () => {
       })
     })
   })
+
+  it('should respond with client-side redirect for /js-conditional-redirect', async function () {
+    const event = {
+      path: '/js-conditional-redirect',
+      multiValueQueryStringParameters: {
+        redirect_uri: [ 'https://www.nypl.org/js-enabled' ],
+        noscript_redirect_uri: [ 'https://www.nypl.org/js-disabled' ]
+      }
+    }
+
+    const resp = await handler(event, context, (_, resp) => resp);
+    expect(resp.statusCode).to.eql(200);
+
+    expect(resp.body).includes('window.location.replace("https://www.nypl.org/js-enabled");')
+    expect(resp.body).includes('<meta http-equiv="refresh" content="1;url=https://www.nypl.org/js-disabled" />')
+  });
 })

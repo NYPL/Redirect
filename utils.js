@@ -3,7 +3,8 @@ const {
   LEGACY_CATALOG_URL,
   VEGA_URL,
   VEGA_AUTH_DOMAIN,
-  ENCORE_URL
+  ENCORE_URL,
+  CAS_SERVER_DOMAIN
 } = process.env;
 
 const indexMappings = {
@@ -69,7 +70,7 @@ function validRedirectUrl (url) {
   if (!url) return false
 
   const wwwDomain = BASE_SCC_URL.split('/')[0]
-  return [wwwDomain, ENCORE_URL, LEGACY_CATALOG_URL, VEGA_URL, VEGA_AUTH_DOMAIN]
+  return [wwwDomain, ENCORE_URL, LEGACY_CATALOG_URL, VEGA_URL, VEGA_AUTH_DOMAIN, CAS_SERVER_DOMAIN]
     .map((domain) => `https://${domain}/`)
     .some((baseUrl) => url.indexOf(baseUrl) === 0)
 }
@@ -77,10 +78,16 @@ function validRedirectUrl (url) {
 /**
  *  Given a query hash, extracts and validates the request_uri, returning the
  *  request_uri or a sensible default if it's invalid/missing.
+ *
+ *  @param query {object} - Hash representing multi-value query params
+ *  @param param {string} - Param name to use. Default redirect_uri
  */
-function getRedirectUri (query) {
-  let redirectUri = Array.isArray(query.redirect_uri) ? query.redirect_uri[0] : null
-  if (redirectUri) redirectUri = decodeURIComponent(redirectUri).replace(/(www\.)?discovery\.nypl\.org/, 'www.nypl.org')
+function getRedirectUri (query, param = 'redirect_uri') {
+  let redirectUri = Array.isArray(query[param]) ? query[param][0] : null
+  if (redirectUri) redirectUri = redirectUri.replace(/(www\.)?discovery\.nypl\.org/, 'www.nypl.org')
+  // Query string values arrive decoded through sam; They are not decoded when
+  // arriving via ELB integration (i.e. deployed). So attempt to detect:
+  if (redirectUri && /^https?%3A/.test(redirectUri)) redirectUri = decodeURIComponent(redirectUri)
   return validRedirectUrl(redirectUri)
     ? redirectUri
     : `https://${VEGA_URL}/`

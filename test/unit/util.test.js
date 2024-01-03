@@ -21,5 +21,28 @@ describe('utils', function () {
       expect(utils.validRedirectUrl('https://nypl.na2.iiivega.com/')).to.eq(true)
     })
   })
+
+  describe('getRedirectUri', () => {
+    ; [
+      'https://www.nypl.org/path',
+      'https://legacycatalog.nypl.org/foo/bar',
+    ]
+      .forEach((uri) => {
+        it(`should parse redirect_uri=${uri}`, () => {
+          expect(utils.getRedirectUri({ redirect_uri: [ uri ] }))
+            .to.eq(uri)
+        })
+    })
+
+    it('supports custom param', () => {
+      expect(utils.getRedirectUri({ custom_param: ['https://www.nypl.org/'] }, 'custom_param'))
+            .to.eq('https://www.nypl.org/')
+    })
+
+    it('decodes encoded redirect_uri value', () => {
+      expect(utils.getRedirectUri({ redirect_uri: [encodeURIComponent('https://www.nypl.org/')] }))
+            .to.eq('https://www.nypl.org/')
+    })
+  })
 })
  
