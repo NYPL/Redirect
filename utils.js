@@ -18,7 +18,11 @@ const indexMappings = {
   i: '&search_scope=standard_number', // what to do with these?
   c: '&search_scope=standard_number',
 }
-const homeHandler = (match, query, host) => LEGACY_CATALOG_URL.includes(host) ? BASE_SCC_URL : VEGA_URL + '/'
+const homeHandler = (match, query, host) => {
+  // If host is catalog.nypl.org (or qa-catalog.nypl.org), redirect to RC (else Vega)
+  const isCatalogDotNyplDomain = host.includes('catalog.nypl.org')
+  return isCatalogDotNyplDomain ? BASE_SCC_URL : VEGA_URL + '/'
+}
 
 const getIndexMapping = index => indexMappings[index] || '';
 

@@ -3,12 +3,12 @@
  *
  *  To test the QA RedirectService:
  *   - Download following sheet as a CSV and save to ./encore-vega-redirects.csv :
- *       https://docs.google.com/spreadsheets/d/1055Y98c_4l-NXWyzoiUhBSkay4SYZMeKEc9-LGhGoqw/edit#gid=234726655
- *   - Run: `node test/test-deployment-redirects.js`
+ *       https://docs.google.com/spreadsheets/d/1055Y98c_4l-NXWyzoiUhBSkay4SYZMeKEc9-LGhGoqw/edit#gid=1152476292
+ *   - Run: `node test/test-deployment-redirects.js --qa`
  *   - Look for "Failed to match" entries
  *
  *  To test the Prod RedirectService:
- *   - Repeat above steps but add --prod to the command
+ *   - Repeat above steps but remove the --qa from the command
  */
 
 const fs = require('fs')
@@ -23,15 +23,18 @@ const rows = parse(fs.readFileSync(input, 'utf8'), { columns: true })
   .map((row) => {
     return {
       type: row.Type,
-      url: row['"Encore" URL'],
-      target: row['Should redirect to']
+      url: row['URL'],
+      target: row['Redirect To']
     }
   })
   .map((row) => {
-    // If running in prod mode, modify input URLs to use prod domains
-    if (argv.prod) {
+    // If running in QA mode, modify input URLs to use QA domains
+    if (argv.qa) {
       row = Object.assign(row, {
-        url: row.url.replace('https://qa-redir', 'https://redir')
+        url: row.url
+          .replace(/^https:\/\/browse\./, 'https://nypl-encore-test.')
+          .replace(/^https:\/\/catalog\./, 'https://qa-redir-browse.')
+          .replace(/^https:\/\/redir-browse\./, 'https://qa-redir-browse.')
       })
     }
     return row
