@@ -125,7 +125,9 @@ const handler = async (event, context, callback) => {
   }
   catch (err) {
     console.log('err: ', err.message);
-    let mappedUrl = BASE_SCC_URL; let redirectLocation = `${proto}://${mappedUrl}`;
+    let mappedUrl = BASE_SCC_URL;
+
+    let redirectLocation = `${proto}://${mappedUrl}`;
     const response = {
       isBase64Encoded: false,
       statusCode: 302,
