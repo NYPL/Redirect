@@ -32,8 +32,11 @@ const rows = parse(fs.readFileSync(input, 'utf8'), { columns: true })
     if (argv.qa) {
       row = Object.assign(row, {
         url: row.url
+          // Prod Encore to Test Encore:
           .replace(/^https:\/\/browse\./, 'https://nypl-encore-test.')
-          .replace(/^https:\/\/catalog\./, 'https://qa-redir-browse.')
+          // Prod Catalog alias to QA Catalog alias:
+          .replace(/^https:\/\/catalog\./, 'https://qa-catalog.')
+          // Prod RedirectService to QA RedirectService:
           .replace(/^https:\/\/redir-browse\./, 'https://qa-redir-browse.')
       })
     }
