@@ -442,9 +442,9 @@ describe('handler', () => {
     // fall through to a 404 page:
     const event = {
       path: '/record=bsomeid/',
-      headers: {
-        'x-forwarded-proto': 'https',
-        host: 'catalog.nypl.org'
+      multiValueHeaders: {
+        'x-forwarded-proto': ['https'],
+        host: ['catalog.nypl.org']
       }
     }
 
@@ -459,9 +459,9 @@ describe('handler', () => {
     it('should redirect to vega with converted bib id when "circ" set as collection query param', async function () {
       const event = {
         path: '/record=b22297361',
-        headers: {
-          'x-forwarded-proto': 'https',
-          host: 'catalog.nypl.org'
+        multiValueHeaders: {
+          'x-forwarded-proto': ['https'],
+          host: ['catalog.nypl.org']
         },
         multiValueQueryStringParameters: {
           "collection": ["circ"]
@@ -477,9 +477,9 @@ describe('handler', () => {
     it('should redirect to vega when "circ" is included in multiple collection query params', async function () {
       const event = {
         path: '/record=b22297361',
-        headers: {
-          'x-forwarded-proto': 'https',
-          host: 'catalog.nypl.org'
+        multiValueHeaders: {
+          'x-forwarded-proto': ['https'],
+          host: ['catalog.nypl.org']
         },
         multiValueQueryStringParameters: {
           "collection": ["circ", "research"]
@@ -495,9 +495,9 @@ describe('handler', () => {
     it('should redirect to research catalog when anything other than "circ" is in collection query params', async function () {
       const event = {
         path: '/record=b22297361',
-        headers: {
-          'x-forwarded-proto': 'https',
-          host: 'catalog.nypl.org'
+        multiValueHeaders: {
+          'x-forwarded-proto': ['https'],
+          host: ['catalog.nypl.org']
         },
         multiValueQueryStringParameters: {
           "collection": ["research"]
@@ -516,9 +516,9 @@ describe('handler', () => {
 
     const baseEvent = {
       path: '/iii/encore/logoutFilterRedirect',
-      headers: {
-        'x-forwarded-proto': 'https',
-        host: 'browse.nypl.org'
+      multiValueHeaders: {
+        'x-forwarded-proto': ['https'],
+        host: ['browse.nypl.org']
       }
     }
 
@@ -615,9 +615,9 @@ describe('handler', () => {
   describe('vega logout handler', function () {
     const baseEvent = {
       path: '/vega-logout-handler',
-      headers: {
-        'x-forwarded-proto': 'https',
-        host: 'redir-browse.nypl.org'
+      multiValueHeaders: {
+        'x-forwarded-proto': ['https'],
+        host: ['redir-browse.nypl.org']
       }
     }
     it('should send user through CAS, passing valid redirect', async function () {

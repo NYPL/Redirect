@@ -83,8 +83,9 @@ const jsConditionalRedirect = (jsRedirect, noscriptRedirect) => {
 }
 
 const handler = async (event, context, callback) => {
-  const headers = event.headers || {}
-  const proto = headers['X-Forwarded-Proto'] || headers['x-forwarded-proto'] || 'https'
+  const headers = event.multiValueHeaders || {}
+  const proto = headers['X-Forwarded-Proto'] ? headers['X-Forwarded-Proto'][0] :
+    ( headers['x-forwarded-proto'] ? headers['x-forwarded-proto'][0] : 'https')
   try {
     const path = event.path;
     if (path === '/check') return callback(null, healthCheck());
@@ -99,7 +100,8 @@ const handler = async (event, context, callback) => {
       }
     }
 
-    const host = headers.host || ENCORE_URL;
+    const host = headers['Host'] ? headers['Host'][0] :
+      (headers['host'] ? headers['host'][0] : ENCORE_URL);
     const mappedUrl = mapToRedirectURL(path, query, host, proto);
     const redirectLocation = `${proto}://${mappedUrl}`;
 
@@ -123,8 +125,7 @@ const handler = async (event, context, callback) => {
   }
   catch (err) {
     console.log('err: ', err.message);
-    let mappedUrl = BASE_SCC_URL;
-    let redirectLocation = `${proto}://${mappedUrl}`;
+    let mappedUrl = BASE_SCC_URL; let redirectLocation = `${proto}://${mappedUrl}`;
     const response = {
       isBase64Encoded: false,
       statusCode: 302,
