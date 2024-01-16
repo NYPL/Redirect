@@ -23,6 +23,11 @@ Resources:
       Handler: index.handler
       Runtime: nodejs12.x
       Events:
+        RedirectServiceRoot:
+          Type: Api
+          Properties:
+            Path: /
+            Method: any
         RedirectServiceCatchAll:
           Type: Api
           Properties:

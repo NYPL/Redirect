@@ -14,11 +14,27 @@ const {
 } = require('./utils')
 
 module.exports = {
+  /**
+  * Handle requests for, e.g.:
+  *  - //catalog.nypl.org/
+  *  - //browse.nypl.org/iii/encore
+  *  - //browse.nypl.org/iii/encore/bookcart
+  *  - //browse.nypl.org/iii/encore/home
+  *
+  * Redirect to RC if host contains catalog.nypl.org. Otherwise redirect to Vega
+  *
+  * FIXME Note that this also matches /bookcart, /home, and /any/path/at/all/bookcart
+  */
   nothingReg: {
     // empty path or /bookcart, /home endpoint (from encore)
     expr: /(?:^\/$)|(?:^\/iii\/encore$)|bookcart$|home$/,
     handler: homeHandler
   },
+
+  /**
+  * Handle requests for:
+  *  - //catalog.nypl.org/search..
+  */
   rc_from_vega: {
     // handling for legacy author/title search URLs in redirect service
     custom: (path, query, host, proto) => {
@@ -32,7 +48,9 @@ module.exports = {
     },
     handler: match => `${BASE_SCC_URL}/search?contributor=${match[2]}&title=${match[1]}`
   },
+
   // Encore => Vega redirects
+
   encoreBibPage: {
     expr: /C__Rb(\d{8})(__|~\$1|$)/,
     handler: (match) => `${VEGA_URL}/search/card?recordId=${match[1]}`
@@ -66,7 +84,9 @@ module.exports = {
     expr: /\/myaccount/,
     handler: () => `${VEGA_URL}/?openAccount=checkouts`
   },
+
   // WebPac => SCC redirects
+
   oclc: {
     expr: /\/search\/o\=?(\d+)/,
     handler: match => `${BASE_SCC_URL}/search?oclc=${match[1]}&redirectOnMatch=true`,
@@ -112,6 +132,7 @@ module.exports = {
       return `${LEGACY_CATALOG_URL}${match.input}${reconstructQuery(query)}`
     }
   },
+
   /**
    *  Handle requests on //browse.nypl.org/iii/encore/logoutFilterRedirect
    *  Redirect requests to the Vega Auth logout endpoint (which in turn should
@@ -143,6 +164,7 @@ module.exports = {
       return `${REDIRECT_SERVICE_DOMAIN}/js-conditional-redirect?redirect_uri=${jsRedirectUri}&noscript_redirect_uri=${noscriptRedirectUri}`
     }
   },
+
   /**
    *  Handler for post-Vega logout. Doubly assures the patron is logged out of
    *  CAS after logging out of Vega.
