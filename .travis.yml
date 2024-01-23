@@ -13,6 +13,7 @@ before_deploy:
 - rm -rf vendor
 deploy:
 - provider: lambda
+  edge: true
   function_name: Redirect-qa
   description: Redirects old webpac requests to Research Catalog
   region: us-east-1
