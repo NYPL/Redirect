@@ -13,6 +13,7 @@ before_deploy:
 - rm -rf vendor
 deploy:
 - provider: lambda
+  edge: true
   function_name: Redirect-qa
   description: Redirects old webpac requests to Research Catalog
   region: us-east-1
@@ -23,9 +24,19 @@ deploy:
   skip_cleanup: true
   access_key_id: "$AWS_ACCESS_KEY_ID_QA"
   secret_access_key: "$AWS_SECRET_ACCESS_KEY_QA"
+  environment:
+   - BASE_SCC_URL=qa-www.nypl.org/research/research-catalog
+   - CAS_SERVER_DOMAIN=nypl-sierra-test.nypl.org
+   - ENCORE_URL=qa-redir-browse.nypl.org
+   - LEGACY_CATALOG_URL=nypl-sierra-test.nypl.org
+   - REDIRECT_SERVICE_DOMAIN=qa-redir-browse.nypl.org
+   # Temporarily point to Vega Train to test Vega DNS update:
+   # - VEGA_URL=nypl.na2.iiivega.com
+   - VEGA_URL=nypl-vega-train.nypl.org
   on:
     branch: qa
 - provider: lambda
+  edge: true
   function_name: Redirect-production
   description: Redirects old webpac requests to Research Catalog
   region: us-east-1
@@ -36,6 +47,13 @@ deploy:
   skip_cleanup: true
   access_key_id: "$AWS_ACCESS_KEY_ID_PRODUCTION"
   secret_access_key: "$AWS_SECRET_ACCESS_KEY_PRODUCTION"
+  environment:
+   - BASE_SCC_URL=www.nypl.org/research/research-catalog
+   - CAS_SERVER_DOMAIN=ilsstaff.nypl.org
+   - ENCORE_URL=browse.nypl.org
+   - LEGACY_CATALOG_URL=legacycatalog.nypl.org
+   - REDIRECT_SERVICE_DOMAIN=redir-browse.nypl.org
+   - VEGA_URL=nypl.na2.iiivega.com
   on:
     branch: production
 after_deploy:

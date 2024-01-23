@@ -52,7 +52,7 @@ Visit http://localhost:3010/record/C__Rb18225028 , for example, and verify it re
 
 ## Contributing
 
-This repo follows a [PRS-Target-Master Git Workflow](https://github.com/NYPL/engineering-general/blob/a19c78b028148465139799f09732e7eb10115eef/standards/git-workflow.md#prs-target-master-merge-to-deployment-branches)
+This repo follows a [PRS-Target-Main Git Workflow](https://github.com/NYPL/engineering-general/blob/a19c78b028148465139799f09732e7eb10115eef/standards/git-workflow.md#prs-target-master-merge-to-deployment-branches); PRs target `main`, merge `main` into `qa` and `production` to deploy.
 
 ## Testing
 
