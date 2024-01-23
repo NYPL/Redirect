@@ -30,12 +30,13 @@ deploy:
    - ENCORE_URL=qa-redir-browse.nypl.org
    - LEGACY_CATALOG_URL=nypl-sierra-test.nypl.org
    - REDIRECT_SERVICE_DOMAIN=qa-redir-browse.nypl.org
-   - VEGA_AUTH_DOMAIN=nypl.na2.iiivega.com
-   - VEGA_URL=nypl.na2.iiivega.com
-   - FOO=bar
+   # Temporarily point to Vega Train to test Vega DNS update:
+   # - VEGA_URL=nypl.na2.iiivega.com
+   - VEGA_URL=nypl-vega-train.nypl.org
   on:
     branch: qa
 - provider: lambda
+  edge: true
   function_name: Redirect-production
   description: Redirects old webpac requests to Research Catalog
   region: us-east-1
@@ -52,7 +53,6 @@ deploy:
    - ENCORE_URL=browse.nypl.org
    - LEGACY_CATALOG_URL=legacycatalog.nypl.org
    - REDIRECT_SERVICE_DOMAIN=redir-browse.nypl.org
-   - VEGA_AUTH_DOMAIN=auth.na2.iiivega.com
    - VEGA_URL=nypl.na2.iiivega.com
   on:
     branch: production
