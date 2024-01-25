@@ -30,9 +30,7 @@ deploy:
    - ENCORE_URL=qa-redir-browse.nypl.org
    - LEGACY_CATALOG_URL=nypl-sierra-test.nypl.org
    - REDIRECT_SERVICE_DOMAIN=qa-redir-browse.nypl.org
-   # Temporarily point to Vega Train to test Vega DNS update:
-   # - VEGA_URL=nypl.na2.iiivega.com
-   - VEGA_URL=nypl-vega-train.nypl.org
+   - VEGA_URL=borrow.nypl.org
   on:
     branch: qa
 - provider: lambda
@@ -53,7 +51,7 @@ deploy:
    - ENCORE_URL=browse.nypl.org
    - LEGACY_CATALOG_URL=legacycatalog.nypl.org
    - REDIRECT_SERVICE_DOMAIN=redir-browse.nypl.org
-   - VEGA_URL=nypl.na2.iiivega.com
+   - VEGA_URL=borrow.nypl.org
   on:
     branch: production
 after_deploy:
