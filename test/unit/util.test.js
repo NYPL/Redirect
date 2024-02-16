@@ -19,6 +19,11 @@ describe('utils', function () {
       expect(utils.validRedirectUrl('https://legacycatalog.nypl.org/')).to.eq(true)
       expect(utils.validRedirectUrl('https://www.nypl.org/research/research-catalog')).to.eq(true)
       expect(utils.validRedirectUrl('https://nypl.na2.iiivega.com/')).to.eq(true)
+
+      // Also local domains:
+      expect(utils.validRedirectUrl('http://local.nypl.org:8080/')).to.eq(true)
+      expect(utils.validRedirectUrl('http://local.nypl.org:3001/')).to.eq(true)
+      expect(utils.validRedirectUrl('http://local.nypl.org:1234/')).to.eq(true)
     })
   })
 
