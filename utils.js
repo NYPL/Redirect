@@ -72,12 +72,7 @@ const recodeSearchQuery = query => query.split(/\+|\s/).join("%20");
 function validRedirectUrl (url) {
   if (!url) return false
 
-  const wwwDomain = BASE_SCC_URL.split('/')[0]
-  return [wwwDomain, ENCORE_URL, LEGACY_CATALOG_URL, VEGA_URL, CAS_SERVER_DOMAIN]
-    .map((domain) => `https://${domain}/`)
-    .some((baseUrl) => url.indexOf(baseUrl) === 0)
-    // Also allow dev domains:
-    || /^http:\/\/local.nypl.org:\d+\//.test(url)
+  return /^(https:\/\/[\w-]+\.nypl.org\/|http:\/\/local.nypl.org:\d+\/)/.test(url)
 }
 
 /**

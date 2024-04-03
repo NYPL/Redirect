@@ -28,6 +28,7 @@ describe('utils', function () {
       expect(utils.validRedirectUrl('https://www.nypl.org/')).to.eq(true)
       expect(utils.validRedirectUrl('https://legacycatalog.nypl.org/')).to.eq(true)
       expect(utils.validRedirectUrl('https://www.nypl.org/research/research-catalog')).to.eq(true)
+      expect(utils.validRedirectUrl('https://qa-research-catalog.nypl.org/research/research-catalog')).to.eq(true)
       expect(utils.validRedirectUrl(`https://${VEGA_URL}/`)).to.eq(true)
 
       // Also local domains:
