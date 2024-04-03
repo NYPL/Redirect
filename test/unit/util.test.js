@@ -22,6 +22,8 @@ describe('utils', function () {
       expect(utils.validRedirectUrl('https://www.nypl.org.us')).to.eq(false)
       // Require a trailing slash:
       expect(utils.validRedirectUrl(`https://${VEGA_URL}`)).to.eq(false)
+      // Require https:
+      expect(utils.validRedirectUrl('http://www.nypl.org/')).to.eq(false)
     })
 
     it('should mark known domains as valid', function () {

@@ -66,12 +66,13 @@ const getQueryFromParams = (url, query) => {
 const recodeSearchQuery = query => query.split(/\+|\s/).join("%20");
 
 /**
- *  Given a URL, returns true if the URL we should redirect there (i.e. is a
- *  known catalog URL)
+ *  Given a URL, returns true if we should redirect there (i.e. it's a domain
+ *  that we control or a local testing domain)
  */
 function validRedirectUrl (url) {
   if (!url) return false
 
+  // It's valid if it matches https://*.nypl.org or http://local.nypl.org:PORT:
   return /^(https:\/\/[\w-]+\.nypl.org\/|http:\/\/local.nypl.org:\d+\/)/.test(url)
 }
 
