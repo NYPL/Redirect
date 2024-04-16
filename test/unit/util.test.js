@@ -22,7 +22,7 @@ describe('utils', function () {
       expect(utils.validRedirectUrl('https://www.nypl.org.us')).to.eq(false)
       // Require a trailing slash:
       expect(utils.validRedirectUrl(`https://${VEGA_URL}`)).to.eq(false)
-      // Require https:
+      // Require https on nypl.org (allow http: on local.nypl.org only):
       expect(utils.validRedirectUrl('http://www.nypl.org/')).to.eq(false)
     })
 
@@ -33,7 +33,7 @@ describe('utils', function () {
       expect(utils.validRedirectUrl('https://qa-research-catalog.nypl.org/research/research-catalog')).to.eq(true)
       expect(utils.validRedirectUrl(`https://${VEGA_URL}/`)).to.eq(true)
 
-      // Also local domains:
+      // Also local domains over http:
       expect(utils.validRedirectUrl('http://local.nypl.org:8080/')).to.eq(true)
       expect(utils.validRedirectUrl('http://local.nypl.org:3001/')).to.eq(true)
       expect(utils.validRedirectUrl('http://local.nypl.org:1234/')).to.eq(true)
