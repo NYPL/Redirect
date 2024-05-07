@@ -1,3 +1,5 @@
+const { readFileSync } = require('fs')
+
 const {
   BASE_SCC_URL,
   LEGACY_CATALOG_URL,
@@ -94,6 +96,15 @@ function getRedirectUri (query, param = 'redirect_uri') {
     : `https://${VEGA_URL}/`
 }
 
+const loadEnvVars = () => {
+  const config = readFileSync(`./config/${process.env.ENVIRONMENT}.env`)
+  .toString()
+  .split('\n')
+  .map(line => line.split('='))
+
+  config.forEach(([key, value]) => { process.env[key] = value })
+}
+
 module.exports = {
   getIndexMapping,
   reconstructQuery,
@@ -102,5 +113,6 @@ module.exports = {
   recodeSearchQuery,
   homeHandler,
   validRedirectUrl,
-  getRedirectUri
+  getRedirectUri,
+  loadEnvVars
 }
