@@ -66,7 +66,7 @@ node test/test-deployment-redirects
 
 ## Deployment
 
-CI/CD is configured in `.travis.yml` for the following branches:
+CI/CD is configured in `.github/workflows/test-and-deploy.yml` for the following branches:
 
 - `qa`
 - `production`
