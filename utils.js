@@ -1,4 +1,5 @@
 const { readFileSync } = require('fs')
+const aws = require('aws-sdk');
 
 const {
   BASE_SCC_URL,
@@ -96,13 +97,47 @@ function getRedirectUri (query, param = 'redirect_uri') {
     : `https://${VEGA_URL}/`
 }
 
-const loadEnvVars = () => {
+const loadEnvVars = async () => {
   const config = readFileSync(`./config/${process.env.ENVIRONMENT}.env`)
   .toString()
   .split('\n')
   .map(line => line.split('='))
 
   config.forEach(([key, value]) => { process.env[key] = value })
+
+  const kmsEnvironment = process.env.KMS_ENV || 'encrypted';
+  let decryptKMS;
+  let kms;
+  if (kmsEnvironment === 'encrypted') {
+    kms = new aws.KMS({
+      region: 'us-east-1',
+    });
+
+    const decryptKMS = async (key) => {
+      const params = {
+        CiphertextBlob: new Buffer(key, 'base64'),
+      };
+
+      const decryptPromise = new Promise((resolve, reject) => {
+        kms.decrypt(params, (err, data) => {
+          if (err) {
+            reject(err);
+          } else {
+            console.log('no error: ', data.Plaintext, data.Plaintext.toString())
+            resolve(data.Plaintext.toString());
+          }
+        });
+      })
+
+      const decrypted = await decryptPromise
+
+      return decrypted
+    }
+
+    process.env.CLIENT_ID = await decryptKMS(process.env.CLIENT_ID)
+    process.env.CLIENT_SECRET = await decryptKMS(process.env.CLIENT_SECRET)
+
+  }
 }
 
 module.exports = {

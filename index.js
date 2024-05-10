@@ -84,8 +84,8 @@ const jsConditionalRedirect = (jsRedirect, noscriptRedirect) => {
 }
 
 const handler = async (event, context, callback) => {
-  loadEnvVars()
-  
+  await loadEnvVars()
+
   const headers = event.multiValueHeaders || {}
   const proto = headers['X-Forwarded-Proto'] ? headers['X-Forwarded-Proto'][0] :
     ( headers['x-forwarded-proto'] ? headers['x-forwarded-proto'][0] : 'https')

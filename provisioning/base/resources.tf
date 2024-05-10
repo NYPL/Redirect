@@ -24,7 +24,7 @@ data "archive_file" "lambda_zip" {
 # Upload the zipped app to S3:
 resource "aws_s3_bucket_object" "uploaded_zip" {
   bucket = "nypl-travis-builds-${var.environment}"
-  key    = "avro-to-json-transofmer-${var.environment}-dist.zip"
+  key    = "redirect-service-${var.environment}-dist.zip"
   acl    = "private"
   source = data.archive_file.lambda_zip.output_path
   etag   = filemd5(data.archive_file.lambda_zip.output_path)
@@ -46,6 +46,12 @@ resource "aws_lambda_function" "lambda_instance" {
 
   # Trigger pulling code from S3 when the zip has changed:
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+
+
+  tags = {
+    Environment = var.environment
+    Project= "LSP"
+  }
 
   # Load ENV vars from ./config/{environment}.env
   environment {
