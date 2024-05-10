@@ -19,6 +19,7 @@
   "devDependencies": {
     "chalk": "^4.1.2",
     "csv-parse": "^5.3.6",
-    "minimist": "^1.2.8"
+    "minimist": "^1.2.8",
+    "sinon": "^17.0.2"
   }
 }
