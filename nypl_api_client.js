@@ -18,7 +18,6 @@ async function nyplApiClient(options = { apiName: 'platform' }) {
   if (kmsEnvironment === 'encrypted') {
     clientId = await decrypt(clientId)
     clientSecret = await decrypt(clientSecret)
-    console.log('decrypted: ', clientId, clientSecret)
   }
 
   const nyplApiClient = new NyplApiClient({
