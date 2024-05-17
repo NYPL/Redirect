@@ -188,7 +188,6 @@ describe('mapToRedirectURL', function () {
         })
 
         sinon.stub(KMSClient.prototype, 'send').callsFake(() => {
-          console.log('Calling Fake!')
           return {
             Plaintext: new ArrayBuffer(8)
           }
