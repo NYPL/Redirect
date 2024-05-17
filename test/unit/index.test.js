@@ -2,6 +2,7 @@ const axios = require('axios');
 const { expect } = require('chai');
 const sinon = require('sinon')
 const NyplApiClient = require('@nypl/nypl-data-api-client');
+const { KMSClient } = require('@aws-sdk/client-kms')
 
 require('./test-helper').loadTestEnvironment()
 
@@ -157,10 +158,17 @@ describe('mapToRedirectURL', function () {
             totalResults: 1
           }
         })
+
+        sinon.stub(KMSClient.prototype, 'send').callsFake(() => {
+          return {
+            Plaintext: new ArrayBuffer(8)
+          }
+        })
       })
 
       after(() => {
         NyplApiClient.prototype.get.restore()
+        KMSClient.prototype.send.restore()
       })
 
       it('should map search pages for oclc records', async () => {
@@ -178,10 +186,18 @@ describe('mapToRedirectURL', function () {
             totalResults: 0
           }
         })
+
+        sinon.stub(KMSClient.prototype, 'send').callsFake(() => {
+          console.log('Calling Fake!')
+          return {
+            Plaintext: new ArrayBuffer(8)
+          }
+        })
       })
 
       after(() => {
         NyplApiClient.prototype.get.restore()
+        KMSClient.prototype.send.restore()
       })
 
       it('should map search pages for oclc records', async () => {
