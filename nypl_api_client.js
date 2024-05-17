@@ -1,12 +1,11 @@
 const NyplApiClient = require('@nypl/nypl-data-api-client');
+const { decrypt } = require('./kms-helper')
 
 const CACHE = { clients: [] };
 
-function nyplApiClient(options = { apiName: 'platform' }) {
-  const clientId = process.env.CLIENT_ID;
-  const clientSecret = process.env.CLIENT_SECRET;
-
-  const keys = [clientId, clientSecret];
+async function nyplApiClient(options = { apiName: 'platform' }) {
+  let clientId = process.env.CLIENT_ID;
+  let clientSecret = process.env.CLIENT_SECRET;
 
   const { apiName } = options;
   if (CACHE.clients[apiName]) {
@@ -17,20 +16,9 @@ function nyplApiClient(options = { apiName: 'platform' }) {
   const kmsEnvironment = process.env.KMS_ENV || 'encrypted';
 
   if (kmsEnvironment === 'encrypted') {
-    return new Promise((resolve, reject) => {
-          const nyplApiClient = new NyplApiClient({
-            base_url: baseUrl,
-            oauth_key: clientId,
-            oauth_secret: clientSecret,
-            oauth_url: process.env.TOKEN_URL,
-          });
-
-          CACHE.clientId = clientId;
-          CACHE.clientSecret = clientSecret;
-          CACHE.clients[apiName] = nyplApiClient;
-
-          resolve(nyplApiClient);
-    });
+    clientId = await decrypt(clientId)
+    clientSecret = await decrypt(clientSecret)
+    console.log('decrypted: ', clientId, clientSecret)
   }
 
   const nyplApiClient = new NyplApiClient({
@@ -40,8 +28,6 @@ function nyplApiClient(options = { apiName: 'platform' }) {
     oauth_url: process.env.TOKEN_URL,
   });
 
-  CACHE.clientId = clientId;
-  CACHE.clientSecret = clientSecret;
   CACHE.clients[apiName] = nyplApiClient;
 
   return Promise.resolve(nyplApiClient);

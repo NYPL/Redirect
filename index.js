@@ -5,8 +5,7 @@ const {
   reconstructOriginalURL,
   getQueryFromParams,
   homeHandler,
-  getRedirectUri,
-  loadEnvVars
+  getRedirectUri
 } = require('./utils')
 const {
   BASE_SCC_URL,
@@ -15,6 +14,8 @@ const {
   VEGA_URL,
   REDIRECT_SERVICE_DOMAIN
 } = process.env;
+
+require('dotenv').config({ path: `./config/${process.env.ENVIRONMENT}.env` })
 
 // The main method to build the redirectURL based on the incoming request
 // Given a path and a query, finds the first expression declared above which matches
@@ -84,7 +85,6 @@ const jsConditionalRedirect = (jsRedirect, noscriptRedirect) => {
 }
 
 const handler = async (event, context, callback) => {
-  await loadEnvVars()
 
   const headers = event.multiValueHeaders || {}
   const proto = headers['X-Forwarded-Proto'] ? headers['X-Forwarded-Proto'][0] :
