@@ -1,5 +1,4 @@
 const { readFileSync } = require('fs')
-const aws = require('aws-sdk');
 
 const {
   BASE_SCC_URL,
