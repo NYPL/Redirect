@@ -1,3 +1,5 @@
+const { readFileSync } = require('fs')
+
 const {
   BASE_SCC_URL,
   LEGACY_CATALOG_URL,
@@ -93,6 +95,7 @@ function getRedirectUri (query, param = 'redirect_uri') {
     ? redirectUri
     : `https://${VEGA_URL}/`
 }
+
 
 module.exports = {
   getIndexMapping,

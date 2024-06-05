@@ -1,0 +1,10 @@
+{
+  "path": "/search/o1295014271",
+  "multiValueHeaders": {
+    "x-forwarded-proto": [
+      "https"
+    ],
+    "host": ["catalog.nypl.org"]
+  },
+  "multiValueQueryStringParameters": {}
+}
