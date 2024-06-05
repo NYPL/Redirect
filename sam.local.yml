@@ -15,6 +15,7 @@ Globals:
         ENCORE_URL: qa-redir-browse.nypl.org
         CAS_SERVER_DOMAIN: nypl-sierra-test.nypl.org
         REDIRECT_SERVICE_DOMAIN: qa-redir-browse.nypl.org
+        ENVIRONMENT: qa
         # SKIP_VEGA_LOGOUT: true
 Resources:
   RedirectService:

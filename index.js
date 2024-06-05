@@ -15,11 +15,13 @@ const {
   REDIRECT_SERVICE_DOMAIN
 } = process.env;
 
+require('dotenv').config({ path: `./config/${process.env.ENVIRONMENT}.env` })
+
 // The main method to build the redirectURL based on the incoming request
 // Given a path and a query, finds the first expression declared above which matches
 // the path, and returns the corresponding handler with the matchdata and query
 // As a default, returns the BASE_SCC_URL
-function mapToRedirectURL (path, query, host, proto) {
+async function mapToRedirectURL (path, query, host, proto) {
   const redirectingFromEncore = host === ENCORE_URL
   const redirectingFromLegacyOrVegaToSCC = !redirectingFromEncore && host !== REDIRECT_SERVICE_DOMAIN
   let redirectURL;
@@ -31,7 +33,7 @@ function mapToRedirectURL (path, query, host, proto) {
       match = pathType.custom(path, query, host, proto)
     }
     if (match) {
-      redirectURL = pathType.handler(match, query, host, proto);
+      redirectURL = await pathType.handler(match, query, host, proto);
       break
     }
   }
@@ -83,6 +85,7 @@ const jsConditionalRedirect = (jsRedirect, noscriptRedirect) => {
 }
 
 const handler = async (event, context, callback) => {
+
   const headers = event.multiValueHeaders || {}
   const proto = headers['X-Forwarded-Proto'] ? headers['X-Forwarded-Proto'][0] :
     ( headers['x-forwarded-proto'] ? headers['x-forwarded-proto'][0] : 'https')
@@ -102,7 +105,7 @@ const handler = async (event, context, callback) => {
 
     const host = headers['Host'] ? headers['Host'][0] :
       (headers['host'] ? headers['host'][0] : ENCORE_URL);
-    const mappedUrl = mapToRedirectURL(path, query, host, proto);
+    const mappedUrl = await mapToRedirectURL(path, query, host, proto);
     const redirectLocation = `${proto}://${mappedUrl}`;
 
     // Support debug param to display incoming values and result:
