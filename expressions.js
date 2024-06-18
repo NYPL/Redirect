@@ -94,11 +94,19 @@ module.exports = {
       // check if bib is research or circulating
       const oclcNum = match[1]
       const client = await nyplApiClient({ apiName: 'discovery' })
-      const resp = await client.get(`/discovery/resources?q=${oclcNum}&search_scope=standard_number&per_page=1}`)
-      if (resp.totalResults > 0) {
+      const resp = await client.get(`bibs?nyplSource=sierra-nypl&controlNumber=${oclcNum}`)
+      const id = resp && resp.data && resp.data[0] && resp.data[0].id
+      const varFields = resp && resp.data && resp.data[0] && resp.data[0].varFields
+      const field910a = varFields && varFields.find(field =>
+        field.marcTag === '910'
+        && field.subfields.some(subfield => subfield.tag === 'a')
+      )
+      const isResearch = field910a && field910a.subfields.some(subfield => subfield.tag === 'a' && subfield.content === 'RL')
+
+      if (isResearch) {
         return `${BASE_SCC_URL}/search?oclc=${oclcNum}&redirectOnMatch=true`
       } else {
-        return `${VEGA_URL}/search/card?recordId=${oclcNum}`
+        return `${VEGA_URL}/search/card?recordId=${id}`
       }
     },
   },

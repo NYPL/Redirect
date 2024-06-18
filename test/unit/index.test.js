@@ -155,7 +155,22 @@ describe('mapToRedirectURL', function () {
       before(() => {
         sinon.stub(NyplApiClient.prototype, 'get').callsFake(() => {
           return {
-            totalResults: 1
+            data: [
+              {
+                id: 'abcdefg',
+                varFields: [
+                  {
+                    marcTag: '910',
+                    subfields: [
+                      {
+                        tag: 'a',
+                        content: 'RL'
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         })
 
@@ -183,7 +198,22 @@ describe('mapToRedirectURL', function () {
       before(() => {
         sinon.stub(NyplApiClient.prototype, 'get').callsFake(() => {
           return {
-            totalResults: 0
+            data: [
+              {
+                id: 'abcdefg',
+                varFields: [
+                  {
+                    marcTag: '910',
+                    subfields: [
+                      {
+                        tag: 'a',
+                        content: 'BL'
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         })
 
@@ -203,7 +233,7 @@ describe('mapToRedirectURL', function () {
         const path = '/search/o1081334684';
         const mapped = await mapToRedirectURL(path, {}, host, method);
         expect(mapped)
-        .to.include(`${VEGA_URL}/search/card?recordId=1081334684`);
+        .to.include(`${VEGA_URL}/search/card?recordId=abcdefg`);
       });
     })
 
@@ -211,7 +241,22 @@ describe('mapToRedirectURL', function () {
       before(() => {
         sinon.stub(NyplApiClient.prototype, 'get').callsFake(() => {
           return {
-            totalResults: 1
+            data: [
+              {
+                id: 'abcdefg',
+                varFields: [
+                  {
+                    marcTag: '910',
+                    subfields: [
+                      {
+                        tag: 'a',
+                        content: 'RL'
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         })
       })
