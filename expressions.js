@@ -94,7 +94,7 @@ module.exports = {
       // check if bib is research or circulating
       const oclcNum = match[1]
       const client = await nyplApiClient({ apiName: 'discovery' })
-      const resp = await client.get(`bibs?nyplSource=sierra-nypl&controlNumber=${oclcNum}`)
+      const resp = await client.get(`/bibs?nyplSource=sierra-nypl&controlNumber=${oclcNum}`)
       const id = resp && resp.data && resp.data[0] && resp.data[0].id
       const varFields = resp && resp.data && resp.data[0] && resp.data[0].varFields
       const field910a = varFields && varFields.find(field =>
