@@ -6,6 +6,7 @@ const loadTestEnvironment = () => {
   process.env.VEGA_URL = 'borrow.nypl.org'
   process.env.CAS_SERVER_DOMAIN = 'ilsstaff.nypl.org'
   process.env.REDIRECT_SERVICE_DOMAIN = 'redir-browse.nypl.org'
+  process.env.ENVIRONMENT = 'test'
 }
 
 module.exports = {

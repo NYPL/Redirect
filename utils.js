@@ -1,3 +1,5 @@
+const { readFileSync } = require('fs')
+
 const {
   BASE_SCC_URL,
   LEGACY_CATALOG_URL,
@@ -66,18 +68,14 @@ const getQueryFromParams = (url, query) => {
 const recodeSearchQuery = query => query.split(/\+|\s/).join("%20");
 
 /**
- *  Given a URL, returns true if the URL we should redirect there (i.e. is a
- *  known catalog URL)
+ *  Given a URL, returns true if we should redirect there (i.e. it's a domain
+ *  that we control or a local testing domain)
  */
 function validRedirectUrl (url) {
   if (!url) return false
 
-  const wwwDomain = BASE_SCC_URL.split('/')[0]
-  return [wwwDomain, ENCORE_URL, LEGACY_CATALOG_URL, VEGA_URL, CAS_SERVER_DOMAIN]
-    .map((domain) => `https://${domain}/`)
-    .some((baseUrl) => url.indexOf(baseUrl) === 0)
-    // Also allow dev domains:
-    || /^http:\/\/local.nypl.org:\d+\//.test(url)
+  // It's valid if it matches https://*.nypl.org or http://local.nypl.org:PORT:
+  return /^(https:\/\/[\w-]+\.nypl.org\/|http:\/\/local.nypl.org:\d+\/)/.test(url)
 }
 
 /**
@@ -97,6 +95,7 @@ function getRedirectUri (query, param = 'redirect_uri') {
     ? redirectUri
     : `https://${VEGA_URL}/`
 }
+
 
 module.exports = {
   getIndexMapping,

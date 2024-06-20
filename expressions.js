@@ -12,6 +12,8 @@ const {
   homeHandler, getRedirectUri
 } = require('./utils')
 
+const { nyplApiClient } = require('./nypl_api_client')
+
 module.exports = {
   /**
   * Handle requests for, e.g.:
@@ -88,7 +90,25 @@ module.exports = {
 
   oclc: {
     expr: /\/search\/o\=?(\d+)/,
-    handler: match => `${BASE_SCC_URL}/search?oclc=${match[1]}&redirectOnMatch=true`,
+    handler: async (match) => {
+      // check if bib is research or circulating
+      const oclcNum = match[1]
+      const client = await nyplApiClient({ apiName: 'discovery' })
+      const resp = await client.get(`/bibs?nyplSource=sierra-nypl&controlNumber=${oclcNum}`)
+      const id = resp && resp.data && resp.data[0] && resp.data[0].id
+      const varFields = resp && resp.data && resp.data[0] && resp.data[0].varFields
+      const field910a = varFields && varFields.find(field =>
+        field.marcTag === '910'
+        && field.subfields.some(subfield => subfield.tag === 'a')
+      )
+      const isResearch = field910a && field910a.subfields.some(subfield => subfield.tag === 'a' && subfield.content === 'RL')
+
+      if (isResearch) {
+        return `${BASE_SCC_URL}/search?oclc=${oclcNum}&redirectOnMatch=true`
+      } else {
+        return `${VEGA_URL}/search/card?recordId=${id}`
+      }
+    },
   },
   issn: {
     expr: /\/search\/i(\d{4}\-\d{4})/,
