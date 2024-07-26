@@ -48,6 +48,7 @@ async function mapToRedirectURL (path, query, host, proto) {
       redirectURL = redirectURL + (redirectURL.includes('?') ? '&' : '?') + 'originalUrl=' + reconstructOriginalURL(path, query, host, proto);
     }
   }
+
   return redirectURL
 }
 

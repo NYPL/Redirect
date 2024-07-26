@@ -2,7 +2,7 @@
  *  Script for testing RedirectService deployment against targets.
  *
  *  To test the QA RedirectService:
- *   - Download following sheet as a CSV and save to ./encore-vega-redirects.csv :
+ *   - Download following sheet as a CSV and save to ./redirect-expectations.csv :
  *       https://docs.google.com/spreadsheets/d/1055Y98c_4l-NXWyzoiUhBSkay4SYZMeKEc9-LGhGoqw/edit#gid=1152476292
  *   - Run: `node test/test-deployment-redirects.js --qa`
  *   - Look for "Failed to match" entries
@@ -18,29 +18,44 @@ const chalk = require('chalk')
 
 const argv = require('minimist')(process.argv.slice(2))
 
-const input = argv.input || './encore-vega-redirects.csv'
+const input = argv.input || './redirect-expectations.csv'
+
+const changeToQa = (url) => {
+  return url
+    // Prod Encore to Test Encore:
+    // Note this has another valid hostname: https://nypl-encore-test.
+    .replace(/^https:\/\/browse\./, 'https://qa-redir-browse.')
+    // Prod Catalog alias to QA Catalog alias:
+    .replace(/https(:\/\/|%3A%2F%2F)catalog\.nypl\.org/g, 'https$1qa-catalog.nypl.org') // legacyqa-catalog.nypl.org
+    // Prod RedirectService to QA RedirectService:
+    .replace(/^https:\/\/redir-browse\./, 'https://qa-redir-browse.')
+    // Prod www to qa:
+    .replace(/^https:\/\/www.nypl/, 'https://qa-www.nypl')
+    // Prod legacycatalog to nypl-sierra-test:
+    .replace(/^https:\/\/legacycatalog/, 'https://nypl-sierra-test')
+}
+
 const rows = parse(fs.readFileSync(input, 'utf8'), { columns: true })
-  .map((row) => {
+  .map((row, ind) => {
     return {
       type: row.Type,
       url: row['URL'],
-      target: row['Redirect To']
+      target: row['Redirect To'],
+      rowNumber: ind + 1
     }
   })
   .map((row) => {
     // If running in QA mode, modify input URLs to use QA domains
     if (argv.qa) {
       row = Object.assign(row, {
-        url: row.url
-          // Prod Encore to Test Encore:
-          .replace(/^https:\/\/browse\./, 'https://nypl-encore-test.')
-          // Prod Catalog alias to QA Catalog alias:
-          .replace(/^https:\/\/catalog\./, 'https://qa-catalog.')
-          // Prod RedirectService to QA RedirectService:
-          .replace(/^https:\/\/redir-browse\./, 'https://qa-redir-browse.')
+        url: changeToQa(row.url),
+        target: changeToQa(row.target),
       })
     }
     return row
+  })
+  .filter((row) => {
+    return !argv.row || argv.row === row.rowNumber
   })
 
 const testRow = (row) => {
@@ -56,11 +71,15 @@ const testRow = (row) => {
 
       const matched = redirect === row.target
       if (matched) {
-        console.log(chalk.green('  Matched'))
+        console.log(chalk.green(`  Matched: ${redirect}`))
+
       } else {
-        console.error(chalk.red('  Failed to match:'))
-        console.error(chalk.red(`    Expected redirect: ${row.target}`))
-        console.error(chalk.red(`    Actual redirect:   ${redirect}`))
+        let partialMatch = redirect.indexOf(row.target) === 0 ? 'starts-with' : false
+        const color = partialMatch ? chalk.yellow : chalk.red
+
+        console.error(color(`  ${partialMatch ? `Partial (${partialMatch})` : 'Failed to'} match:`))
+        console.error(color(`    Expected redirect: ${row.target}`))
+        console.error(color(`    Actual redirect:   ${redirect}`))
       }
     })
 }
@@ -73,7 +92,7 @@ const testAll = async (index = 0) => {
     console.log('------------------------------------------------------------')
   }
 
-  console.log(`[${index + 1} of ${rows.length}]: Request ${row.url}`)
+  console.log(`[${row.rowNumber} of ${rows.length}]: Request ${row.url}`)
   await testRow(row)
 
   if (rows.length > index + 1) {

@@ -1,7 +1,6 @@
 const {
   BASE_SCC_URL,
   LEGACY_CATALOG_URL,
-  ENCORE_URL,
   VEGA_URL,
   CAS_SERVER_DOMAIN,
   REDIRECT_SERVICE_DOMAIN
@@ -116,10 +115,29 @@ module.exports = {
     expr: /\/search\/i(\w+)/,
     handler: match => `${BASE_SCC_URL}/search?isbn=${match[1]}&redirectOnMatch=true`,
   },
+
+  /**
+  * Match:
+  *  - /search/i{query} => ?q={query}&search_scope=standard_number
+  *  - /search~S1/i{query} => ?q={query&search_scope=standard_number
+  *
+  * where "i" can be a, t, s, i, or c to trigger a specific search_scope
+  *
+  * E.g.:
+  *  - /search/i{query} => ?q={query}&search_scope=standard_number
+  *  - /search~S1/t{query} => ?q={query&search_scope=title
+  *  - /search/s{query} => ?q={query}&search_scope=journal_title
+  */
   searchRegWith: {
     expr: /\/search(~S\w*)?\/([a-zA-Z])(([^\/])+)/,
     handler: match => `${BASE_SCC_URL}/search?q=${recodeSearchQuery(match[3])}${getIndexMapping(match[2])}`
   },
+
+  /**
+  * Match:
+  *  - /search~S1/{query}
+  *  - /search/{query}
+  */
   searchRegWithout: {
     expr: /\/search(~S\w*)?(\/([a-zA-Z]))?/,
     handler: (match, query) => {
