@@ -55,6 +55,7 @@ const rows = parse(fs.readFileSync(input, 'utf8'), { columns: true })
     return row
   })
   .filter((row) => {
+    // Filter out any rows not requested via --row arg, if used
     return !argv.row || argv.row === row.rowNumber
   })
 
@@ -74,6 +75,8 @@ const testRow = (row) => {
         console.log(chalk.green(`  Matched: ${redirect}`))
 
       } else {
+        // Specially color case where the actual redirect URL matches the start
+        // of the target URL (e.g. matching except for a query param):
         let partialMatch = redirect.indexOf(row.target) === 0 ? 'starts-with' : false
         const color = partialMatch ? chalk.yellow : chalk.red
 
