@@ -22,10 +22,6 @@ require('dotenv').config({ path: `./config/${process.env.ENVIRONMENT}.env` })
 // the path, and returns the corresponding handler with the matchdata and query
 // As a default, returns the BASE_SCC_URL
 async function mapToRedirectURL (path, query, host, proto) {
-  console.log('path: ', path)
-  console.log('query: ', query)
-  console.log('host: ', host)
-  console.log('proto: ', proto)
   const redirectingFromEncore = host === ENCORE_URL
   const redirectingFromLegacyOrVegaToSCC = !redirectingFromEncore && host !== REDIRECT_SERVICE_DOMAIN
   let redirectURL;
