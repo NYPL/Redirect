@@ -151,6 +151,14 @@ describe('mapToRedirectURL', function () {
         .to.eql(`${BASE_SCC_URL}/search?q=brainwash&search_scope=title&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch~S97%3F%2Ftbrainwash%2Ftbrainwash%2F1%2C3%2C10%2CB%2Fexact%26FF%3Dtbrainwash%261%2C4%2C`)
     });
 
+    it('should map search pages with index c to callnumber', async function () {
+      const path = '/search~S1';
+      const query = { '/c*pwz/c*pwz/1,9837,17665,E/limit': [ '' ] };
+      const mapped = await mapToRedirectURL(path, query, host, method);
+      expect(mapped)
+        .to.include(`${BASE_SCC_URL}/search?q=*pwz&search_scope=callnumber`)
+    });
+
     describe('mapping oclc records in the research catalog', async () => {
       before(() => {
         sinon.stub(NyplApiClient.prototype, 'get').callsFake(() => {
