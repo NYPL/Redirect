@@ -17,7 +17,7 @@ const indexMappings = {
   // h: '', // there is no genre search
   // d: '', // this is the subject search, might want to do something different
   i: '&search_scope=standard_number', // what to do with these?
-  c: '&search_scope=standard_number',
+  c: '&search_scope=callnumber',
 }
 const homeHandler = (match, query, host) => {
   // If host is catalog.nypl.org (or qa-catalog.nypl.org), redirect to RC (else Vega)
