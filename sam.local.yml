@@ -9,14 +9,18 @@ Globals:
     Environment:
       Variables:
         BASE_SCC_URL: qa-www.nypl.org/research/research-catalog
-        LEGACY_CATALOG_URL: nypl-sierra-test.nypl.org
-        ENCORE_URL: qa-redir-browse.nypl.org
-        VEGA_URL: nypl.na2.iiivega.com
+        LEGACY_CATALOG_URL: qa-catalog.nypl.org # nypl-sierra-test.nypl.org
+        VEGA_URL: borrow.nypl.org
         ENCORE_URL: qa-redir-browse.nypl.org
         CAS_SERVER_DOMAIN: nypl-sierra-test.nypl.org
         REDIRECT_SERVICE_DOMAIN: qa-redir-browse.nypl.org
         ENVIRONMENT: qa
-        # SKIP_VEGA_LOGOUT: true
+        CLIENT_ID: AQECAHh7ea2tyZ6phZgT4B9BDKwguhlFtRC6hgt+7HbmeFsrsgAAAGowaAYJKoZIhvcNAQcGoFswWQIBADBUBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDFj85nrBv1wJEzjj9QIBEIAnf7WYNkPL9S59ss8IzjGuLZT7uBas0HVbPmOGEmtIYDJTkX44WVj7
+        CLIENT_SECRET: AQECAHh7ea2tyZ6phZgT4B9BDKwguhlFtRC6hgt+7HbmeFsrsgAAAIcwgYQGCSqGSIb3DQEHBqB3MHUCAQAwcAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAwZvQaV5sQyzWMAsbwCARCAQ1ZxDRknxNNbRKkXzEmPgl5y9DDLXdeQsN6J7SytaDp9PHgP715Tdn6hS7uMtUtne+PZ/ngowPYkyS97ZFaUomLi9hw=
+        PLATFORM_BASE_URL: https://qa-platform.nypl.org/api/v0.1
+        TOKEN_URL: https://isso.nypl.org/
+        KMS_ENV: encrypted
+        LOG_LEVEL: debug
 Resources:
   RedirectService:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction

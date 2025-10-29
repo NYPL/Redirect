@@ -4,7 +4,7 @@ const {
   VEGA_URL,
   CAS_SERVER_DOMAIN,
   REDIRECT_SERVICE_DOMAIN
-} = process.env;
+} = process.env
 
 const {
   getQueryFromParams, recodeSearchQuery, reconstructQuery, getIndexMapping,
@@ -38,10 +38,10 @@ module.exports = {
   rc_from_vega: {
     // handling for legacy author/title search URLs in redirect service
     custom: (path, query, host, proto) => {
-      let searchKey = Object.keys(query).find(key => key.match(/search/i));
-      if (!searchKey) { return null; }
-      let searchValue = query[searchKey];
-      if (!Array.isArray(searchValue) || !searchValue[0] || (typeof searchValue[0] !== 'string')) { return null; }
+      const searchKey = Object.keys(query).find(key => key.match(/search/i))
+      if (!searchKey) { return null }
+      const searchValue = query[searchKey]
+      if (!Array.isArray(searchValue) || !searchValue[0] || (typeof searchValue[0] !== 'string')) { return null }
       return searchValue[0].match(/t:\((.*)\)(?:%20|\s*)and(?:%20|\s*)a:\((.*)\)/i)
     },
     handler: match => `${BASE_SCC_URL}/search?contributor=${match[2]}&title=${match[1]}`
@@ -95,8 +95,8 @@ module.exports = {
       const id = resp && resp.data && resp.data[0] && resp.data[0].id
       const varFields = resp && resp.data && resp.data[0] && resp.data[0].varFields
       const field910a = varFields && varFields.find(field =>
-        field.marcTag === '910'
-        && field.subfields.some(subfield => subfield.tag === 'a')
+        field.marcTag === '910' &&
+        field.subfields.some(subfield => subfield.tag === 'a')
       )
       const isResearch = field910a && field910a.subfields.some(subfield => subfield.tag === 'a' && subfield.content === 'RL')
 
@@ -105,15 +105,15 @@ module.exports = {
       } else {
         return `${VEGA_URL}/search/card?recordId=${id}`
       }
-    },
+    }
   },
   issn: {
     expr: /\/search\/i(\d{4}\-\d{4})/,
-    handler: match => `${BASE_SCC_URL}/search?issn=${match[1]}&redirectOnMatch=true`,
+    handler: match => `${BASE_SCC_URL}/search?issn=${match[1]}&redirectOnMatch=true`
   },
   isbn: {
     expr: /\/search\/i(\w+)/,
-    handler: match => `${BASE_SCC_URL}/search?isbn=${match[1]}&redirectOnMatch=true`,
+    handler: match => `${BASE_SCC_URL}/search?isbn=${match[1]}&redirectOnMatch=true`
   },
 
   /**
@@ -141,9 +141,9 @@ module.exports = {
   searchRegWithout: {
     expr: /\/search(~S\w*)?(\/([a-zA-Z]))?/,
     handler: (match, query) => {
-      const mappedQuery = getQueryFromParams(match[0], query);
-      if (!mappedQuery) return BASE_SCC_URL;
-      return `${BASE_SCC_URL}/search?q=${mappedQuery}${getIndexMapping(match[3])}`;
+      const mappedQuery = getQueryFromParams(match[0], query)
+      if (!mappedQuery) return BASE_SCC_URL
+      return `${BASE_SCC_URL}/search?q=${mappedQuery}${getIndexMapping(match[3])}`
     }
   },
   patroninfoReg: {
@@ -153,12 +153,12 @@ module.exports = {
   recordReg: {
     expr: /\/record=(b\d{8})/,
     handler: (match, query) => {
-      const { collection } = query;
-      const bnum = match[1];
-      if (Array.isArray(collection) && collection.includes("circ")) {
-        return `${VEGA_URL}/search/card?recordId=${bnum.replace(/\D/g, '')}`;
+      const { collection } = query
+      const bnum = match[1]
+      if (Array.isArray(collection) && collection.includes('circ')) {
+        return `${VEGA_URL}/search/card?recordId=${bnum.replace(/\D/g, '')}`
       }
-      return `${BASE_SCC_URL}/bib/${bnum}`;
+      return `${BASE_SCC_URL}/bib/${bnum}`
     }
   },
   legacyReg: {
@@ -211,4 +211,4 @@ module.exports = {
       return `${CAS_SERVER_DOMAIN}/iii/cas/logout?service=${encodeURIComponent(redirectToAfterLogout)}`
     }
   }
-};
+}

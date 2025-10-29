@@ -35,21 +35,32 @@ const changeToQa = (url) => {
     .replace(/^https:\/\/legacycatalog/, 'https://nypl-sierra-test')
 }
 
+const changeToLocal = (url) => {
+  return url
+    .replace('https://qa-catalog.nypl.org', 'http://localhost:3010')
+    .replace(/https:\/\/qa-redir-browse\.nypl\.org(:\d+)?/, 'http://localhost:3010')
+}
+
 const rows = parse(fs.readFileSync(input, 'utf8'), { columns: true })
   .map((row, ind) => {
     return {
       type: row.Type,
-      url: row['URL'],
+      url: row.URL,
       target: row['Redirect To'],
       rowNumber: ind + 1
     }
   })
   .map((row) => {
     // If running in QA mode, modify input URLs to use QA domains
-    if (argv.qa) {
+    if (argv.qa || argv.local) {
       row = Object.assign(row, {
         url: changeToQa(row.url),
-        target: changeToQa(row.target),
+        target: changeToQa(row.target)
+      })
+    } else if (argv.local) {
+      row = Object.assign(row, {
+        url: changeToLocal(row.url),
+        target: changeToQa(row.target)
       })
     }
     return row
@@ -64,8 +75,19 @@ const testRow = (row) => {
     maxRedirects: 0,
     validateStatus: (status) => status >= 200 && status < 400
   }
+
+  const domain = (new URL(row.url)).host
+  if (argv.local) {
+    opts.headers = {
+      'X-Request-Domain': domain
+    }
+  }
+  row.url = changeToLocal(row.url)
   if (!row.url) return Promise.resolve()
 
+  console.log(`[${row.rowNumber} of ${rows.length}]: Request ${row.url}` + (opts.headers ? ` (${domain})` : ''))
+
+  // console.log('Making request: ', row.url, opts)
   return axios.get(row.url, opts)
     .then((resp) => {
       const redirect = resp.headers.location
@@ -73,11 +95,10 @@ const testRow = (row) => {
       const matched = redirect === row.target
       if (matched) {
         console.log(chalk.green(`  Matched: ${redirect}`))
-
       } else {
         // Specially color case where the actual redirect URL matches the start
         // of the target URL (e.g. matching except for a query param):
-        let partialMatch = redirect.indexOf(row.target) === 0 ? 'starts-with' : false
+        const partialMatch = redirect.indexOf(row.target) === 0 ? 'starts-with' : false
         const color = partialMatch ? chalk.yellow : chalk.red
 
         console.error(color(`  ${partialMatch ? `Partial (${partialMatch})` : 'Failed to'} match:`))
@@ -95,7 +116,6 @@ const testAll = async (index = 0) => {
     console.log('------------------------------------------------------------')
   }
 
-  console.log(`[${row.rowNumber} of ${rows.length}]: Request ${row.url}`)
   await testRow(row)
 
   if (rows.length > index + 1) {
@@ -105,4 +125,4 @@ const testAll = async (index = 0) => {
   }
 }
 
-testAll()
+testAll(64)

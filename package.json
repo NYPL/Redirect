@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node_modules/.bin/mocha test/unit/*.test.js"
+    "test": "node_modules/.bin/mocha test/unit/*.js"
   },
   "author": "",
   "license": "ISC",
@@ -15,7 +15,19 @@
     "chai": "^4.2.0",
     "dotenv": "^16.4.5",
     "express": "^4.17.1",
-    "mocha": "^8.2.1"
+    "mocha": "^8.2.1",
+    "winston": "^3.18.3"
+  },
+  "standard": {
+    "globals": [
+      "describe",
+      "before",
+      "after",
+      "beforeEach",
+      "afterEach",
+      "it",
+      "assert"
+    ]
   },
   "devDependencies": {
     "chalk": "^4.1.2",

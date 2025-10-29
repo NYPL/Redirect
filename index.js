@@ -1,113 +1,91 @@
-const expressions = require('./expressions')
 const {
   getIndexMapping,
   reconstructQuery,
-  reconstructOriginalURL,
-  getQueryFromParams,
-  homeHandler,
-  getRedirectUri
-} = require('./utils')
+  getQueryFromParams
+} = require('./lib/utils')
+const logger = require('./lib/logger')
+
 const {
-  BASE_SCC_URL,
-  LEGACY_CATALOG_URL,
-  ENCORE_URL,
-  VEGA_URL,
-  REDIRECT_SERVICE_DOMAIN
-} = process.env;
+  RC_BASE_URL,
+  ENCORE_HOST,
+  VEGA_HOST
+} = process.env
+
+const {
+  hostsToHandlers,
+  redirectServiceHandler
+} = require('./handlers')
 
 require('dotenv').config({ path: `./config/${process.env.ENVIRONMENT}.env` })
 
 // The main method to build the redirectURL based on the incoming request
 // Given a path and a query, finds the first expression declared above which matches
 // the path, and returns the corresponding handler with the matchdata and query
-// As a default, returns the BASE_SCC_URL
-async function mapToRedirectURL (path, query, host, proto) {
-  const redirectingFromEncore = host === ENCORE_URL
-  const redirectingFromLegacyOrVegaToSCC = !redirectingFromEncore && host !== REDIRECT_SERVICE_DOMAIN
-  let redirectURL;
-  for (let pathType of Object.values(expressions)) {
-    let match;
-    if (pathType.expr) {
-      match = path.match(pathType.expr);
-    } else if (pathType.custom) {
-      match = pathType.custom(path, query, host, proto)
-    }
-    if (match) {
-      redirectURL = await pathType.handler(match, query, host, proto);
-      break
-    }
-  }
-  // instead of a 404, we are just sending them to the landing page
-  if (redirectingFromEncore && !redirectURL) {
-    redirectURL = VEGA_URL + '/'
-  }
-  if (redirectingFromLegacyOrVegaToSCC) {
-    if (!redirectURL) redirectURL = `${BASE_SCC_URL}/404/redirect`;
-    // if a redirect transformation was made, add original url to the redirect url
-    if (!redirectURL.includes(LEGACY_CATALOG_URL)) {
-      redirectURL = redirectURL + (redirectURL.includes('?') ? '&' : '?') + 'originalUrl=' + reconstructOriginalURL(path, query, host, proto);
-    }
-  }
+// As a default, returns the RC_BASE_URL
+function mapToRedirectURL (request) {
+  logger.debug(`Index::mapToRedirectURL: Handling request ${request.host}/${request.path}...`)
 
-  return redirectURL
+  const handler = hostsToHandlers()[request.host]
+
+  if (handler) {
+    return handler.redirectUrl(request)
+  } else {
+    logger.warn(`Could not find handler for host: ${request.handler}`)
+    return VEGA_HOST
+  }
 }
 
-const healthCheck = () => {
-  const version = require('./package.json').version;
-  return {
-    isBase64Encoded: false,
-    multiValueHeaders: {
-      'Content-Type': ['application/json']
-    },
-    statusCode: 200,
-    body: JSON.stringify({ version })
-  };
-};
+const parseHost = (event) => {
+  const headers = event.multiValueHeaders || {}
+  const query = event.multiValueQueryStringParameters || {}
+
+  let host = headers.Host
+    ? headers.Host[0]
+    : (headers.host ? headers.host[0] : ENCORE_HOST)
+
+  // Remove port:
+  host = host.replace(/:\d+$/, '')
+
+  // Apply override when testing locally:
+  if (host === 'localhost') {
+    logger.debug(`Original host: ${host}`)
+    const overrideHost = headers['X-Request-Domain'] || query['override-host']
+    if (Array.isArray(overrideHost)) {
+      host = overrideHost[0]
+      logger.debug(`Overriding host with ${host}`)
+    }
+  }
+
+  return host
+}
 
 /**
-*   Special handler to serve a page that performs a conditionanl client-side redirect:
-*    - If JS is enabled, JS redirects the user to `jsRedirect`
-*    - If JS is disabled, a META tag redirects the user to `noscriptRedirect`
-*/
-const jsConditionalRedirect = (jsRedirect, noscriptRedirect) => {
-  return {
-    statusCode: 200,
-    isBase64Encoded: false,
-    multiValueHeaders: {
-      'Content-Type': ['text/html']
-    },
-    body: `<html>
-        <head>
-          <script type="text/javascript">window.location.replace("${jsRedirect}");</script>
-          <meta http-equiv="refresh" content="1;url=${noscriptRedirect}" />
-        </head>
-      </html>`
-  }
-}
-
+ * Main Lambda handler
+ **/
 const handler = async (event, context, callback) => {
-
   const headers = event.multiValueHeaders || {}
-  const proto = headers['X-Forwarded-Proto'] ? headers['X-Forwarded-Proto'][0] :
-    ( headers['x-forwarded-proto'] ? headers['x-forwarded-proto'][0] : 'https')
+  const proto = headers['X-Forwarded-Proto']
+    ? headers['X-Forwarded-Proto'][0]
+    : (headers['x-forwarded-proto'] ? headers['x-forwarded-proto'][0] : 'https')
+
   try {
-    const path = event.path;
-    if (path === '/check') return callback(null, healthCheck());
+    const path = event.path
+    const query = event.multiValueQueryStringParameters || {}
+    const host = parseHost(event)
 
-    const query = event.multiValueQueryStringParameters || {};
+    const request = { path, query, host, proto }
+    logger.debug('Handling request: ', request)
 
-    if (path === '/js-conditional-redirect') {
-      const redirectUri = getRedirectUri(query)
-      const noscriptRedirectUri = getRedirectUri(query, 'noscript_redirect_uri')
-      if (redirectUri && noscriptRedirectUri) {
-        return callback(null, jsConditionalRedirect(redirectUri, noscriptRedirectUri));
-      }
+    // First check to see if the app should respond with a custom response
+    // instead of a redirect:
+    const customResponse = redirectServiceHandler.customResponse(request)
+    if (customResponse) {
+      return callback(null, customResponse)
     }
 
-    const host = headers['Host'] ? headers['Host'][0] :
-      (headers['host'] ? headers['host'][0] : ENCORE_URL);
-    const mappedUrl = await mapToRedirectURL(path, query, host, proto);
-    const redirectLocation = `${proto}://${mappedUrl}`;
+    const mappedUrl = await mapToRedirectURL(request)
+    logger.debug('Serving redirect to ' + mappedUrl)
+    const redirectLocation = `https://${mappedUrl}`
 
     // Support debug param to display incoming values and result:
     if (query && query['redirect-service-debug']) {
@@ -124,34 +102,27 @@ const handler = async (event, context, callback) => {
       multiValueHeaders: {
         Location: [redirectLocation]
       }
-    };
-    return callback(null, response);
-  }
-  catch (err) {
-    console.log('err: ', err.message);
-    let mappedUrl = BASE_SCC_URL;
-    let redirectLocation = `${proto}://${mappedUrl}`;
+    }
+    return callback(null, response)
+  } catch (err) {
+    logger.error('Error', err)
+    const mappedUrl = RC_BASE_URL
+    const redirectLocation = `${proto}://${mappedUrl}`
     const response = {
       isBase64Encoded: false,
       statusCode: 302,
       multiValueHeaders: {
-        Location: [redirectLocation],
-      },
-    };
+        Location: [redirectLocation]
+      }
+    }
     return callback(null, response)
   }
-};
+}
 
 module.exports = {
   mapToRedirectURL,
-  expressions,
   getQueryFromParams,
   getIndexMapping,
   handler,
-  reconstructOriginalURL,
-  reconstructQuery,
-  BASE_SCC_URL,
-  LEGACY_CATALOG_URL,
-  VEGA_URL,
-  ENCORE_URL
-};
+  reconstructQuery
+}
