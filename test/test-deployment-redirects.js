@@ -77,6 +77,14 @@ let rows = parse(fs.readFileSync(input, 'utf8'), { columns: true })
     return !argv.row || argv.row === row.rowNumber
   })
 
+const normalizeEncoding = (s) => {
+  return s
+    .replaceAll('%2C', ',')
+    .replaceAll('%25', '%')
+    .replaceAll('%20', '%2B')
+    // .replaceAll('%2B', '%20')
+}
+
 const testRow = (row) => {
   const opts = {
     maxRedirects: 0,
@@ -105,7 +113,13 @@ const testRow = (row) => {
       } else {
         // Specially color case where the actual redirect URL matches the start
         // of the target URL (e.g. matching except for a query param):
-        const partialMatch = redirect.indexOf(row.target) === 0 ? 'starts-with' : false
+        let partialMatch = false
+        if (redirect.indexOf(row.target) === 0) {
+          partialMatch = 'starts-with'
+        } else if (normalizeEncoding(redirect) === normalizeEncoding(row.target)) {
+          partialMatch = 'slight encoding difference'
+        }
+
         const color = partialMatch ? chalk.yellow : chalk.red
 
         console.error(color(`  ${partialMatch ? `Partial (${partialMatch})` : 'Failed to'} match:`))
