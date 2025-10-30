@@ -16,7 +16,13 @@ const { parse } = require('csv-parse/sync')
 const axios = require('axios')
 const chalk = require('chalk')
 
-const argv = require('minimist')(process.argv.slice(2))
+const argv = require('minimist')(process.argv.slice(2), {
+  default: {
+    offset: 0,
+    rows: ''
+  },
+  string: ['rows']
+})
 
 const input = argv.input || './redirect-expectations.csv'
 
@@ -24,7 +30,7 @@ const changeToQa = (url) => {
   return url
     // Prod Encore to Test Encore:
     // Note this has another valid hostname: https://nypl-encore-test.
-    .replace(/^https:\/\/browse\./, 'https://qa-redir-browse.')
+    .replace(/^https:\/\/browse\./, 'https://nypl-encore-test.')
     // Prod Catalog alias to QA Catalog alias:
     .replace(/https(:\/\/|%3A%2F%2F)catalog\.nypl\.org/g, 'https$1qa-catalog.nypl.org') // legacyqa-catalog.nypl.org
     // Prod RedirectService to QA RedirectService:
@@ -39,9 +45,10 @@ const changeToLocal = (url) => {
   return url
     .replace('https://qa-catalog.nypl.org', 'http://localhost:3010')
     .replace(/https:\/\/qa-redir-browse\.nypl\.org(:\d+)?/, 'http://localhost:3010')
+    .replace(/https:\/\/nypl-encore-test\.nypl\.org(:\d+)?/, 'http://localhost:3010')
 }
 
-const rows = parse(fs.readFileSync(input, 'utf8'), { columns: true })
+let rows = parse(fs.readFileSync(input, 'utf8'), { columns: true })
   .map((row, ind) => {
     return {
       type: row.Type,
@@ -76,16 +83,16 @@ const testRow = (row) => {
     validateStatus: (status) => status >= 200 && status < 400
   }
 
-  const domain = (new URL(row.url)).host
+  const host = (new URL(row.url)).host
   if (argv.local) {
     opts.headers = {
-      'X-Request-Domain': domain
+      'X-Request-Host': host
     }
   }
   row.url = changeToLocal(row.url)
   if (!row.url) return Promise.resolve()
 
-  console.log(`[${row.rowNumber} of ${rows.length}]: Request ${row.url}` + (opts.headers ? ` (${domain})` : ''))
+  console.log(`[${row.rowNumber} of ${rows.length}]: Request ${row.url}` + (opts.headers ? ` (${host})` : ''))
 
   // console.log('Making request: ', row.url, opts)
   return axios.get(row.url, opts)
@@ -104,6 +111,9 @@ const testRow = (row) => {
         console.error(color(`  ${partialMatch ? `Partial (${partialMatch})` : 'Failed to'} match:`))
         console.error(color(`    Expected redirect: ${row.target}`))
         console.error(color(`    Actual redirect:   ${redirect}`))
+        if (argv.local) {
+          console.log(`    Debug URL: ${row.url}&override-host=${host}&redirect-service-debug=1`)
+        }
       }
     })
 }
@@ -125,4 +135,10 @@ const testAll = async (index = 0) => {
   }
 }
 
-testAll(64)
+if (argv.rows) {
+  rows = argv.rows
+    .split(',')
+    .map((ind) => rows[parseInt(ind) - 1])
+}
+
+testAll(argv.offset)

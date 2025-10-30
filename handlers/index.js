@@ -1,6 +1,18 @@
-const encoreHandler = require('./encore-handler.js')
-const legacyCatalogHandler = require('./legacy-catalog-handler.js')
-const redirectServiceHandler = require('./redirect-service-handler.js')
+const encoreHandler = require('./encore-handler')
+const logger = require('../lib/logger')
+const legacyCatalogHandler = require('./legacy-catalog-handler')
+const redirectServiceHandler = require('./redirect-service-handler')
+
+/**
+ *  Be noisy (in the logs) about any hosts mapped to multiple handlers:
+ * **/
+const checkForDupes = (map, hosts) => {
+  const existingHosts = Object.keys(map)
+  if (hosts.some((host) => existingHosts.includes(host))) {
+    const offendingHost = hosts.find((host) => existingHosts.includes(host))
+    logger.error(`Duplicate host mapping: ${offendingHost}`)
+  }
+}
 
 /**
  *  Creates a map associating hostnames to handlers
@@ -21,6 +33,8 @@ const hostsToHandlers = () => {
     }
   ]
     .reduce((map, { hosts, handler }) => {
+      checkForDupes(map, hosts)
+
       return hosts.reduce((m, host) => Object.assign(m, { [host]: handler }), map)
     }, {})
 

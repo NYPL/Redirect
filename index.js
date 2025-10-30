@@ -18,6 +18,8 @@ const {
 
 require('dotenv').config({ path: `./config/${process.env.ENVIRONMENT}.env` })
 
+logger.setLevel(process.env.LOG_LEVEL || 'error')
+
 // The main method to build the redirectURL based on the incoming request
 // Given a path and a query, finds the first expression declared above which matches
 // the path, and returns the corresponding handler with the matchdata and query
@@ -49,11 +51,12 @@ const parseHost = (event) => {
   // Apply override when testing locally:
   if (host === 'localhost') {
     logger.debug(`Original host: ${host}`)
-    const overrideHost = headers['X-Request-Domain'] || query['override-host']
+    const overrideHost = headers['X-Request-Host'] || query['override-host']
+    host = overrideHost
     if (Array.isArray(overrideHost)) {
       host = overrideHost[0]
-      logger.debug(`Overriding host with ${host}`)
     }
+    logger.debug(`Overriding host with ${host}`)
   }
 
   return host

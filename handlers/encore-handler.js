@@ -30,10 +30,10 @@ const expressions = {
   },
 
   languagesOtherThanEnglish: {
-    expr: /C__Sf:\((a|v)%20(\||%7C)%20(u|y)\)(?:.*?)l:\(?([a-z]{3})\)?/,
+    expr: /C__Sf:\((a|v)(%20| )(\||%7C)(%20| )(u|y)\)(?:.*?)l:\(?([a-z]{3})\)?/,
     handler: (match) => {
-      const materialTypes = match[1] + ',' + match[3]
-      const languageId = match[4]
+      const materialTypes = match[1] + ',' + match[5]
+      const languageId = match[6]
       return `${process.env.VEGA_HOST}/search?query=*&searchType=everything&pageSize=10&languageIds=${languageId}&pageNum=0&materialTypeIds=${materialTypes}&sorting=publicationDate&sortOrder=desc`
     }
   },
