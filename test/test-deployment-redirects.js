@@ -77,12 +77,15 @@ let rows = parse(fs.readFileSync(input, 'utf8'), { columns: true })
     return !argv.row || argv.row === row.rowNumber
   })
 
+/**
+ *  Rudimentary encoding transformation to undo some subtle encoding choices
+ *  that confuse URL comparison between environments:
+ * **/
 const normalizeEncoding = (s) => {
   return s
     .replaceAll('%2C', ',')
     .replaceAll('%25', '%')
     .replaceAll('%20', '%2B')
-    // .replaceAll('%2B', '%20')
 }
 
 const testRow = (row) => {
@@ -100,16 +103,15 @@ const testRow = (row) => {
   row.url = changeToLocal(row.url)
   if (!row.url) return Promise.resolve()
 
-  console.log(`[${row.rowNumber} of ${rows.length}]: Request ${row.url}` + (opts.headers ? ` (${host})` : ''))
+  console.info(`[${row.rowNumber} of ${rows.length}]: Request ${row.url}` + (opts.headers ? ` (${host})` : ''))
 
-  // console.log('Making request: ', row.url, opts)
   return axios.get(row.url, opts)
     .then((resp) => {
       const redirect = resp.headers.location
 
       const matched = redirect === row.target
       if (matched) {
-        console.log(chalk.green(`  Matched: ${redirect}`))
+        console.info(chalk.green(`  Matched: ${redirect}`))
       } else {
         // Specially color case where the actual redirect URL matches the start
         // of the target URL (e.g. matching except for a query param):
@@ -126,7 +128,7 @@ const testRow = (row) => {
         console.error(color(`    Expected redirect: ${row.target}`))
         console.error(color(`    Actual redirect:   ${redirect}`))
         if (argv.local) {
-          console.log(`    Debug URL: ${row.url}&override-host=${host}&redirect-service-debug=1`)
+          console.info(`    Debug URL: ${row.url}&override-host=${host}&redirect-service-debug=1`)
         }
       }
     })
@@ -135,9 +137,9 @@ const testRow = (row) => {
 const testAll = async (index = 0) => {
   const row = rows[index]
   if (row.type) {
-    console.log('------------------------------------------------------------')
-    console.log(row.type)
-    console.log('------------------------------------------------------------')
+    console.info('------------------------------------------------------------')
+    console.info(row.type)
+    console.info('------------------------------------------------------------')
   }
 
   await testRow(row)
@@ -145,7 +147,7 @@ const testAll = async (index = 0) => {
   if (rows.length > index + 1) {
     testAll(index + 1)
   } else {
-    console.log('Done')
+    console.info('Done')
   }
 }
 
