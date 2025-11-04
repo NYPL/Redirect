@@ -21,10 +21,21 @@ const {
 
 logger.setLevel(process.env.LOG_LEVEL || 'error')
 
-// The main method to build the redirectURL based on the incoming request
-// Given a path and a query, finds the first expression declared above which matches
-// the path, and returns the corresponding handler with the matchdata and query
-// As a default, returns the RC_BASE_URL
+/**
+ *  @typedef {Object} Request
+ *  @property {string} proto - Original protocol (http, https)
+ *  @property {string} host  - Original request host
+ *  @property {string} path  - Original request path
+ *  @property {Object} query - Hash of query string params (all multi-value)
+ **/
+
+/**
+ *  The main method to build the redirectURL based on the incoming request
+ *  Finds the first expression that matches the host, path, and query,
+ *  returning the resulting redirect URI
+ *
+ *  @param {Request} request - The request to handle.
+ **/
 function mapToRedirectURL (request) {
   logger.debug(`Index::mapToRedirectURL: Handling request ${request.host}${request.path}...`)
 
