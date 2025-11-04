@@ -5,27 +5,39 @@ const {
 } = require('./lib/utils')
 const logger = require('./lib/logger')
 
-const {
-  RC_BASE_URL,
-  ENCORE_HOST,
-  VEGA_HOST
-} = process.env
+require('dotenv').config({ path: `./config/${process.env.ENVIRONMENT}.env` })
 
 const {
   hostsToHandlers,
   redirectServiceHandler
 } = require('./handlers')
 
-require('dotenv').config({ path: `./config/${process.env.ENVIRONMENT}.env` })
+const {
+  RC_BASE_URL,
+  ENCORE_HOST,
+  VEGA_HOST,
+  REDIRECT_SERVICE_HOST
+} = process.env
 
 logger.setLevel(process.env.LOG_LEVEL || 'error')
 
-// The main method to build the redirectURL based on the incoming request
-// Given a path and a query, finds the first expression declared above which matches
-// the path, and returns the corresponding handler with the matchdata and query
-// As a default, returns the RC_BASE_URL
+/**
+ *  @typedef {Object} Request
+ *  @property {string} proto - Original protocol (http, https)
+ *  @property {string} host  - Original request host
+ *  @property {string} path  - Original request path
+ *  @property {Object} query - Hash of query string params (all multi-value)
+ **/
+
+/**
+ *  The main method to build the redirectURL based on the incoming request
+ *  Finds the first expression that matches the host, path, and query,
+ *  returning the resulting redirect URI
+ *
+ *  @param {Request} request - The request to handle.
+ **/
 function mapToRedirectURL (request) {
-  logger.debug(`Index::mapToRedirectURL: Handling request ${request.host}/${request.path}...`)
+  logger.debug(`Index::mapToRedirectURL: Handling request ${request.host}${request.path}...`)
 
   const handler = hostsToHandlers()[request.host]
 
@@ -37,6 +49,10 @@ function mapToRedirectURL (request) {
   }
 }
 
+/**
+ *  Determine `host` for request
+ *  In some cases allows host to be overriden by header/query-param
+ * **/
 const parseHost = (event) => {
   const headers = event.multiValueHeaders || {}
   const query = event.multiValueQueryStringParameters || {}
@@ -51,7 +67,7 @@ const parseHost = (event) => {
   // Apply override when testing locally:
   if (host === 'localhost') {
     logger.debug(`Original host: ${host}`)
-    const overrideHost = headers['X-Request-Host'] || query['override-host']
+    const overrideHost = headers['X-Request-Host'] || query['override-host'] || REDIRECT_SERVICE_HOST
     host = overrideHost
     if (Array.isArray(overrideHost)) {
       host = overrideHost[0]
@@ -88,6 +104,7 @@ const handler = async (event, context, callback) => {
 
     const mappedUrl = await mapToRedirectURL(request)
     logger.debug('Serving redirect to ' + mappedUrl)
+
     const redirectLocation = `https://${mappedUrl}`
 
     // Support debug param to display incoming values and result:
@@ -95,7 +112,7 @@ const handler = async (event, context, callback) => {
       return callback(null, {
         statusCode: 200,
         multiValueHeaders: { 'content-type': ['application/json'] },
-        body: JSON.stringify({ input: { query, proto, host, path, event }, redirectLocation }, null, 2)
+        body: JSON.stringify({ redirectLocation, input: { query, proto, host, path, event } }, null, 2)
       })
     }
 

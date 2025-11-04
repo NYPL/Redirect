@@ -5,6 +5,10 @@ const {
   casLogoutUrl
 } = require('../lib/utils.js')
 
+/**
+ *  Special custom HTML response that simply returns the app version.
+ *  (For debugging DNS and verifying deployments.)
+ */
 const healthCheck = () => {
   const version = require('../package.json').version
   return {
@@ -21,21 +25,27 @@ const healthCheck = () => {
 *   Special handler to serve a page that performs a conditionanl client-side redirect:
 *    - If JS is enabled, JS redirects the user to `jsRedirect`
 *    - If JS is disabled, a META tag redirects the user to `noscriptRedirect`
+*
+*   Note that the js detection necessarily happens client-side, so the page is
+*   built with both the js and noscript redirect URIs.
 */
 const jsConditionalRedirect = (request) => {
-  const jsRedirect = getRedirectUriParam(request.query)
-  const noscriptRedirect = getRedirectUriParam(request.query, 'noscript_redirect_uri')
-  if (jsRedirect && noscriptRedirect) {
+  const jsRedirectUri = getRedirectUriParam(request.query)
+  const noscriptRedirectUri = getRedirectUriParam(request.query, 'noscript_redirect_uri')
+  if (jsRedirectUri && noscriptRedirectUri) {
     return {
       statusCode: 200,
       isBase64Encoded: false,
       multiValueHeaders: {
         'Content-Type': ['text/html']
       },
+      // Serve custom HTML that:
+      //  - If JS is enabled, immediately redirects to jsRedirectUri
+      //  - If JS is not enabled, redirects to noscriptRedirectUri after 1s
       body: `<html>
           <head>
-            <script type="text/javascript">window.location.replace("${jsRedirect}");</script>
-            <meta http-equiv="refresh" content="1;url=${noscriptRedirect}" />
+            <script type="text/javascript">window.location.replace("${jsRedirectUri}");</script>
+            <meta http-equiv="refresh" content="1;url=${noscriptRedirectUri}" />
           </head>
         </html>`
     }
@@ -55,6 +65,10 @@ const expressions = {
     }
   },
 
+  /**
+   *  When handling any other path on a redirect-service host, just send patron
+   *  to Vega.
+   * **/
   catchAll: {
     expr: /./,
     handler: () => {
@@ -63,10 +77,19 @@ const expressions = {
   }
 }
 
+/**
+ *  This handler, in addition to serving redirects for certain requests,
+ *  defines a number of "custom responses", which are full status 200 html
+ *  responses.
+ * **/
 module.exports.customResponse = (request) => {
   switch (request.path) {
+    // Serve special health-check endpoint (for verifying DNS and
+    // RedirectService app version):
     case '/check':
       return healthCheck()
+    // Special custom JS-conditional-redirect response, for performing JS-
+    // dependent redirects
     case '/js-conditional-redirect':
       return jsConditionalRedirect(request)
   }

@@ -11,13 +11,10 @@ const { nyplApiClient } = require('../lib/nypl-api-client.js')
 
 const expressions = {
   /**
-  * Handle requests for, e.g.:
-  *  - //catalog.nypl.org/
-  *
-  * Redirect to RC
+  *   Match root:
   */
   nothingReg: {
-    // empty path or /bookcart, /home endpoint (from encore)
+    // Match root:
     expr: /^\/?$/,
     handler: () => process.env.RC_BASE_URL
   },
