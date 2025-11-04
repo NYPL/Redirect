@@ -100,7 +100,6 @@ const testRow = (row) => {
       'X-Request-Host': host
     }
   }
-  row.url = changeToLocal(row.url)
   if (!row.url) return Promise.resolve()
 
   console.info(`[${row.rowNumber} of ${rows.length}]: Request ${row.url}` + (opts.headers ? ` (${host})` : ''))
@@ -131,6 +130,9 @@ const testRow = (row) => {
           console.info(`    Debug URL: ${row.url}&override-host=${host}&redirect-service-debug=1`)
         }
       }
+    })
+    .catch((e) => {
+      console.error(`Error: ${e}`)
     })
 }
 
