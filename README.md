@@ -58,6 +58,10 @@ This repo follows a [PRS-Target-Main Git Workflow](https://github.com/NYPL/engin
 
 `npm test`
 
+To enable verbose logging for debugging:
+
+`LOG_LEVEL=debug npm test`
+
 To test the app's performance against the [redirect targets sheet](https://docs.google.com/spreadsheets/d/1055Y98c_4l-NXWyzoiUhBSkay4SYZMeKEc9-LGhGoqw/edit#gid=234726655), run:
 
 ```
