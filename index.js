@@ -5,18 +5,19 @@ const {
 } = require('./lib/utils')
 const logger = require('./lib/logger')
 
-const {
-  RC_BASE_URL,
-  ENCORE_HOST,
-  VEGA_HOST
-} = process.env
+require('dotenv').config({ path: `./config/${process.env.ENVIRONMENT}.env` })
 
 const {
   hostsToHandlers,
   redirectServiceHandler
 } = require('./handlers')
 
-require('dotenv').config({ path: `./config/${process.env.ENVIRONMENT}.env` })
+const {
+  RC_BASE_URL,
+  ENCORE_HOST,
+  VEGA_HOST,
+  REDIRECT_SERVICE_HOST
+} = process.env
 
 logger.setLevel(process.env.LOG_LEVEL || 'error')
 
@@ -25,7 +26,7 @@ logger.setLevel(process.env.LOG_LEVEL || 'error')
 // the path, and returns the corresponding handler with the matchdata and query
 // As a default, returns the RC_BASE_URL
 function mapToRedirectURL (request) {
-  logger.debug(`Index::mapToRedirectURL: Handling request ${request.host}/${request.path}...`)
+  logger.debug(`Index::mapToRedirectURL: Handling request ${request.host}${request.path}...`)
 
   const handler = hostsToHandlers()[request.host]
 
@@ -37,6 +38,10 @@ function mapToRedirectURL (request) {
   }
 }
 
+/**
+ *  Determine `host` for request
+ *  In some cases allows host to be overriden by header/query-param
+ * **/
 const parseHost = (event) => {
   const headers = event.multiValueHeaders || {}
   const query = event.multiValueQueryStringParameters || {}
@@ -51,7 +56,7 @@ const parseHost = (event) => {
   // Apply override when testing locally:
   if (host === 'localhost') {
     logger.debug(`Original host: ${host}`)
-    const overrideHost = headers['X-Request-Host'] || query['override-host']
+    const overrideHost = headers['X-Request-Host'] || query['override-host'] || REDIRECT_SERVICE_HOST
     host = overrideHost
     if (Array.isArray(overrideHost)) {
       host = overrideHost[0]
@@ -88,6 +93,7 @@ const handler = async (event, context, callback) => {
 
     const mappedUrl = await mapToRedirectURL(request)
     logger.debug('Serving redirect to ' + mappedUrl)
+
     const redirectLocation = `https://${mappedUrl}`
 
     // Support debug param to display incoming values and result:
@@ -95,7 +101,7 @@ const handler = async (event, context, callback) => {
       return callback(null, {
         statusCode: 200,
         multiValueHeaders: { 'content-type': ['application/json'] },
-        body: JSON.stringify({ input: { query, proto, host, path, event }, redirectLocation }, null, 2)
+        body: JSON.stringify({ redirectLocation, input: { query, proto, host, path, event } }, null, 2)
       })
     }
 

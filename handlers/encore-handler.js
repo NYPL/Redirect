@@ -18,7 +18,7 @@ const expressions = {
   *
   * Redirect to Vega
   */
-  nothingReg: {
+  encoreHome: {
     // empty path or /bookcart, /home endpoint (from encore)
     expr: /(?:^\/$)|(?:^\/iii\/encore$)|bookcart$|home$/,
     handler: vegaHome

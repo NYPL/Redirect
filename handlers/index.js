@@ -1,6 +1,6 @@
 const encoreHandler = require('./encore-handler')
 const logger = require('../lib/logger')
-const legacyCatalogHandler = require('./legacy-catalog-handler')
+const webpacHandler = require('./webpac-handler')
 const redirectServiceHandler = require('./redirect-service-handler')
 
 /**
@@ -25,7 +25,7 @@ const hostsToHandlers = () => {
     },
     {
       hosts: process.env.DEPRECATED_WEBPAC_HOSTS.split(','),
-      handler: legacyCatalogHandler
+      handler: webpacHandler
     },
     {
       hosts: [process.env.REDIRECT_SERVICE_HOST],
