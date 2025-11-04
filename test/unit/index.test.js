@@ -325,7 +325,7 @@ describe('mapToRedirectURL', function () {
       '/pinreset',
       '/iii/cas?fladeedle'
     ].forEach((path) => {
-      it.only(`should redirect ${path} to stable webpac host`, async () => {
+      it(`should redirect ${path} to stable webpac host`, async () => {
         const mapped = await mapToRedirectURL({ ...request, path })
         expect(mapped)
           .to.eql(`catalogservices.nypl.org${path}`)
