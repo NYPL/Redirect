@@ -4,7 +4,7 @@ A service for handling traffic to deprecated catalog hosts, which routes the tra
 
 ## Purpose
 
-As we turn off catatalog services, we direct their DNS to this service, which determines the best place to send the patron based on the app they were attempting to reach (given by host) and the request path. This service currently handles DNS for:
+As we turn off catalog services, we direct their DNS to this service, which determines the best place to send the patron based on the app they were attempting to reach (given by host) and the request path. This service currently handles DNS for:
  - Encore (browse.nypl.org)
  - Webpac (catalog.nypl.org, legacycatalog.nypl.org, ilsstaff.nypl.org)
 
