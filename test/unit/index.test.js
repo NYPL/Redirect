@@ -1,690 +1,777 @@
-const axios = require('axios')
-const { expect } = require('chai')
-const sinon = require('sinon')
-const NyplApiClient = require('@nypl/nypl-data-api-client')
-const { KMSClient } = require('@aws-sdk/client-kms')
+const axios = require("axios");
+const { expect } = require("chai");
+const sinon = require("sinon");
+const NyplApiClient = require("@nypl/nypl-data-api-client");
+const { KMSClient } = require("@aws-sdk/client-kms");
 
-const {
-  mapToRedirectURL,
-  handler
-} = require('../../index')
+const { mapToRedirectURL, handler } = require("../../index");
 
-describe('mapToRedirectURL', function () {
-  describe('legacy catalog links', () => {
+describe("mapToRedirectURL", function () {
+  describe("legacy catalog links", () => {
     // Set up generic, overridable request object for catalog.nypl tests:
     const request = {
-      proto: 'https',
+      proto: "https",
       query: {},
-      host: 'catalog.nypl.org'
-    }
+      host: "catalog.nypl.org",
+    };
 
-    it('should map the base URL correctly', async function () {
-      const path = '/'
-      const mapped = await mapToRedirectURL({ ...request, path })
-      expect(mapped)
-        .to.eql(process.env.RC_BASE_URL + '?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2F')
-    })
+    it("should map the base URL correctly", async function () {
+      const path = "/";
+      const mapped = await mapToRedirectURL({ ...request, path });
+      expect(mapped).to.eql(
+        process.env.RC_BASE_URL +
+          "?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2F"
+      );
+    });
 
-    it('should map bib pages correctly', async function () {
-      const path = '/record=b12172157~S1'
-      axios.post = () => ({ data: { access_token: '' } })
-      axios.get = () => ({ data: { uri: 'b12172157' } })
-      const mapped = await mapToRedirectURL({ ...request, path })
-      expect(mapped)
-        .to.eql(`${process.env.RC_BASE_URL}/bib/b12172157?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Frecord%3Db12172157~S1`)
-    })
+    it("should map bib pages correctly", async function () {
+      const path = "/record=b12172157~S1";
+      axios.post = () => ({ data: { access_token: "" } });
+      axios.get = () => ({ data: { uri: "b12172157" } });
+      const mapped = await mapToRedirectURL({ ...request, path });
+      expect(mapped).to.eql(
+        `${process.env.RC_BASE_URL}/bib/b12172157?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Frecord%3Db12172157~S1`
+      );
+    });
 
-    it('should map search pages using the format /Xsearchterm', async function () {
-      const path = '/search~S1/aRubina%2C+Dina/arubina+dina/1%2C2%2C84%2CB/exact&FF=arubina+dina+author&1%2C-1%2C/indexsort=-)'
-      const mapped = await mapToRedirectURL({ ...request, path })
-      expect(mapped)
-        .to.eql(`${process.env.RC_BASE_URL}/search?q=Rubina%2C%20Dina&search_scope=contributor&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch~S1%2FaRubina%252C%2BDina%2Farubina%2Bdina%2F1%252C2%252C84%252CB%2Fexact%26FF%3Darubina%2Bdina%2Bauthor%261%252C-1%252C%2Findexsort%3D-)`)
-    })
+    it("should map search pages using the format /Xsearchterm", async function () {
+      const path =
+        "/search~S1/aRubina%2C+Dina/arubina+dina/1%2C2%2C84%2CB/exact&FF=arubina+dina+author&1%2C-1%2C/indexsort=-)";
+      const mapped = await mapToRedirectURL({ ...request, path });
+      expect(mapped).to.eql(
+        `${process.env.RC_BASE_URL}/search?q=Rubina%2C%20Dina&search_scope=contributor&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch~S1%2FaRubina%252C%2BDina%2Farubina%2Bdina%2F1%252C2%252C84%252CB%2Fexact%26FF%3Darubina%2Bdina%2Bauthor%261%252C-1%252C%2Findexsort%3D-)`
+      );
+    });
 
-    it('should allow LANG in/Xsearchterm', async function () {
-      const path = '/search~S1ENG/aRubina%2C+Dina/arubina+dina/1%2C2%2C84%2CB/exact&FF=arubina+dina+author&1%2C-1%2C/indexsort=-)'
-      const mapped = await mapToRedirectURL({ ...request, path })
-      expect(mapped)
-        .to.eql(`${process.env.RC_BASE_URL}/search?q=Rubina%2C%20Dina&search_scope=contributor&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch~S1ENG%2FaRubina%252C%2BDina%2Farubina%2Bdina%2F1%252C2%252C84%252CB%2Fexact%26FF%3Darubina%2Bdina%2Bauthor%261%252C-1%252C%2Findexsort%3D-)`)
-    })
+    it("should allow LANG in/Xsearchterm", async function () {
+      const path =
+        "/search~S1ENG/aRubina%2C+Dina/arubina+dina/1%2C2%2C84%2CB/exact&FF=arubina+dina+author&1%2C-1%2C/indexsort=-)";
+      const mapped = await mapToRedirectURL({ ...request, path });
+      expect(mapped).to.eql(
+        `${process.env.RC_BASE_URL}/search?q=Rubina%2C%20Dina&search_scope=contributor&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch~S1ENG%2FaRubina%252C%2BDina%2Farubina%2Bdina%2F1%252C2%252C84%252CB%2Fexact%26FF%3Darubina%2Bdina%2Bauthor%261%252C-1%252C%2Findexsort%3D-)`
+      );
+    });
 
-    it('should map search pages with index but no search term to the base url', async function () {
-      const path = '/search/t'
-      const mapped = await mapToRedirectURL({ ...request, path })
-      expect(mapped).to.eql(`${process.env.RC_BASE_URL}?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch%2Ft`)
-    })
+    it("should map search pages with index but no search term to the base url", async function () {
+      const path = "/search/t";
+      const mapped = await mapToRedirectURL({ ...request, path });
+      expect(mapped).to.eql(
+        `${process.env.RC_BASE_URL}?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch%2Ft`
+      );
+    });
 
-    it('should map search pages with no index and no search term to the base url', async function () {
-      const path = '/search'
-      const mapped = await mapToRedirectURL({ ...request, path })
-      expect(mapped).to.eql(`${process.env.RC_BASE_URL}?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch`)
-    })
+    it("should map search pages with no index and no search term to the base url", async function () {
+      const path = "/search";
+      const mapped = await mapToRedirectURL({ ...request, path });
+      expect(mapped).to.eql(
+        `${process.env.RC_BASE_URL}?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch`
+      );
+    });
 
-    it('should map search pages with no index and no search term, plus screen type to the base url', async function () {
-      const path = '/search~S98'
-      const mapped = await mapToRedirectURL({ ...request, path })
-      expect(mapped).to.eql(`${process.env.RC_BASE_URL}?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch~S98`)
-    })
+    it("should map search pages with no index and no search term, plus screen type to the base url", async function () {
+      const path = "/search~S98";
+      const mapped = await mapToRedirectURL({ ...request, path });
+      expect(mapped).to.eql(
+        `${process.env.RC_BASE_URL}?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch~S98`
+      );
+    });
 
-    it('should map search pages with searcharg and searchtype given as parameters', async function () {
-      const path = '/search~S1/'
+    it("should map search pages with searcharg and searchtype given as parameters", async function () {
+      const path = "/search~S1/";
       const query = {
-        searchtype: ['a'],
-        searcharg: ['winspeare, j'],
-        searchscope: ['1'],
-        sortdropdown: ['-'],
-        SORT: ['D'],
-        extended: ['0'],
-        SUBMIT: ['Search'],
-        searchlimits: [''],
-        searchorigarg: ['dmystery']
-      }
+        searchtype: ["a"],
+        searcharg: ["winspeare, j"],
+        searchscope: ["1"],
+        sortdropdown: ["-"],
+        SORT: ["D"],
+        extended: ["0"],
+        SUBMIT: ["Search"],
+        searchlimits: [""],
+        searchorigarg: ["dmystery"],
+      };
 
-      const mapped = await mapToRedirectURL({ ...request, path, query })
+      const mapped = await mapToRedirectURL({ ...request, path, query });
 
-      expect(mapped)
-        .to.eql(`${process.env.RC_BASE_URL}/search?q=winspeare,%20j&search_scope=contributor&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch~S1%2F%3Fsearchtype%3Da%26searcharg%3Dwinspeare%2C%20j%26searchscope%3D1%26sortdropdown%3D-%26SORT%3DD%26extended%3D0%26SUBMIT%3DSearch%26searchlimits%26searchorigarg%3Ddmystery`)
-    })
+      expect(mapped).to.eql(
+        `${process.env.RC_BASE_URL}/search?q=winspeare,%20j&search_scope=contributor&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch~S1%2F%3Fsearchtype%3Da%26searcharg%3Dwinspeare%2C%20j%26searchscope%3D1%26sortdropdown%3D-%26SORT%3DD%26extended%3D0%26SUBMIT%3DSearch%26searchlimits%26searchorigarg%3Ddmystery`
+      );
+    });
 
-    it('should allow LANG as param in searches with searcharg and searchtype given as parameters', async function () {
-      const path = '/search~S1ENG/'
+    it("should allow LANG as param in searches with searcharg and searchtype given as parameters", async function () {
+      const path = "/search~S1ENG/";
       const query = {
-        searchtype: ['a'],
-        searcharg: ['winspeare, j'],
-        searchscope: ['1'],
-        sortdropdown: ['-'],
-        SORT: ['D'],
-        extended: ['0'],
-        SUBMIT: ['Search'],
-        searchlimits: [''],
-        searchorigarg: ['dmystery']
-      }
+        searchtype: ["a"],
+        searcharg: ["winspeare, j"],
+        searchscope: ["1"],
+        sortdropdown: ["-"],
+        SORT: ["D"],
+        extended: ["0"],
+        SUBMIT: ["Search"],
+        searchlimits: [""],
+        searchorigarg: ["dmystery"],
+      };
 
-      const mapped = await mapToRedirectURL({ ...request, path, query })
+      const mapped = await mapToRedirectURL({ ...request, path, query });
 
-      expect(mapped)
-        .to.eql(`${process.env.RC_BASE_URL}/search?q=winspeare,%20j&search_scope=contributor&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch~S1ENG%2F%3Fsearchtype%3Da%26searcharg%3Dwinspeare%2C%20j%26searchscope%3D1%26sortdropdown%3D-%26SORT%3DD%26extended%3D0%26SUBMIT%3DSearch%26searchlimits%26searchorigarg%3Ddmystery`)
-    })
+      expect(mapped).to.eql(
+        `${process.env.RC_BASE_URL}/search?q=winspeare,%20j&search_scope=contributor&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch~S1ENG%2F%3Fsearchtype%3Da%26searcharg%3Dwinspeare%2C%20j%26searchscope%3D1%26sortdropdown%3D-%26SORT%3DD%26extended%3D0%26SUBMIT%3DSearch%26searchlimits%26searchorigarg%3Ddmystery`
+      );
+    });
 
-    it('should map search pages with SEARCH given as parameter', async function () {
-      const path = '/search/t'
+    it("should map search pages with SEARCH given as parameter", async function () {
+      const path = "/search/t";
       const query = {
-        SEARCH: ['The+Mothers+'],
-        sortdropdown: ['-'],
-        searchscope: ['1']
-      }
-      const mapped = await mapToRedirectURL({ ...request, path, query })
+        SEARCH: ["The+Mothers+"],
+        sortdropdown: ["-"],
+        searchscope: ["1"],
+      };
+      const mapped = await mapToRedirectURL({ ...request, path, query });
 
-      expect(mapped)
-        .to.eql(`${process.env.RC_BASE_URL}/search?q=The%20Mothers%20&search_scope=title&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch%2Ft%3FSEARCH%3DThe%2BMothers%2B%26sortdropdown%3D-%26searchscope%3D1`)
-    })
+      expect(mapped).to.eql(
+        `${process.env.RC_BASE_URL}/search?q=The%20Mothers%20&search_scope=title&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch%2Ft%3FSEARCH%3DThe%2BMothers%2B%26sortdropdown%3D-%26searchscope%3D1`
+      );
+    });
 
-    it('should map search pages with search query given as query param', async function () {
-      const path = '/search~S1/a'
+    it("should map search pages with search query given as query param", async function () {
+      const path = "/search~S1/a";
       const query = {
-        'jac+winspeare%2C': ['']
-      }
-      const mapped = await mapToRedirectURL({ ...request, path, query })
-      expect(mapped)
-        .to.eql(`${process.env.RC_BASE_URL}/search?q=jac%20winspeare%2C&search_scope=contributor&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch~S1%2Fa%3Fjac%2Bwinspeare%252C`)
-    })
+        "jac+winspeare%2C": [""],
+      };
+      const mapped = await mapToRedirectURL({ ...request, path, query });
+      expect(mapped).to.eql(
+        `${process.env.RC_BASE_URL}/search?q=jac%20winspeare%2C&search_scope=contributor&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch~S1%2Fa%3Fjac%2Bwinspeare%252C`
+      );
+    });
 
-    it('should map search pages with search query and search type as query param', async function () {
-      const path = '/search~S97'
+    it("should map search pages with search query and search type as query param", async function () {
+      const path = "/search~S97";
       const query = {
-        '/tbrainwash/tbrainwash/1,3,10,B/exact': [''],
-        FF: ['tbrainwash'],
-        '1,4,': ['']
-      }
-      const mapped = await mapToRedirectURL({ ...request, path, query })
-      expect(mapped)
-        .to.eql(`${process.env.RC_BASE_URL}/search?q=brainwash&search_scope=title&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch~S97%3F%2Ftbrainwash%2Ftbrainwash%2F1%2C3%2C10%2CB%2Fexact%26FF%3Dtbrainwash%261%2C4%2C`)
-    })
+        "/tbrainwash/tbrainwash/1,3,10,B/exact": [""],
+        FF: ["tbrainwash"],
+        "1,4,": [""],
+      };
+      const mapped = await mapToRedirectURL({ ...request, path, query });
+      expect(mapped).to.eql(
+        `${process.env.RC_BASE_URL}/search?q=brainwash&search_scope=title&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch~S97%3F%2Ftbrainwash%2Ftbrainwash%2F1%2C3%2C10%2CB%2Fexact%26FF%3Dtbrainwash%261%2C4%2C`
+      );
+    });
 
-    it('should map search pages with index c to callnumber', async function () {
-      const path = '/search~S1'
-      const query = { '/c*pwz/c*pwz/1,9837,17665,E/limit': [''] }
-      const mapped = await mapToRedirectURL({ ...request, path, query })
-      expect(mapped)
-        .to.include(`${process.env.RC_BASE_URL}/search?q=*pwz&search_scope=callnumber`)
-    })
+    it("should map search pages with index c to callnumber", async function () {
+      const path = "/search~S1";
+      const query = { "/c*pwz/c*pwz/1,9837,17665,E/limit": [""] };
+      const mapped = await mapToRedirectURL({ ...request, path, query });
+      expect(mapped).to.include(
+        `${process.env.RC_BASE_URL}/search?q=*pwz&search_scope=callnumber`
+      );
+    });
 
-    describe('mapping oclc records in the research catalog', async () => {
+    describe("mapping oclc records in the research catalog", async () => {
       before(() => {
-        sinon.stub(NyplApiClient.prototype, 'get').callsFake(() => {
+        sinon.stub(NyplApiClient.prototype, "get").callsFake(() => {
           return {
             data: [
               {
-                id: 'abcdefg',
+                id: "abcdefg",
                 varFields: [
                   {
-                    marcTag: '910',
+                    marcTag: "910",
                     subfields: [
                       {
-                        tag: 'a',
-                        content: 'RL'
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
-        })
+                        tag: "a",
+                        content: "RL",
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          };
+        });
 
-        sinon.stub(KMSClient.prototype, 'send').callsFake(() => {
+        sinon.stub(KMSClient.prototype, "send").callsFake(() => {
           return {
-            Plaintext: new ArrayBuffer(8)
-          }
-        })
-      })
+            Plaintext: new ArrayBuffer(8),
+          };
+        });
+      });
 
       after(() => {
-        NyplApiClient.prototype.get.restore()
-        KMSClient.prototype.send.restore()
-      })
+        NyplApiClient.prototype.get.restore();
+        KMSClient.prototype.send.restore();
+      });
 
-      it('should map search pages for oclc records', async () => {
-        const path = '/search/o1081334684'
-        const mapped = await mapToRedirectURL({ ...request, path })
-        expect(mapped)
-          .to.include(`${process.env.RC_BASE_URL}/search?oclc=1081334684&redirectOnMatch=true`)
-      })
-    })
+      it("should map search pages for oclc records", async () => {
+        const path = "/search/o1081334684";
+        const mapped = await mapToRedirectURL({ ...request, path });
+        expect(mapped).to.include(
+          `${process.env.RC_BASE_URL}/search?oclc=1081334684&redirectOnMatch=true`
+        );
+      });
+    });
 
-    describe('mapping oclc records in the circulating catalog', async () => {
+    describe("mapping oclc records in the circulating catalog", async () => {
       before(() => {
-        sinon.stub(NyplApiClient.prototype, 'get').callsFake(() => {
+        sinon.stub(NyplApiClient.prototype, "get").callsFake(() => {
           return {
             data: [
               {
-                id: 'abcdefg',
+                id: "abcdefg",
                 varFields: [
                   {
-                    marcTag: '910',
+                    marcTag: "910",
                     subfields: [
                       {
-                        tag: 'a',
-                        content: 'BL'
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
-        })
+                        tag: "a",
+                        content: "BL",
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          };
+        });
 
-        sinon.stub(KMSClient.prototype, 'send').callsFake(() => {
+        sinon.stub(KMSClient.prototype, "send").callsFake(() => {
           return {
-            Plaintext: new ArrayBuffer(8)
-          }
-        })
-      })
+            Plaintext: new ArrayBuffer(8),
+          };
+        });
+      });
 
       after(() => {
-        NyplApiClient.prototype.get.restore()
-        KMSClient.prototype.send.restore()
-      })
+        NyplApiClient.prototype.get.restore();
+        KMSClient.prototype.send.restore();
+      });
 
-      it('should map search pages for oclc records', async () => {
-        const path = '/search/o1081334684'
-        const mapped = await mapToRedirectURL({ ...request, path })
-        expect(mapped)
-          .to.include(`${process.env.VEGA_HOST}/search/card?recordId=abcdefg`)
-      })
-    })
+      it("should map search pages for oclc records", async () => {
+        const path = "/search/o1081334684";
+        const mapped = await mapToRedirectURL({ ...request, path });
+        expect(mapped).to.include(
+          `${process.env.VEGA_HOST}/search/card?recordId=abcdefg`
+        );
+      });
+    });
 
-    describe('oclc including = ', async () => {
+    describe("oclc including = ", async () => {
       before(() => {
-        sinon.stub(NyplApiClient.prototype, 'get').callsFake(() => {
+        sinon.stub(NyplApiClient.prototype, "get").callsFake(() => {
           return {
             data: [
               {
-                id: 'abcdefg',
+                id: "abcdefg",
                 varFields: [
                   {
-                    marcTag: '910',
+                    marcTag: "910",
                     subfields: [
                       {
-                        tag: 'a',
-                        content: 'RL'
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
-        })
-      })
+                        tag: "a",
+                        content: "RL",
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          };
+        });
+      });
 
       after(() => {
-        NyplApiClient.prototype.get.restore()
-      })
+        NyplApiClient.prototype.get.restore();
+      });
 
-      it('should map search pages for oclc records including =', async () => {
-        const path = '/search/o=75307280'
-        const mapped = await mapToRedirectURL({ ...request, path })
-        expect(mapped)
-          .to.include(`${process.env.RC_BASE_URL}/search?oclc=75307280&redirectOnMatch=true`)
-      })
-    })
+      it("should map search pages for oclc records including =", async () => {
+        const path = "/search/o=75307280";
+        const mapped = await mapToRedirectURL({ ...request, path });
+        expect(mapped).to.include(
+          `${process.env.RC_BASE_URL}/search?oclc=75307280&redirectOnMatch=true`
+        );
+      });
+    });
 
-    it('should map search pages for issn numbers', async () => {
-      const path = '/search/i0012-9976'
-      const mapped = await mapToRedirectURL({ ...request, path })
-      expect(mapped)
-        .to.include(`${process.env.RC_BASE_URL}/search?issn=0012-9976&redirectOnMatch=true`)
-    })
+    it("should map search pages for issn numbers", async () => {
+      const path = "/search/i0012-9976";
+      const mapped = await mapToRedirectURL({ ...request, path });
+      expect(mapped).to.include(
+        `${process.env.RC_BASE_URL}/search?issn=0012-9976&redirectOnMatch=true`
+      );
+    });
 
-    it('should map search pages for short isbn numbers', async () => {
-      const path = '/search/i1465351078'
-      const mapped = await mapToRedirectURL({ ...request, path })
-      expect(mapped)
-        .to.include(`${process.env.RC_BASE_URL}/search?isbn=1465351078&redirectOnMatch=true`)
-    })
+    it("should map search pages for short isbn numbers", async () => {
+      const path = "/search/i1465351078";
+      const mapped = await mapToRedirectURL({ ...request, path });
+      expect(mapped).to.include(
+        `${process.env.RC_BASE_URL}/search?isbn=1465351078&redirectOnMatch=true`
+      );
+    });
 
-    it('should map search pages for long isbn numbers', async () => {
-      const path = '/search/i9781568987873'
-      const mapped = await mapToRedirectURL({ ...request, path })
-      expect(mapped)
-        .to.include(`${process.env.RC_BASE_URL}/search?isbn=9781568987873&redirectOnMatch=true`)
-    })
+    it("should map search pages for long isbn numbers", async () => {
+      const path = "/search/i9781568987873";
+      const mapped = await mapToRedirectURL({ ...request, path });
+      expect(mapped).to.include(
+        `${process.env.RC_BASE_URL}/search?isbn=9781568987873&redirectOnMatch=true`
+      );
+    });
 
-    it('should map search pages for isbn numbers including X', async () => {
-      const path = '/search/i178694135X'
-      const mapped = await mapToRedirectURL({ ...request, path })
-      expect(mapped)
-        .to.include(`${process.env.RC_BASE_URL}/search?isbn=178694135X&redirectOnMatch=true`)
-    })
+    it("should map search pages for isbn numbers including X", async () => {
+      const path = "/search/i178694135X";
+      const mapped = await mapToRedirectURL({ ...request, path });
+      expect(mapped).to.include(
+        `${process.env.RC_BASE_URL}/search?isbn=178694135X&redirectOnMatch=true`
+      );
+    });
 
-    it('should return 404 page if no match is found', async function () {
-      const path = '/record=fishsticks'
-      const mapped = await mapToRedirectURL({ ...request, path })
-      expect(mapped)
-        .to.eql(`${process.env.RC_BASE_URL}/404/redirect?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Frecord%3Dfishsticks`)
-    })
+    it("should map legacy subject search URLs to starts with browse", async () => {
+      const path = "/search~S1/d";
+      const query = {
+        "Homosexuality+Religious+aspects": [""],
+      };
+      const mapped = await mapToRedirectURL({ ...request, path, query });
+      expect(mapped).to.eql(
+        `${process.env.RC_BASE_URL}/browse?q=Homosexuality Religious aspects&search_scope=starts_with&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch~S1%2Fd%3FHomosexuality%2BReligious%2Baspects`
+      );
+    });
 
-    it('should return account page for research my account', async () => {
-      const path = '/patroninfo/1234567'
-      const mapped = await mapToRedirectURL({ ...request, path })
-      expect(mapped).to.eql(`${process.env.RC_BASE_URL}/account?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fpatroninfo%2F1234567`)
-    })
+    it("should return 404 page if no match is found", async function () {
+      const path = "/record=fishsticks";
+      const mapped = await mapToRedirectURL({ ...request, path });
+      expect(mapped).to.eql(
+        `${process.env.RC_BASE_URL}/404/redirect?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Frecord%3Dfishsticks`
+      );
+    });
 
-    it('should redirect to legacy for pinreset pages', async () => {
-      const path = '/pinreset~S1'
-      const mapped = await mapToRedirectURL({ ...request, path })
-      expect(mapped)
-        .to.eql('legacycatalog.nypl.org/pinreset~S1')
-    })
+    it("should return account page for research my account", async () => {
+      const path = "/patroninfo/1234567";
+      const mapped = await mapToRedirectURL({ ...request, path });
+      expect(mapped).to.eql(
+        `${process.env.RC_BASE_URL}/account?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fpatroninfo%2F1234567`
+      );
+    });
 
-    it('should redirect to legacy for selfreg pages', async () => {
-      const path = '/screens/selfregpick.html'
-      const mapped = await mapToRedirectURL({ ...request, path })
-      expect(mapped)
-        .to.eql('legacycatalog.nypl.org/screens/selfregpick.html')
-    })
-  })
+    it("should redirect to legacy for pinreset pages", async () => {
+      const path = "/pinreset~S1";
+      const mapped = await mapToRedirectURL({ ...request, path });
+      expect(mapped).to.eql("legacycatalog.nypl.org/pinreset~S1");
+    });
 
-  describe('vega links', () => {
+    it("should redirect to legacy for selfreg pages", async () => {
+      const path = "/screens/selfregpick.html";
+      const mapped = await mapToRedirectURL({ ...request, path });
+      expect(mapped).to.eql("legacycatalog.nypl.org/screens/selfregpick.html");
+    });
+  });
+
+  describe("vega links", () => {
     // Set up generic, overridable request object for catalog.nypl tests:
     const request = {
-      proto: 'https',
+      proto: "https",
       query: {},
-      host: 'catalog.nypl.org'
-    }
+      host: "catalog.nypl.org",
+    };
 
-    it('should handle vega link', async () => {
-      const path = '/search/X'
+    it("should handle vega link", async () => {
+      const path = "/search/X";
       const query = {
         SEARCH: [
-          't:(The%20dark%20is%20rising)and%20a:(Cooper,%20Susan,%201935-)'
-        ]
-      }
-      const mapped = await mapToRedirectURL({ ...request, path, query })
-      expect(mapped)
-        .to.eql(`${process.env.RC_BASE_URL}/search?contributor=Cooper,%20Susan,%201935-&title=The%20dark%20is%20rising&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch%2FX%3FSEARCH%3Dt%3A(The%2520dark%2520is%2520rising)and%2520a%3A(Cooper%2C%2520Susan%2C%25201935-)`)
-    })
+          "t:(The%20dark%20is%20rising)and%20a:(Cooper,%20Susan,%201935-)",
+        ],
+      };
+      const mapped = await mapToRedirectURL({ ...request, path, query });
+      expect(mapped).to.eql(
+        `${process.env.RC_BASE_URL}/search?contributor=Cooper,%20Susan,%201935-&title=The%20dark%20is%20rising&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch%2FX%3FSEARCH%3Dt%3A(The%2520dark%2520is%2520rising)and%2520a%3A(Cooper%2C%2520Susan%2C%25201935-)`
+      );
+    });
 
-    it('should handle case variations', async () => {
-      const path = '/SeArCh/x'
+    it("should handle case variations", async () => {
+      const path = "/SeArCh/x";
       const query = {
         sEarCh: [
-          'T:(The%20dark%20is%20rising)and%20a:(Cooper,%20Susan,%201935-)'
-        ]
-      }
-      const mapped = await mapToRedirectURL({ ...request, path, query })
-      expect(mapped)
-        .to.eql(`${process.env.RC_BASE_URL}/search?contributor=Cooper,%20Susan,%201935-&title=The%20dark%20is%20rising&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2FSeArCh%2Fx%3FsEarCh%3DT%3A(The%2520dark%2520is%2520rising)and%2520a%3A(Cooper%2C%2520Susan%2C%25201935-)`)
-    })
+          "T:(The%20dark%20is%20rising)and%20a:(Cooper,%20Susan,%201935-)",
+        ],
+      };
+      const mapped = await mapToRedirectURL({ ...request, path, query });
+      expect(mapped).to.eql(
+        `${process.env.RC_BASE_URL}/search?contributor=Cooper,%20Susan,%201935-&title=The%20dark%20is%20rising&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2FSeArCh%2Fx%3FsEarCh%3DT%3A(The%2520dark%2520is%2520rising)and%2520a%3A(Cooper%2C%2520Susan%2C%25201935-)`
+      );
+    });
 
-    it('should handle spacing variations', async () => {
-      const path = '/search/X'
+    it("should handle spacing variations", async () => {
+      const path = "/search/X";
       const query1 = {
         SEARCH: [
-          't:(The%20dark%20is%20rising) and%20a:(Cooper,%20Susan,%201935-)'
-        ]
-      }
+          "t:(The%20dark%20is%20rising) and%20a:(Cooper,%20Susan,%201935-)",
+        ],
+      };
 
       const query2 = {
         SEARCH: [
-          't:(The%20dark%20is%20rising)and a:(Cooper,%20Susan,%201935-)'
-        ]
-      }
+          "t:(The%20dark%20is%20rising)and a:(Cooper,%20Susan,%201935-)",
+        ],
+      };
 
       const query3 = {
-        SEARCH: [
-          't:(The%20dark%20is%20rising)anda:(Cooper,%20Susan,%201935-)'
-        ]
-      }
+        SEARCH: ["t:(The%20dark%20is%20rising)anda:(Cooper,%20Susan,%201935-)"],
+      };
 
       const query4 = {
         SEARCH: [
-          't:(The%20dark%20is%20rising)%20and%20a:(Cooper,%20Susan,%201935-)'
-        ]
-      }
+          "t:(The%20dark%20is%20rising)%20and%20a:(Cooper,%20Susan,%201935-)",
+        ],
+      };
 
-      expect(await mapToRedirectURL({ ...request, path, query: query1 }))
-        .to.eql(`${process.env.RC_BASE_URL}/search?contributor=Cooper,%20Susan,%201935-&title=The%20dark%20is%20rising&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch%2FX%3FSEARCH%3Dt%3A(The%2520dark%2520is%2520rising)%20and%2520a%3A(Cooper%2C%2520Susan%2C%25201935-)`)
+      expect(
+        await mapToRedirectURL({ ...request, path, query: query1 })
+      ).to.eql(
+        `${process.env.RC_BASE_URL}/search?contributor=Cooper,%20Susan,%201935-&title=The%20dark%20is%20rising&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch%2FX%3FSEARCH%3Dt%3A(The%2520dark%2520is%2520rising)%20and%2520a%3A(Cooper%2C%2520Susan%2C%25201935-)`
+      );
 
-      expect(await mapToRedirectURL({ ...request, path, query: query2 }))
-        .to.eql(`${process.env.RC_BASE_URL}/search?contributor=Cooper,%20Susan,%201935-&title=The%20dark%20is%20rising&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch%2FX%3FSEARCH%3Dt%3A(The%2520dark%2520is%2520rising)and%20a%3A(Cooper%2C%2520Susan%2C%25201935-)`)
+      expect(
+        await mapToRedirectURL({ ...request, path, query: query2 })
+      ).to.eql(
+        `${process.env.RC_BASE_URL}/search?contributor=Cooper,%20Susan,%201935-&title=The%20dark%20is%20rising&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch%2FX%3FSEARCH%3Dt%3A(The%2520dark%2520is%2520rising)and%20a%3A(Cooper%2C%2520Susan%2C%25201935-)`
+      );
 
-      expect(await mapToRedirectURL({ ...request, path, query: query3 }))
-        .to.eql(`${process.env.RC_BASE_URL}/search?contributor=Cooper,%20Susan,%201935-&title=The%20dark%20is%20rising&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch%2FX%3FSEARCH%3Dt%3A(The%2520dark%2520is%2520rising)anda%3A(Cooper%2C%2520Susan%2C%25201935-)`)
+      expect(
+        await mapToRedirectURL({ ...request, path, query: query3 })
+      ).to.eql(
+        `${process.env.RC_BASE_URL}/search?contributor=Cooper,%20Susan,%201935-&title=The%20dark%20is%20rising&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch%2FX%3FSEARCH%3Dt%3A(The%2520dark%2520is%2520rising)anda%3A(Cooper%2C%2520Susan%2C%25201935-)`
+      );
 
-      expect(await mapToRedirectURL({ ...request, path, query: query4 }))
-        .to.eql('www.nypl.org/research/research-catalog/search?contributor=Cooper,%20Susan,%201935-&title=The%20dark%20is%20rising&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch%2FX%3FSEARCH%3Dt%3A(The%2520dark%2520is%2520rising)%2520and%2520a%3A(Cooper%2C%2520Susan%2C%25201935-)')
-    })
-  })
-  describe('encore links', () => {
+      expect(
+        await mapToRedirectURL({ ...request, path, query: query4 })
+      ).to.eql(
+        "www.nypl.org/research/research-catalog/search?contributor=Cooper,%20Susan,%201935-&title=The%20dark%20is%20rising&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch%2FX%3FSEARCH%3Dt%3A(The%2520dark%2520is%2520rising)%2520and%2520a%3A(Cooper%2C%2520Susan%2C%25201935-)"
+      );
+    });
+  });
+  describe("encore links", () => {
     // Set up generic, overridable request object for Encore tests:
-    let request
-    let homepage
+    let request;
+    let homepage;
 
     before(() => {
       request = {
-        proto: 'https',
+        proto: "https",
         query: {},
-        host: process.env.DEPRECATED_ENCORE_HOSTS.split(',')[0]
-      }
-      homepage = process.env.VEGA_HOST + '/'
-    })
+        host: process.env.DEPRECATED_ENCORE_HOSTS.split(",")[0],
+      };
+      homepage = process.env.VEGA_HOST + "/";
+    });
 
-    it('should map the base URL correctly', async function () {
-      const path = '/iii/encore'
-      const mapped = await mapToRedirectURL({ ...request, path })
-      expect(mapped)
-        .to.eql(homepage)
-    })
+    it("should map the base URL correctly", async function () {
+      const path = "/iii/encore";
+      const mapped = await mapToRedirectURL({ ...request, path });
+      expect(mapped).to.eql(homepage);
+    });
 
-    it('should map bib pages correctly', async function () {
-      const paths = ['/record/C__Rb18225028__Skindred__Orightresult__U__X7?lang=eng&suite=def',
-        '/record/C__Rb18225028',
-        '/record/C__Rb18225028~$1']
+    it("should map bib pages correctly", async function () {
+      const paths = [
+        "/record/C__Rb18225028__Skindred__Orightresult__U__X7?lang=eng&suite=def",
+        "/record/C__Rb18225028",
+        "/record/C__Rb18225028~$1",
+      ];
       paths.forEach(async (path) => {
-        const mapped = await mapToRedirectURL({ ...request, path })
-        expect(mapped)
-          .to.eql(`${process.env.VEGA_HOST}/search/card?recordId=18225028`)
-      })
-    })
+        const mapped = await mapToRedirectURL({ ...request, path });
+        expect(mapped).to.eql(
+          `${process.env.VEGA_HOST}/search/card?recordId=18225028`
+        );
+      });
+    });
 
-    it('should skip something close to a bib page', async () => {
-      const path = '/record/C__Rb18225028kindred__Orightresult__U__X7?lang=eng&suite=def'
-      const mapped = await mapToRedirectURL({ ...request, path })
-      expect(mapped)
-        .to.eql(homepage)
-    })
+    it("should skip something close to a bib page", async () => {
+      const path =
+        "/record/C__Rb18225028kindred__Orightresult__U__X7?lang=eng&suite=def";
+      const mapped = await mapToRedirectURL({ ...request, path });
+      expect(mapped).to.eql(homepage);
+    });
 
-    it('should redirect keyword search properly', async () => {
-      const path = '/search/C__SAncient%20Greece__Orightresult__U?lang=eng&suite=def'
-      const mapped = await mapToRedirectURL({ ...request, path })
-      expect(mapped)
-        .to.equal(`${process.env.VEGA_HOST}/search?query=Ancient%20Greece&searchType=everything&pageSize=10`)
-    })
+    it("should redirect keyword search properly", async () => {
+      const path =
+        "/search/C__SAncient%20Greece__Orightresult__U?lang=eng&suite=def";
+      const mapped = await mapToRedirectURL({ ...request, path });
+      expect(mapped).to.equal(
+        `${process.env.VEGA_HOST}/search?query=Ancient%20Greece&searchType=everything&pageSize=10`
+      );
+    });
 
-    it('should redirect keyword search properly without a double undercore', async () => {
-      const path = '/search/C__SAncient%20Greece?lang=eng&suite=def'
-      const mapped = await mapToRedirectURL({ ...request, path })
-      expect(mapped)
-        .to.equal(`${process.env.VEGA_HOST}/search?query=Ancient%20Greece&searchType=everything&pageSize=10`)
-    })
+    it("should redirect keyword search properly without a double undercore", async () => {
+      const path = "/search/C__SAncient%20Greece?lang=eng&suite=def";
+      const mapped = await mapToRedirectURL({ ...request, path });
+      expect(mapped).to.equal(
+        `${process.env.VEGA_HOST}/search?query=Ancient%20Greece&searchType=everything&pageSize=10`
+      );
+    });
 
-    it('should redirect keyword search properly without a double undercore nor query string', async () => {
-      const path = '/search/C__SAncient%20Greece'
-      const mapped = await mapToRedirectURL({ ...request, path })
-      expect(mapped)
-        .to.equal(`${process.env.VEGA_HOST}/search?query=Ancient%20Greece&searchType=everything&pageSize=10`)
-    })
+    it("should redirect keyword search properly without a double undercore nor query string", async () => {
+      const path = "/search/C__SAncient%20Greece";
+      const mapped = await mapToRedirectURL({ ...request, path });
+      expect(mapped).to.equal(
+        `${process.env.VEGA_HOST}/search?query=Ancient%20Greece&searchType=everything&pageSize=10`
+      );
+    });
 
-    it('should not include anything but the keyword search', async () => {
-      const path = '/search/C__Schopped%20cheese__Ff%3Afacetmediatype%3Az%3Az%3AE-BOOK%3A%3A__Oauthor__U__X0?lang=eng&suite=def'
-      const mapped = await mapToRedirectURL({ ...request, path })
-      expect(mapped)
-        .to.include(`${process.env.VEGA_HOST}/search?query=chopped%20cheese&searchType=everything&pageSize=10`)
-    })
+    it("should not include anything but the keyword search", async () => {
+      const path =
+        "/search/C__Schopped%20cheese__Ff%3Afacetmediatype%3Az%3Az%3AE-BOOK%3A%3A__Oauthor__U__X0?lang=eng&suite=def";
+      const mapped = await mapToRedirectURL({ ...request, path });
+      expect(mapped).to.include(
+        `${process.env.VEGA_HOST}/search?query=chopped%20cheese&searchType=everything&pageSize=10`
+      );
+    });
 
-    it('/bookcart redirects to /', async () => {
-      const path = '/bookcart'
-      const mapped = await mapToRedirectURL({ ...request, path })
-      expect(mapped)
-        .to.eql(homepage)
-    })
+    it("/bookcart redirects to /", async () => {
+      const path = "/bookcart";
+      const mapped = await mapToRedirectURL({ ...request, path });
+      expect(mapped).to.eql(homepage);
+    });
 
-    it('/home redirects to /', async () => {
-      const path = '/home'
-      const mapped = await mapToRedirectURL({ ...request, path })
-      expect(mapped)
-        .to.eql(homepage)
-    })
+    it("/home redirects to /", async () => {
+      const path = "/home";
+      const mapped = await mapToRedirectURL({ ...request, path });
+      expect(mapped).to.eql(homepage);
+    });
 
-    it('should redirect account page', async () => {
-      const path = '/myaccount'
-      const mapped = await mapToRedirectURL({ ...request, path })
-      expect(mapped)
-        .to.eql(process.env.VEGA_HOST + '/?openAccount=checkouts')
-    })
+    it("should redirect account page", async () => {
+      const path = "/myaccount";
+      const mapped = await mapToRedirectURL({ ...request, path });
+      expect(mapped).to.eql(process.env.VEGA_HOST + "/?openAccount=checkouts");
+    });
 
-    it('languages other than english links', async () => {
+    it("languages other than english links", async () => {
       const pathsAndResultsMap = {
         // a/u, no parens around language code
-        '/search/C__Sf:(a%20|%20u)%20c:(96)%20l:hat__O-date__U__X0?lang=eng&suite=def': '/search?query=*&searchType=everything&pageSize=10&languageIds=hat&pageNum=0&materialTypeIds=a,u&sorting=publicationDate&sortOrder=desc',
+        "/search/C__Sf:(a%20|%20u)%20c:(96)%20l:hat__O-date__U__X0?lang=eng&suite=def":
+          "/search?query=*&searchType=everything&pageSize=10&languageIds=hat&pageNum=0&materialTypeIds=a,u&sorting=publicationDate&sortOrder=desc",
         // v/y, parens around language code
-        '/search/C__Sf:(v%20|%20y)%20c:(96)%20l:(spa)s__Orightresult__U?lang=eng&suite=def': '/search?query=*&searchType=everything&pageSize=10&languageIds=spa&pageNum=0&materialTypeIds=v,y&sorting=publicationDate&sortOrder=desc'
-
-      }
-      const paths = Object.keys(pathsAndResultsMap)
+        "/search/C__Sf:(v%20|%20y)%20c:(96)%20l:(spa)s__Orightresult__U?lang=eng&suite=def":
+          "/search?query=*&searchType=everything&pageSize=10&languageIds=spa&pageNum=0&materialTypeIds=v,y&sorting=publicationDate&sortOrder=desc",
+      };
+      const paths = Object.keys(pathsAndResultsMap);
       paths.forEach(async (path, i) => {
-        const mapped = await mapToRedirectURL({ ...request, path })
-        expect(mapped).to.eql(process.env.VEGA_HOST + pathsAndResultsMap[path])
-      })
-    })
+        const mapped = await mapToRedirectURL({ ...request, path });
+        expect(mapped).to.eql(process.env.VEGA_HOST + pathsAndResultsMap[path]);
+      });
+    });
 
-    it('handles pipe queries whether URI encoded or not', async () => {
+    it("handles pipe queries whether URI encoded or not", async () => {
       [
         // First, a language scoped Encore query with a '|'
-        '/iii/encore/search/C__Sf:(a%20|%20u)%20c:(96)%20l:ita__O-date__U__X0?lang=eng&suite=def',
+        "/iii/encore/search/C__Sf:(a%20|%20u)%20c:(96)%20l:ita__O-date__U__X0?lang=eng&suite=def",
         // Next, a language scoped Encore query where the '|' is URI encoded
         // (such as Chrome likes to do):
-        '/iii/encore/search/C__Sf:(a%20%7C%20u)%20c:(96)%20l:ita__O-date__U__X0?lang=eng&suite=def'
+        "/iii/encore/search/C__Sf:(a%20%7C%20u)%20c:(96)%20l:ita__O-date__U__X0?lang=eng&suite=def",
       ].forEach(async (path) => {
-        const mapped = await mapToRedirectURL({ ...request, path })
+        const mapped = await mapToRedirectURL({ ...request, path });
         // Both forms should resolve to this language scoped Vega search:
-        expect(mapped).to.eql(process.env.VEGA_HOST + '/search?query=*&searchType=everything&pageSize=10&languageIds=ita&pageNum=0&materialTypeIds=a,u&sorting=publicationDate&sortOrder=desc')
-      })
-    })
+        expect(mapped).to.eql(
+          process.env.VEGA_HOST +
+            "/search?query=*&searchType=everything&pageSize=10&languageIds=ita&pageNum=0&materialTypeIds=a,u&sorting=publicationDate&sortOrder=desc"
+        );
+      });
+    });
 
-    it('ampersand in url', async () => {
-      const path = '/search/C__St:(Yotsuba&!)%20a:(Kiyohiko%20Azuma)__Orightresult__U?lang=eng&suite=def&ivts=zutuA%2FQzFQ7zF9VYDrWRJQ%3D%3D&casts=R56ZSWFQjofaBF62y8o1mQ%3D%3D'
-      const mapped = await mapToRedirectURL({ ...request, path })
-      expect(mapped).to.eql(process.env.VEGA_HOST + '/search?query=Yotsuba%26!%20Kiyohiko%20Azuma&searchType=everything&pageSize=10')
-    })
+    it("ampersand in url", async () => {
+      const path =
+        "/search/C__St:(Yotsuba&!)%20a:(Kiyohiko%20Azuma)__Orightresult__U?lang=eng&suite=def&ivts=zutuA%2FQzFQ7zF9VYDrWRJQ%3D%3D&casts=R56ZSWFQjofaBF62y8o1mQ%3D%3D";
+      const mapped = await mapToRedirectURL({ ...request, path });
+      expect(mapped).to.eql(
+        process.env.VEGA_HOST +
+          "/search?query=Yotsuba%26!%20Kiyohiko%20Azuma&searchType=everything&pageSize=10"
+      );
+    });
 
-    it('author and title searches', async () => {
+    it("author and title searches", async () => {
       const pathsAndResultsMap = {
-        '/search/C__S%28Didion%2C%20Joan.%29%20t%3A%28%28play%20it%20as%20it%20lays%29%20-1960s%29__Orightresult__U?lang=eng&suite=def': '/search?query=Didion%2C%20Joan.%20play%20it%20as%20it%20lays&searchType=everything&pageSize=10',
-        '/search/C__S%28Didion%2C%20Joan.%29%20t%3A%28democracy%20-1980s%20-%28golden%20age%29%29__Orightresult__U?lang=eng&suite=def': '/search?query=Didion%2C%20Joan.%20democracy%20&searchType=everything&pageSize=10',
-        '/search/C__St%3A%28love%20is%20loud%3A%20how%20diane%20nash%29%20a%3A%28wallace%29__Orightresult__U?lang=eng&suite=def': '/search?query=love%20is%20loud%3A%20how%20diane%20nash%20wallace&searchType=everything&pageSize=10',
-        '/search/C__St%3A%28%28slouching%20towards%20bethlehem%29%20-collected%20-river%29%20a%3A%28didion%29__Orightresult__U?lang=eng&suite=def': '/search?query=slouching%20towards%20bethlehem%20didion&searchType=everything&pageSize=10',
-        '/search/C__Sa%3A%28Didion%2C%20Joan%29%20t%3A%28%28where%20i%20was%20from%29%20-collected%29__Orightresult__U?lang=eng&suite=def': '/search?query=Didion%2C%20Joan%20where%20i%20was%20from&searchType=everything&pageSize=10',
-        '/search/C__St%3A%28killers%20of%20a%20certain%20age%29__Orightresult__U?lang=eng&suite=def':
-          '/search?query=killers%20of%20a%20certain%20age&searchType=everything&pageSize=10'
-      }
+        "/search/C__S%28Didion%2C%20Joan.%29%20t%3A%28%28play%20it%20as%20it%20lays%29%20-1960s%29__Orightresult__U?lang=eng&suite=def":
+          "/search?query=Didion%2C%20Joan.%20play%20it%20as%20it%20lays&searchType=everything&pageSize=10",
+        "/search/C__S%28Didion%2C%20Joan.%29%20t%3A%28democracy%20-1980s%20-%28golden%20age%29%29__Orightresult__U?lang=eng&suite=def":
+          "/search?query=Didion%2C%20Joan.%20democracy%20&searchType=everything&pageSize=10",
+        "/search/C__St%3A%28love%20is%20loud%3A%20how%20diane%20nash%29%20a%3A%28wallace%29__Orightresult__U?lang=eng&suite=def":
+          "/search?query=love%20is%20loud%3A%20how%20diane%20nash%20wallace&searchType=everything&pageSize=10",
+        "/search/C__St%3A%28%28slouching%20towards%20bethlehem%29%20-collected%20-river%29%20a%3A%28didion%29__Orightresult__U?lang=eng&suite=def":
+          "/search?query=slouching%20towards%20bethlehem%20didion&searchType=everything&pageSize=10",
+        "/search/C__Sa%3A%28Didion%2C%20Joan%29%20t%3A%28%28where%20i%20was%20from%29%20-collected%29__Orightresult__U?lang=eng&suite=def":
+          "/search?query=Didion%2C%20Joan%20where%20i%20was%20from&searchType=everything&pageSize=10",
+        "/search/C__St%3A%28killers%20of%20a%20certain%20age%29__Orightresult__U?lang=eng&suite=def":
+          "/search?query=killers%20of%20a%20certain%20age&searchType=everything&pageSize=10",
+      };
       Object.keys(pathsAndResultsMap).forEach(async (path) => {
-        const mapped = await mapToRedirectURL({ ...request, path })
-        expect(mapped).to.equal(process.env.VEGA_HOST + pathsAndResultsMap[path])
-      })
-    })
-  })
-})
+        const mapped = await mapToRedirectURL({ ...request, path });
+        expect(mapped).to.equal(
+          process.env.VEGA_HOST + pathsAndResultsMap[path]
+        );
+      });
+    });
+  });
+});
 
-describe('handler', () => {
-  const context = {}
-  const callback = (_, resp) => resp.statusCode
+describe("handler", () => {
+  const context = {};
+  const callback = (_, resp) => resp.statusCode;
 
-  it('should respond 200 to /check', async function () {
+  it("should respond 200 to /check", async function () {
     const event = {
-      path: '/check',
+      path: "/check",
       multiValueHeaders: {
-        'x-forwarded-proto': ['https'],
-        host: ['redir-browse.nypl.org']
-      }
-    }
+        "x-forwarded-proto": ["https"],
+        host: ["redir-browse.nypl.org"],
+      },
+    };
 
-    const version = require('../../package.json').version
+    const version = require("../../package.json").version;
 
-    const resp = await handler(event, context, (_, resp) => resp)
-    expect(resp.statusCode).to.eql(200)
-    expect(JSON.parse(resp.body).version).to.eql(version)
-  })
+    const resp = await handler(event, context, (_, resp) => resp);
+    expect(resp.statusCode).to.eql(200);
+    expect(JSON.parse(resp.body).version).to.eql(version);
+  });
 
-  it('should call the callback with 302 response for matching url', async function () {
+  it("should call the callback with 302 response for matching url", async function () {
     const event = {
-      path: '/',
+      path: "/",
       multiValueHeaders: {
-        'x-forwarded-proto': 'https',
-        host: ['catalog.nypl.org']
-      }
-    }
+        "x-forwarded-proto": "https",
+        host: ["catalog.nypl.org"],
+      },
+    };
 
-    const resp = await handler(event, context, callback)
-    expect(resp).to.eql(302)
-  })
+    const resp = await handler(event, context, callback);
+    expect(resp).to.eql(302);
+  });
 
-  it('should call the callback with 302 response for non-matching url', async function () {
+  it("should call the callback with 302 response for non-matching url", async function () {
     // The following path will not match any known pattern, so we expect it to
     // fall through to a 404 page:
     const event = {
-      path: '/record=bsomeid/',
+      path: "/record=bsomeid/",
       multiValueHeaders: {
-        'x-forwarded-proto': ['https'],
-        host: ['catalog.nypl.org']
-      }
-    }
+        "x-forwarded-proto": ["https"],
+        host: ["catalog.nypl.org"],
+      },
+    };
 
-    const resp = await handler(event, context, (_, resp) => resp)
+    const resp = await handler(event, context, (_, resp) => resp);
     expect(resp).to.deep.include({
       statusCode: 302,
-      multiValueHeaders: { Location: ['https://www.nypl.org/research/research-catalog/404/redirect?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Frecord%3Dbsomeid%2F'] }
-    })
-  })
+      multiValueHeaders: {
+        Location: [
+          "https://www.nypl.org/research/research-catalog/404/redirect?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Frecord%3Dbsomeid%2F",
+        ],
+      },
+    });
+  });
 
-  describe('collection query param redirect', () => {
+  describe("collection query param redirect", () => {
     it('should redirect to vega with converted bib id when "circ" set as collection query param', async function () {
       const event = {
-        path: '/record=b22297361',
+        path: "/record=b22297361",
         multiValueHeaders: {
-          'x-forwarded-proto': ['https'],
-          host: ['catalog.nypl.org']
+          "x-forwarded-proto": ["https"],
+          host: ["catalog.nypl.org"],
         },
         multiValueQueryStringParameters: {
-          collection: ['circ']
-        }
-      }
-      const resp = await handler(event, context, (_, resp) => resp)
+          collection: ["circ"],
+        },
+      };
+      const resp = await handler(event, context, (_, resp) => resp);
       expect(resp).to.deep.include({
         statusCode: 302,
-        multiValueHeaders: { Location: [`https://${process.env.VEGA_HOST}/search/card?recordId=22297361&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Frecord%3Db22297361%3Fcollection%3Dcirc`] }
-      })
-    })
+        multiValueHeaders: {
+          Location: [
+            `https://${process.env.VEGA_HOST}/search/card?recordId=22297361&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Frecord%3Db22297361%3Fcollection%3Dcirc`,
+          ],
+        },
+      });
+    });
 
     it('should redirect to vega when "circ" is included in multiple collection query params', async function () {
       const event = {
-        path: '/record=b22297361',
+        path: "/record=b22297361",
         multiValueHeaders: {
-          'x-forwarded-proto': ['https'],
-          host: ['catalog.nypl.org']
+          "x-forwarded-proto": ["https"],
+          host: ["catalog.nypl.org"],
         },
         multiValueQueryStringParameters: {
-          collection: ['circ', 'research']
-        }
-      }
-      const resp = await handler(event, context, (_, resp) => resp)
+          collection: ["circ", "research"],
+        },
+      };
+      const resp = await handler(event, context, (_, resp) => resp);
       expect(resp).to.deep.include({
         statusCode: 302,
-        multiValueHeaders: { Location: [`https://${process.env.VEGA_HOST}/search/card?recordId=22297361&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Frecord%3Db22297361%3Fcollection%3Dcirc%26collection%3Dresearch`] }
-      })
-    })
+        multiValueHeaders: {
+          Location: [
+            `https://${process.env.VEGA_HOST}/search/card?recordId=22297361&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Frecord%3Db22297361%3Fcollection%3Dcirc%26collection%3Dresearch`,
+          ],
+        },
+      });
+    });
 
     it('should redirect to research catalog when anything other than "circ" is in collection query params', async function () {
       const event = {
-        path: '/record=b22297361',
+        path: "/record=b22297361",
         multiValueHeaders: {
-          'x-forwarded-proto': ['https'],
-          host: ['catalog.nypl.org']
+          "x-forwarded-proto": ["https"],
+          host: ["catalog.nypl.org"],
         },
         multiValueQueryStringParameters: {
-          collection: ['research']
-        }
-      }
-      const resp = await handler(event, context, (_, resp) => resp)
+          collection: ["research"],
+        },
+      };
+      const resp = await handler(event, context, (_, resp) => resp);
       expect(resp).to.deep.include({
         statusCode: 302,
-        multiValueHeaders: { Location: ['https://www.nypl.org/research/research-catalog/bib/b22297361?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Frecord%3Db22297361%3Fcollection%3Dresearch'] }
-      })
-    })
-  })
+        multiValueHeaders: {
+          Location: [
+            "https://www.nypl.org/research/research-catalog/bib/b22297361?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Frecord%3Db22297361%3Fcollection%3Dresearch",
+          ],
+        },
+      });
+    });
+  });
 
-  describe('encore logout redirect', () => {
-    const jsConditionalRedirect = 'https://redir-browse.nypl.org/js-conditional-redirect'
+  describe("encore logout redirect", () => {
+    const jsConditionalRedirect =
+      "https://redir-browse.nypl.org/js-conditional-redirect";
 
     const baseEvent = {
-      path: '/iii/encore/logoutFilterRedirect',
+      path: "/iii/encore/logoutFilterRedirect",
       multiValueHeaders: {
-        'x-forwarded-proto': ['https'],
-        host: ['browse.nypl.org']
-      }
-    }
+        "x-forwarded-proto": ["https"],
+        host: ["browse.nypl.org"],
+      },
+    };
 
-    it('should redirect Encore logout URL to Vega Auth logout endpoint', async function () {
-      const resp = await handler(baseEvent, context, (_, resp) => resp)
-      const url = jsConditionalRedirect +
-        '?redirect_uri=' + encodeURIComponent(
+    it("should redirect Encore logout URL to Vega Auth logout endpoint", async function () {
+      const resp = await handler(baseEvent, context, (_, resp) => resp);
+      const url =
+        jsConditionalRedirect +
+        "?redirect_uri=" +
+        encodeURIComponent(
           `https://${process.env.VEGA_HOST}/logout` +
-            '?redirect_uri=' +
+            "?redirect_uri=" +
             encodeURIComponent(
-              'https://redir-browse.nypl.org/vega-logout-handler?redirect_uri=' +
-              encodeURIComponent(`https://${process.env.VEGA_HOST}/`)
+              "https://redir-browse.nypl.org/vega-logout-handler?redirect_uri=" +
+                encodeURIComponent(`https://${process.env.VEGA_HOST}/`)
             )
-      ) +
-        '&noscript_redirect_uri=' + encodeURIComponent(
-        'https://ilsstaff.nypl.org/iii/cas/logout?service=' +
-          encodeURIComponent(`https://${process.env.VEGA_HOST}/`)
-      )
+        ) +
+        "&noscript_redirect_uri=" +
+        encodeURIComponent(
+          "https://ilsstaff.nypl.org/iii/cas/logout?service=" +
+            encodeURIComponent(`https://${process.env.VEGA_HOST}/`)
+        );
       expect(resp).to.deep.eql({
         isBase64Encoded: false,
         statusCode: 302,
-        multiValueHeaders: { Location: [url] }
-      })
-    })
+        multiValueHeaders: { Location: [url] },
+      });
+    });
 
     // Test several allowed redirect_uris:
-    ; [
+    [
       // redirect_uri 0:
-      () => 'https://www.nypl.org/',
+      () => "https://www.nypl.org/",
       // redirect_uri 1:
-      () => `https://${process.env.DEPRECATED_ENCORE_HOSTS.split(',')[0]}/`,
+      () => `https://${process.env.DEPRECATED_ENCORE_HOSTS.split(",")[0]}/`,
       // redirect_uri 2:
       () => `https://${process.env.WEBPAC_HOST}/`,
       // redirect_uri 3:
@@ -692,124 +779,163 @@ describe('handler', () => {
       // redirect_uri 4:
       () => `https://${process.env.RC_BASE_URL}`,
       // redirect_uri 5:
-      () => `https://${process.env.VEGA_HOST}/logout?redirect_uri=https://www.nypl.org/research/research-catalog/bib/b11373666`
+      () =>
+        `https://${process.env.VEGA_HOST}/logout?redirect_uri=https://www.nypl.org/research/research-catalog/bib/b11373666`,
     ].forEach((urlGenerator, ind) => {
       it(`should respect redirect_uri ${ind}`, async function () {
-        const validUrl = urlGenerator()
-        const eventWithRedirect = Object.assign({}, baseEvent,
-          { multiValueQueryStringParameters: { redirect_uri: [validUrl] } }
-        )
-        const resp = await handler(eventWithRedirect, context, (_, resp) => resp)
-        const url = jsConditionalRedirect +
-          '?redirect_uri=' + encodeURIComponent(
-            `https://${process.env.VEGA_HOST}/logout?redirect_uri=` + encodeURIComponent(
-            'https://redir-browse.nypl.org/vega-logout-handler?redirect_uri=' + encodeURIComponent(validUrl)
-          )
-        ) +
-          '&noscript_redirect_uri=' + encodeURIComponent(
-          'https://ilsstaff.nypl.org/iii/cas/logout?service=' + encodeURIComponent(validUrl)
-        )
+        const validUrl = urlGenerator();
+        const eventWithRedirect = Object.assign({}, baseEvent, {
+          multiValueQueryStringParameters: { redirect_uri: [validUrl] },
+        });
+        const resp = await handler(
+          eventWithRedirect,
+          context,
+          (_, resp) => resp
+        );
+        const url =
+          jsConditionalRedirect +
+          "?redirect_uri=" +
+          encodeURIComponent(
+            `https://${process.env.VEGA_HOST}/logout?redirect_uri=` +
+              encodeURIComponent(
+                "https://redir-browse.nypl.org/vega-logout-handler?redirect_uri=" +
+                  encodeURIComponent(validUrl)
+              )
+          ) +
+          "&noscript_redirect_uri=" +
+          encodeURIComponent(
+            "https://ilsstaff.nypl.org/iii/cas/logout?service=" +
+              encodeURIComponent(validUrl)
+          );
 
         expect(resp).to.deep.include({
           statusCode: 302,
-          multiValueHeaders: { Location: [url] }
-        })
-      })
-    })
+          multiValueHeaders: { Location: [url] },
+        });
+      });
+    });
 
     // Test replacing discovery.nypl.org with nypl.org in redirect
+    ["https://www.discovery.nypl.org/", "https://discovery.nypl.org/"].forEach(
+      (validUrl) => {
+        it(`should respect redirect_uri=${validUrl}`, async function () {
+          const eventWithRedirect = Object.assign({}, baseEvent, {
+            multiValueQueryStringParameters: { redirect_uri: [validUrl] },
+          });
+          const resp = await handler(
+            eventWithRedirect,
+            context,
+            (_, resp) => resp
+          );
 
-    ; [
-      'https://www.discovery.nypl.org/',
-      'https://discovery.nypl.org/'
-    ].forEach((validUrl) => {
-      it(`should respect redirect_uri=${validUrl}`, async function () {
-        const eventWithRedirect = Object.assign({}, baseEvent,
-          { multiValueQueryStringParameters: { redirect_uri: [validUrl] } }
-        )
-        const resp = await handler(eventWithRedirect, context, (_, resp) => resp)
+          const url =
+            jsConditionalRedirect +
+            "?redirect_uri=" +
+            encodeURIComponent(
+              `https://${process.env.VEGA_HOST}/logout?redirect_uri=https%3A%2F%2Fredir-browse.nypl.org%2Fvega-logout-handler%3Fredirect_uri%3D` +
+                encodeURIComponent(encodeURIComponent("https://www.nypl.org/"))
+            ) +
+            "&noscript_redirect_uri=https%3A%2F%2Filsstaff.nypl.org%2Fiii%2Fcas%2Flogout%3Fservice%3Dhttps%253A%252F%252Fwww.nypl.org%252F";
+          expect(resp).to.deep.include({
+            statusCode: 302,
+            multiValueHeaders: { Location: [url] },
+          });
+        });
+      }
+    );
 
-        const url = jsConditionalRedirect +
-         '?redirect_uri=' + encodeURIComponent(`https://${process.env.VEGA_HOST}/logout?redirect_uri=https%3A%2F%2Fredir-browse.nypl.org%2Fvega-logout-handler%3Fredirect_uri%3D` + encodeURIComponent(encodeURIComponent('https://www.nypl.org/'))) +
-         '&noscript_redirect_uri=https%3A%2F%2Filsstaff.nypl.org%2Fiii%2Fcas%2Flogout%3Fservice%3Dhttps%253A%252F%252Fwww.nypl.org%252F'
-        expect(resp).to.deep.include({
-          statusCode: 302,
-          multiValueHeaders: { Location: [url] }
-        })
-      })
-    })
-
-    it('should reject invalid redirect_uri param', async function () {
-      const eventWithRedirect = Object.assign({}, baseEvent,
-        { multiValueQueryStringParameters: { redirect_uri: ['https://duckduckgo.com'] } }
-      )
-      const resp = await handler(eventWithRedirect, context, (_, resp) => resp)
-      const url = jsConditionalRedirect +
-        '?redirect_uri=' + encodeURIComponent(`https://${process.env.VEGA_HOST}/logout?redirect_uri=https%3A%2F%2Fredir-browse.nypl.org%2Fvega-logout-handler%3Fredirect_uri%3D` + encodeURIComponent(encodeURIComponent(`https://${process.env.VEGA_HOST}/`))) +
-        `&noscript_redirect_uri=https%3A%2F%2Filsstaff.nypl.org%2Fiii%2Fcas%2Flogout%3Fservice%3Dhttps%253A%252F%252F${process.env.VEGA_HOST}%252F`
+    it("should reject invalid redirect_uri param", async function () {
+      const eventWithRedirect = Object.assign({}, baseEvent, {
+        multiValueQueryStringParameters: {
+          redirect_uri: ["https://duckduckgo.com"],
+        },
+      });
+      const resp = await handler(eventWithRedirect, context, (_, resp) => resp);
+      const url =
+        jsConditionalRedirect +
+        "?redirect_uri=" +
+        encodeURIComponent(
+          `https://${process.env.VEGA_HOST}/logout?redirect_uri=https%3A%2F%2Fredir-browse.nypl.org%2Fvega-logout-handler%3Fredirect_uri%3D` +
+            encodeURIComponent(
+              encodeURIComponent(`https://${process.env.VEGA_HOST}/`)
+            )
+        ) +
+        `&noscript_redirect_uri=https%3A%2F%2Filsstaff.nypl.org%2Fiii%2Fcas%2Flogout%3Fservice%3Dhttps%253A%252F%252F${process.env.VEGA_HOST}%252F`;
       expect(resp).to.deep.include({
         statusCode: 302,
-        multiValueHeaders: { Location: [url] }
-      })
-    })
-  })
+        multiValueHeaders: { Location: [url] },
+      });
+    });
+  });
 
-  describe('vega logout handler', function () {
+  describe("vega logout handler", function () {
     const baseEvent = {
-      path: '/vega-logout-handler',
+      path: "/vega-logout-handler",
       multiValueHeaders: {
-        'x-forwarded-proto': ['https'],
-        host: ['redir-browse.nypl.org']
-      }
-    }
+        "x-forwarded-proto": ["https"],
+        host: ["redir-browse.nypl.org"],
+      },
+    };
 
-    it('should send user through CAS, passing valid redirect', async function () {
-      const eventWithRedirect = Object.assign({}, baseEvent,
-        { multiValueQueryStringParameters: { redirect_uri: ['https://www.nypl.org/research/research-catalog/bib/b1234'] } }
-      )
-      const resp = await handler(eventWithRedirect, context, (_, resp) => resp)
+    it("should send user through CAS, passing valid redirect", async function () {
+      const eventWithRedirect = Object.assign({}, baseEvent, {
+        multiValueQueryStringParameters: {
+          redirect_uri: [
+            "https://www.nypl.org/research/research-catalog/bib/b1234",
+          ],
+        },
+      });
+      const resp = await handler(eventWithRedirect, context, (_, resp) => resp);
       expect(resp).to.deep.eql({
         isBase64Encoded: false,
         statusCode: 302,
         multiValueHeaders: {
           Location: [
-          `https://ilsstaff.nypl.org/iii/cas/logout?service=${encodeURIComponent('https://www.nypl.org/research/research-catalog/bib/b1234')}`
-          ]
-        }
-      })
-    })
+            `https://ilsstaff.nypl.org/iii/cas/logout?service=${encodeURIComponent(
+              "https://www.nypl.org/research/research-catalog/bib/b1234"
+            )}`,
+          ],
+        },
+      });
+    });
 
-    it('should send user through CAS, passing default redirect', async function () {
-      const resp = await handler(baseEvent, context, (_, resp) => resp)
+    it("should send user through CAS, passing default redirect", async function () {
+      const resp = await handler(baseEvent, context, (_, resp) => resp);
       expect(resp).to.deep.eql({
         isBase64Encoded: false,
         statusCode: 302,
         multiValueHeaders: {
           Location: [
-          `https://ilsstaff.nypl.org/iii/cas/logout?service=${encodeURIComponent(`https://${process.env.VEGA_HOST}/`)}`
-          ]
-        }
-      })
-    })
-  })
+            `https://ilsstaff.nypl.org/iii/cas/logout?service=${encodeURIComponent(
+              `https://${process.env.VEGA_HOST}/`
+            )}`,
+          ],
+        },
+      });
+    });
+  });
 
-  it('should respond with client-side redirect for /js-conditional-redirect', async function () {
+  it("should respond with client-side redirect for /js-conditional-redirect", async function () {
     const event = {
-      path: '/js-conditional-redirect',
+      path: "/js-conditional-redirect",
       multiValueHeaders: {
-        'x-forwarded-proto': ['https'],
-        host: ['redir-browse.nypl.org']
+        "x-forwarded-proto": ["https"],
+        host: ["redir-browse.nypl.org"],
       },
       multiValueQueryStringParameters: {
-        redirect_uri: ['https://www.nypl.org/js-enabled'],
-        noscript_redirect_uri: ['https://www.nypl.org/js-disabled']
-      }
-    }
+        redirect_uri: ["https://www.nypl.org/js-enabled"],
+        noscript_redirect_uri: ["https://www.nypl.org/js-disabled"],
+      },
+    };
 
-    const resp = await handler(event, context, (_, resp) => resp)
-    expect(resp.statusCode).to.eql(200)
+    const resp = await handler(event, context, (_, resp) => resp);
+    expect(resp.statusCode).to.eql(200);
 
-    expect(resp.body).includes('window.location.replace("https://www.nypl.org/js-enabled");')
-    expect(resp.body).includes('<meta http-equiv="refresh" content="1;url=https://www.nypl.org/js-disabled" />')
-  })
-})
+    expect(resp.body).includes(
+      'window.location.replace("https://www.nypl.org/js-enabled");'
+    );
+    expect(resp.body).includes(
+      '<meta http-equiv="refresh" content="1;url=https://www.nypl.org/js-disabled" />'
+    );
+  });
+});
