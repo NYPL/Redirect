@@ -325,6 +325,17 @@ describe('mapToRedirectURL', function () {
       expect(mapped)
         .to.eql('legacycatalog.nypl.org/screens/selfregpick.html')
     })
+    
+    it('should map legacy subject search URLs to starts with browse', async () => {
+      const path = '/search~S1/d';
+      const query = {
+        'Homosexuality+Religious+aspects': [''],
+      };
+      const mapped = await mapToRedirectURL({ ...request, path, query });
+      expect(mapped).to.eql(
+        `${process.env.RC_BASE_URL}/browse?q=Homosexuality Religious aspects&search_scope=starts_with&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch~S1%2Fd%3FHomosexuality%2BReligious%2Baspects`
+      );
+    });
   })
 
   describe('vega links', () => {
