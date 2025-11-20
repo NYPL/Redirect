@@ -69,6 +69,23 @@ const expressions = {
   },
 
   /**
+   * Match legacy subject searches
+   *  - /search~S1/d?{term} => /browse?q=${term}&search_scope=starts_with
+   */
+
+  subjectBrowseReg: {
+    expr: /\/search(~S\w*)?\/d/,
+    handler: (match, request) => {
+      const searchKey = Object.keys(request.query)[0] ||'';
+      const searchTerm = decodeURIComponent(searchKey.replace(/\+/g, ' '));
+      if (!searchTerm) return process.env.RC_BASE_URL;
+      return `${process.env.RC_BASE_URL}/browse?q=${searchTerm}&search_scope=starts_with`;
+    },
+  },
+
+
+
+  /**
   * Match:
   *  - /search/i{query} => ?q={query}&search_scope=standard_number
   *  - /search~S1/i{query} => ?q={query&search_scope=standard_number
