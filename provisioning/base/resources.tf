@@ -37,7 +37,7 @@ resource "aws_lambda_function" "lambda_instance" {
   handler       = "index.handler"
   memory_size   = 128
   role          = "arn:aws:iam::946183545209:role/lambda-full-access"
-  runtime       = "nodejs14.x"
+  runtime       = "nodejs22.x"
   timeout       = 60
 
   # Location of the zipped code in S3:
