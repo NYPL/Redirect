@@ -33,7 +33,7 @@ resource "aws_s3_bucket_object" "uploaded_zip" {
 # Create the lambda:
 resource "aws_lambda_function" "lambda_instance" {
   description   = "Redirects catalog requests to RC or circulating catalog"
-  function_name = "RedirectService-${var.environment}"
+  function_name = "Redirect-${var.environment}"
   handler       = "index.handler"
   memory_size   = 128
   role          = "arn:aws:iam::946183545209:role/lambda-full-access"
