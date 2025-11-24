@@ -316,14 +316,20 @@ describe('mapToRedirectURL', function () {
       const path = '/pinreset~S1'
       const mapped = await mapToRedirectURL({ ...request, path })
       expect(mapped)
-        .to.eql('legacycatalog.nypl.org/pinreset~S1')
+        .to.eql('catalogservices.nypl.org/pinreset~S1')
     })
 
-    it('should redirect to legacy for selfreg pages', async () => {
-      const path = '/screens/selfregpick.html'
-      const mapped = await mapToRedirectURL({ ...request, path })
-      expect(mapped)
-        .to.eql('legacycatalog.nypl.org/screens/selfregpick.html')
+    ;[
+      // These paths are marked forever accessible via new stable webpac host:
+      '/selfreg/patronsite',
+      '/pinreset',
+      '/iii/cas?fladeedle'
+    ].forEach((path) => {
+      it(`should redirect ${path} to stable webpac host`, async () => {
+        const mapped = await mapToRedirectURL({ ...request, path })
+        expect(mapped)
+          .to.eql(`catalogservices.nypl.org${path}`)
+      })
     })
     
     it('should map legacy subject search URLs to starts with browse', async () => {
@@ -680,7 +686,7 @@ describe('handler', () => {
             )
       ) +
         '&noscript_redirect_uri=' + encodeURIComponent(
-        'https://ilsstaff.nypl.org/iii/cas/logout?service=' +
+        'https://catalogservices.nypl.org/iii/cas/logout?service=' +
           encodeURIComponent(`https://${process.env.VEGA_HOST}/`)
       )
       expect(resp).to.deep.eql({
@@ -718,7 +724,7 @@ describe('handler', () => {
           )
         ) +
           '&noscript_redirect_uri=' + encodeURIComponent(
-          'https://ilsstaff.nypl.org/iii/cas/logout?service=' + encodeURIComponent(validUrl)
+          'https://catalogservices.nypl.org/iii/cas/logout?service=' + encodeURIComponent(validUrl)
         )
 
         expect(resp).to.deep.include({
@@ -742,7 +748,7 @@ describe('handler', () => {
 
         const url = jsConditionalRedirect +
          '?redirect_uri=' + encodeURIComponent(`https://${process.env.VEGA_HOST}/logout?redirect_uri=https%3A%2F%2Fredir-browse.nypl.org%2Fvega-logout-handler%3Fredirect_uri%3D` + encodeURIComponent(encodeURIComponent('https://www.nypl.org/'))) +
-         '&noscript_redirect_uri=https%3A%2F%2Filsstaff.nypl.org%2Fiii%2Fcas%2Flogout%3Fservice%3Dhttps%253A%252F%252Fwww.nypl.org%252F'
+         '&noscript_redirect_uri=https%3A%2F%2Fcatalogservices.nypl.org%2Fiii%2Fcas%2Flogout%3Fservice%3Dhttps%253A%252F%252Fwww.nypl.org%252F'
         expect(resp).to.deep.include({
           statusCode: 302,
           multiValueHeaders: { Location: [url] }
@@ -757,7 +763,7 @@ describe('handler', () => {
       const resp = await handler(eventWithRedirect, context, (_, resp) => resp)
       const url = jsConditionalRedirect +
         '?redirect_uri=' + encodeURIComponent(`https://${process.env.VEGA_HOST}/logout?redirect_uri=https%3A%2F%2Fredir-browse.nypl.org%2Fvega-logout-handler%3Fredirect_uri%3D` + encodeURIComponent(encodeURIComponent(`https://${process.env.VEGA_HOST}/`))) +
-        `&noscript_redirect_uri=https%3A%2F%2Filsstaff.nypl.org%2Fiii%2Fcas%2Flogout%3Fservice%3Dhttps%253A%252F%252F${process.env.VEGA_HOST}%252F`
+        `&noscript_redirect_uri=https%3A%2F%2Fcatalogservices.nypl.org%2Fiii%2Fcas%2Flogout%3Fservice%3Dhttps%253A%252F%252F${process.env.VEGA_HOST}%252F`
       expect(resp).to.deep.include({
         statusCode: 302,
         multiValueHeaders: { Location: [url] }
@@ -784,7 +790,7 @@ describe('handler', () => {
         statusCode: 302,
         multiValueHeaders: {
           Location: [
-          `https://ilsstaff.nypl.org/iii/cas/logout?service=${encodeURIComponent('https://www.nypl.org/research/research-catalog/bib/b1234')}`
+          `https://catalogservices.nypl.org/iii/cas/logout?service=${encodeURIComponent('https://www.nypl.org/research/research-catalog/bib/b1234')}`
           ]
         }
       })
@@ -797,7 +803,7 @@ describe('handler', () => {
         statusCode: 302,
         multiValueHeaders: {
           Location: [
-          `https://ilsstaff.nypl.org/iii/cas/logout?service=${encodeURIComponent(`https://${process.env.VEGA_HOST}/`)}`
+          `https://catalogservices.nypl.org/iii/cas/logout?service=${encodeURIComponent(`https://${process.env.VEGA_HOST}/`)}`
           ]
         }
       })

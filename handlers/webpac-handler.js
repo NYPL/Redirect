@@ -134,8 +134,9 @@ const expressions = {
     }
   },
 
-  legacyReg: {
-    expr: /pinreset|selfreg/,
+  // If we receive a request for any of these Webpac paths, redirect to the catalogservices domain:
+  postDeprecationPassThroughPath: {
+    expr: /(:?\/selfreg\/patronsite|\/pinreset|\/iii\/cas).*/,
     handler: (match, request) => {
       return `${process.env.WEBPAC_HOST}${match.input}${reconstructQuery(request.query)}`
     }
