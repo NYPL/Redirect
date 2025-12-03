@@ -1,33 +1,16 @@
-# Redirect service
+# Redirect Service
+
+A service for handling traffic to deprecated catalog hosts, which routes the traffic to the best alternate URL.
 
 ## Purpose
 
-Redirect request for old Classic Catalog pages to new Research Catalog, and old circulating catalog (Encore) to the new circulating catalog (Vega)
+As we turn off catalog services, we direct their DNS to this service, which determines the best place to send the patron based on the app they were attempting to reach (given by host) and the request path. This service currently handles DNS for:
+ - Encore (browse.nypl.org)
+ - Webpac (catalog.nypl.org, legacycatalog.nypl.org, ilsstaff.nypl.org)
 
-## Current Status
+(As well as QA equivalents.)
 
-Implemented for Research Catalog:
-
-- homepage
-- permanent urls for bib show pages
-- most common search pages, accounting for search index and argument
-- login page
-
-Not yet implemented for Research Catalog:
-
-- search-type urls that point to bib pages (i.e. non-permanent links)
-- patron account pages
-- non-research pages
-- more complicated search page parameters (e.g. sort type)
-- subject searches
-- standard number searches are implemented, but seem to have some issues.
-
-Implemented for Circulating:
-
-- homepage, bookcard, home
-- permanent urls for bib show pages
-- keyword searches, not accounting for pagination or facets
-- account page
+This app also serves a few routes on its own dedicated redir-browse.nypl domain to support complicated login flows and debugging.
 
 ## Running locally
 
@@ -58,10 +41,14 @@ This repo follows a [PRS-Target-Main Git Workflow](https://github.com/NYPL/engin
 
 `npm test`
 
+To enable verbose logging for debugging:
+
+`LOG_LEVEL=debug npm test`
+
 To test the app's performance against the [redirect targets sheet](https://docs.google.com/spreadsheets/d/1055Y98c_4l-NXWyzoiUhBSkay4SYZMeKEc9-LGhGoqw/edit#gid=234726655), run:
 
 ```
-node test/test-deployment-redirects
+node test/test-deployment-redirects [--qa]
 ```
 
 ## Deployment
@@ -73,19 +60,4 @@ CI/CD is configured in `.github/workflows/test-and-deploy.yml` for the following
 
 ### Accessing deployed code
 
-This app is deployed as qa and production Lambda functions in `nypl-digital-dev`. A set of [load balancer "Target groups"](https://us-east-1.console.aws.amazon.com/ec2/home?region=us-east-1#TargetGroups:targetType=Lambda;search=catal) in that account route traffic to the lambda functions. DNS in the `nypl` account routes several nypl.org subdomains to those LB target groups. The subdomains include:
- - Prod:
-   - redir-browse.nypl.org
-   - catalog.nypl.org
- - QA:
-   - qa-redir-browse.nypl.org
-   - [Unclear why qa-catalog.nypl.org routes elsewhere]
-
-Thus, to test route handling by the redirect service, build requests using those domains (note the hostname doesn't matter for most redirects). For example:
-
-| Scenario | Expected result | Links |
-|----------|-----------------|-------|
-| Old catalog bib URL | Redirect to equivalent RC bib | [QA](https://qa-redir-browse.nypl.org/record=b12172157~S1) - [Prod](https://qa-redir-browse.nypl.org/record=b12172157~S1) |
-| Old catalog search | Redirect to equivalent RC search | [QA](https://qa-redir-browse.nypl.org/search~S1/aRubina%2C+Dina/arubina+dina/1%2C2%2C84%2CB/exact&FF=arubina+dina+author&1%2C-1%2C/indexsort=-) - [Prod](https://catalog.nypl.org/search~S1/aRubina%2C+Dina/arubina+dina/1%2C2%2C84%2CB/exact&FF=arubina+dina+author&1%2C-1%2C/indexsort=-) |
-| Encore bib page | Redirect to Vega bib page | [QA](https://qa-redir-browse.nypl.org/record/C__Rb18225028) - [Prod](https://redir-browse.nypl.org/record/C__Rb18225028) |
-| Encore logout | Redirect to CAS Logout | [QA](https://qa-redir-browse.nypl.org/iii/encore/logoutFilterRedirect) - [Prod](https://redir-browse.nypl.org/iii/encore/logoutFilterRedirect) |
+This app is deployed as qa and production Lambda functions in `nypl-digital-dev`. A set of [load balancer "Target groups"](https://us-east-1.console.aws.amazon.com/ec2/home?region=us-east-1#TargetGroups:targetType=Lambda;search=catal) in that account route traffic to the lambda functions. DNS in the `nypl` account routes several nypl.org subdomains to those LB target groups.
