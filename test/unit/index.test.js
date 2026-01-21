@@ -321,7 +321,7 @@ describe('mapToRedirectURL', function () {
 
     ;[
       // These paths are marked forever accessible via new stable webpac host:
-      '/selfreg/patronsite',
+      '/selfreg/patonsite',
       '/pinreset',
       '/iii/cas?fladeedle'
     ].forEach((path) => {
