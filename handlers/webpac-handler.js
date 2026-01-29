@@ -76,14 +76,12 @@ const expressions = {
   subjectBrowseReg: {
     expr: /\/search(~S\w*)?\/d/,
     handler: (match, request) => {
-      const searchKey = Object.keys(request.query)[0] ||'';
-      const searchTerm = decodeURIComponent(searchKey.replace(/\+/g, ' '));
-      if (!searchTerm) return process.env.RC_BASE_URL;
-      return `${process.env.RC_BASE_URL}/browse?q=${searchTerm}&search_scope=starts_with`;
-    },
+      const searchKey = Object.keys(request.query)[0] || ''
+      const searchTerm = decodeURIComponent(searchKey.replace(/\+/g, ' '))
+      if (!searchTerm) return process.env.RC_BASE_URL
+      return `${process.env.RC_BASE_URL}/browse?q=${searchTerm}&search_scope=starts_with`
+    }
   },
-
-
 
   /**
   * Match:
@@ -136,7 +134,8 @@ const expressions = {
 
   // If we receive a request for any of these Webpac paths, redirect to the catalogservices domain:
   postDeprecationPassThroughPath: {
-    expr: /(:?\/selfreg\/patronsite|\/pinreset|\/iii\/cas).*/,
+    // Note this is not a misspelling. The offcial URL has "patonsite" (presumably "PATron ONSITE"?)
+    expr: /(:?\/selfreg\/patonsite|\/pinreset|\/iii\/cas).*/,
     handler: (match, request) => {
       return `${process.env.WEBPAC_HOST}${match.input}${reconstructQuery(request.query)}`
     }
@@ -149,7 +148,7 @@ const expressions = {
 }
 
 module.exports.redirectUrl = async (request) => {
-  logger.debug(`LegacyCatalogHandler::redirectUrl: Finding match for ${request.path} among ${Object.keys(expressions).length} expressions`)
+  logger.debug(`WebpacHandler::redirectUrl: Finding match for ${request.path} among ${Object.keys(expressions).length} expressions`)
   let url = await matchFirstExpression(request, expressions)
 
   // If navigating to RC, include originalUrl param:
