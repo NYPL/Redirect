@@ -2,6 +2,7 @@ const encoreHandler = require('./encore-handler')
 const logger = require('../lib/logger')
 const webpacHandler = require('./webpac-handler')
 const redirectServiceHandler = require('./redirect-service-handler')
+const discoveryHandler = require('./discovery-handler')
 
 /**
  *  Be noisy (in the logs) about any hosts mapped to multiple handlers:
@@ -30,6 +31,10 @@ const hostsToHandlers = () => {
     {
       hosts: [process.env.REDIRECT_SERVICE_HOST],
       handler: redirectServiceHandler
+    },
+    {
+      hosts: [process.env.DEPRECATED_DISCOVERY_HOST],
+      handler: discoveryHandler
     }
   ]
     .reduce((map, { hosts, handler }) => {
