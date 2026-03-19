@@ -65,7 +65,7 @@ const parseHost = (event) => {
   host = host.replace(/:\d+$/, '')
 
   // Apply override when testing locally:
-  if (host === 'localhost') {
+  if (['localhost', 'local.nypl.org'].includes(host)) {
     logger.debug(`Original host: ${host}`)
     const overrideHost = headers['X-Request-Host'] || query['override-host'] || REDIRECT_SERVICE_HOST
     host = overrideHost
@@ -92,7 +92,7 @@ const handler = async (event, context, callback) => {
     const query = event.multiValueQueryStringParameters || {}
     const host = parseHost(event)
 
-    const request = { path, query, host, proto }
+    const request = { path, query, host, proto, headers }
     logger.debug('Handling request: ', request)
 
     // First check to see if the app should respond with a custom response
