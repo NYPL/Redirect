@@ -331,17 +331,17 @@ describe('mapToRedirectURL', function () {
           .to.eql(`catalogservices.nypl.org${path}`)
       })
     })
-    
+
     it('should map legacy subject search URLs to starts with browse', async () => {
-      const path = '/search~S1/d';
+      const path = '/search~S1/d'
       const query = {
-        'Homosexuality+Religious+aspects': [''],
-      };
-      const mapped = await mapToRedirectURL({ ...request, path, query });
+        'Homosexuality+Religious+aspects': ['']
+      }
+      const mapped = await mapToRedirectURL({ ...request, path, query })
       expect(mapped).to.eql(
         `${process.env.RC_BASE_URL}/browse?q=Homosexuality Religious aspects&search_scope=starts_with&originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Fsearch~S1%2Fd%3FHomosexuality%2BReligious%2Baspects`
-      );
-    });
+      )
+    })
   })
 
   describe('vega links', () => {
@@ -828,5 +828,33 @@ describe('handler', () => {
 
     expect(resp.body).includes('window.location.replace("https://www.nypl.org/js-enabled");')
     expect(resp.body).includes('<meta http-equiv="refresh" content="1;url=https://www.nypl.org/js-disabled" />')
+  })
+
+  describe('discovery handler', function () {
+    it('routes requests to www', async function () {
+      const event = {
+        path: '/research/research-catalog/foo',
+        multiValueHeaders: {
+          'x-forwarded-proto': ['https'],
+          host: ['discovery.nypl.org']
+        },
+        multiValueQueryStringParameters: {
+          k1: ['v1'],
+          k2: ['v2']
+        }
+      }
+
+      const resp = await handler(event, context, (_, resp) => resp)
+
+      expect(resp).to.deep.eql({
+        isBase64Encoded: false,
+        statusCode: 302,
+        multiValueHeaders: {
+          Location: [
+            'https://www.nypl.org/research/research-catalog/foo?k1=v1&k2=v2'
+          ]
+        }
+      })
+    })
   })
 })
