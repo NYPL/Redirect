@@ -11,6 +11,39 @@ const {
 
 describe('mapToRedirectURL', function () {
   describe('legacy catalog links', () => {
+          before(() => {
+        sinon.stub(NyplApiClient.prototype, 'get').callsFake(() => {
+          return {
+            data: [
+              {
+                id: 'abcdefg',
+                varFields: [
+                  {
+                    marcTag: '910',
+                    subfields: [
+                      {
+                        tag: 'a',
+                        content: 'RL'
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        })
+
+        sinon.stub(KMSClient.prototype, 'send').callsFake(() => {
+          return {
+            Plaintext: new ArrayBuffer(8)
+          }
+        })
+      })
+
+      after(() => {
+        NyplApiClient.prototype.get.restore()
+        KMSClient.prototype.send.restore()
+      })
     // Set up generic, overridable request object for catalog.nypl tests:
     const request = {
       proto: 'https',
