@@ -41,6 +41,7 @@ const expressions = {
       // check if bib is research or circulating
       const oclcNum = match[1]
       const { isResearch, bibId } = await queryIsResearch(oclcNum, "oclc")
+      console.log(bibId)
       if (isResearch) {
         return `${process.env.RC_BASE_URL}/search?oclc=${oclcNum}&redirectOnMatch=true`
       } else {
@@ -112,14 +113,17 @@ const expressions = {
   },
 
   recordReg: {
-    expr: /\/record=(b\d{8})/,
-    handler: (match, request) => {
+    expr: /\/record=b(\d{8})/,
+    handler: async (match, request) => {
+      const num = match[1]
       const { collection } = request.query
-      const bnum = match[1]
-      if (Array.isArray(collection) && collection.includes('circ')) {
-        return `${process.env.VEGA_HOST}/search/card?recordId=${bnum.replace(/\D/g, '')}`
+      const circCollection = Array.isArray(collection) && collection.includes('circ')
+      const { isResearch } = await queryIsResearch(num, 'bibId')
+      const redirectToResearch = isResearch && !circCollection
+      if (redirectToResearch) {
+        return `${process.env.RC_BASE_URL}/bib/b${num}`
       }
-      return `${process.env.RC_BASE_URL}/bib/${bnum}`
+      return `${process.env.VEGA_HOST}/search/card?recordId=${num.replace(/\D/g, '')}`
     }
   },
 
