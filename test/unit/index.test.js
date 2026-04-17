@@ -27,8 +27,25 @@ describe('mapToRedirectURL', function () {
 
     it('should map bib pages correctly', async function () {
       const path = '/record=b12172157~S1'
-      axios.post = () => ({ data: { access_token: '' } })
-      axios.get = () => ({ data: { uri: 'b12172157' } })
+      axios.post = async () => ({ data: { access_token: '' } })
+      axios.get = async () => ({
+            data: [
+              {
+                id: 'abcdefg',
+                varFields: [
+                  {
+                    marcTag: '910',
+                    subfields: [
+                      {
+                        tag: 'a',
+                        content: 'RL'
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          })
       const mapped = await mapToRedirectURL({ ...request, path })
       expect(mapped)
         .to.eql(`${process.env.RC_BASE_URL}/bib/b12172157?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Frecord%3Db12172157~S1`)
@@ -607,7 +624,39 @@ describe('handler', () => {
     })
   })
 
-  describe('collection query param redirect', () => {
+  describe('collection query param takes precedence over RL 910$a', () => {
+     before(() => {
+        sinon.stub(NyplApiClient.prototype, 'get').callsFake(() => {
+          return {
+            data: [
+              {
+                id: 'abcdefg',
+                varFields: [
+                  {
+                    marcTag: '910',
+                    subfields: [
+                      {
+                        tag: 'a',
+                        content: 'RL'
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        })
+
+        sinon.stub(KMSClient.prototype, 'send').callsFake(() => {
+          return {
+            Plaintext: new ArrayBuffer(8)
+          }
+        })
+      })
+      after(() => {
+        NyplApiClient.prototype.get.restore()
+        KMSClient.prototype.send.restore()
+      })
     it('should redirect to vega with converted bib id when "circ" set as collection query param', async function () {
       const event = {
         path: '/record=b22297361',

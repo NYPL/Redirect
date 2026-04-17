@@ -119,11 +119,10 @@ const expressions = {
       const { collection } = request.query
       const circCollection = Array.isArray(collection) && collection.includes('circ')
       const { isResearch } = await queryIsResearch(num, 'bibId')
-      const redirectToResearch = isResearch && !circCollection
-      if (redirectToResearch) {
-        return `${process.env.RC_BASE_URL}/bib/b${num}`
+      if (circCollection || !isResearch) {
+        return `${process.env.VEGA_HOST}/search/card?recordId=${num.replace(/\D/g, '')}`
       }
-      return `${process.env.VEGA_HOST}/search/card?recordId=${num.replace(/\D/g, '')}`
+      return `${process.env.RC_BASE_URL}/bib/b${num}`
     }
   },
 
