@@ -7,7 +7,7 @@ const {
   reconstructOriginalURL
 } = require('../lib/utils')
 const logger = require('../lib/logger')
-const { nyplApiClient } = require('../lib/nypl-api-client.js')
+const { queryIsResearch } = require('../lib/requests')
 
 const expressions = {
   /**
@@ -40,20 +40,11 @@ const expressions = {
     handler: async (match) => {
       // check if bib is research or circulating
       const oclcNum = match[1]
-      const client = await nyplApiClient({ apiName: 'discovery' })
-      const resp = await client.get(`/bibs?nyplSource=sierra-nypl&controlNumber=${oclcNum}`)
-      const id = resp && resp.data && resp.data[0] && resp.data[0].id
-      const varFields = resp && resp.data && resp.data[0] && resp.data[0].varFields
-      const field910a = varFields && varFields.find(field =>
-        field.marcTag === '910' &&
-        field.subfields.some(subfield => subfield.tag === 'a')
-      )
-      const isResearch = field910a && field910a.subfields.some(subfield => subfield.tag === 'a' && subfield.content === 'RL')
-
+      const { isResearch, bibId } = await queryIsResearch(oclcNum, "oclc")
       if (isResearch) {
         return `${process.env.RC_BASE_URL}/search?oclc=${oclcNum}&redirectOnMatch=true`
       } else {
-        return `${process.env.VEGA_HOST}/search/card?recordId=${id}`
+        return `${process.env.VEGA_HOST}/search/card?recordId=${bibId}`
       }
     }
   },
