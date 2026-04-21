@@ -1,4 +1,4 @@
-const bibServiceResponse = (isResearch) => {
+const bibServiceResponse = ({isResearch}) => {
   return {
           data: [
             {

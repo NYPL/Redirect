@@ -7,7 +7,7 @@ const {
   reconstructOriginalURL
 } = require('../lib/utils')
 const logger = require('../lib/logger')
-const { queryIsResearch } = require('../lib/requests')
+const requests = require('../lib/requests')
 
 const expressions = {
   /**
@@ -40,8 +40,7 @@ const expressions = {
     handler: async (match) => {
       // check if bib is research or circulating
       const oclcNum = match[1]
-      const { isResearch, bibId } = await queryIsResearch(oclcNum, "oclc")
-      console.log(bibId)
+      const { isResearch, bibId } = await requests.queryIsResearch(oclcNum, "oclc")
       if (isResearch) {
         return `${process.env.RC_BASE_URL}/search?oclc=${oclcNum}&redirectOnMatch=true`
       } else {
@@ -118,11 +117,13 @@ const expressions = {
       const num = match[1]
       const { collection } = request.query
       const circCollection = Array.isArray(collection) && collection.includes('circ')
-      const { isResearch } = await queryIsResearch(num, 'bibId')
-      if (circCollection || !isResearch) {
+      const { isResearch } = await requests.queryIsResearch(num, 'bibId')
+      if (!circCollection || isResearch) {
+        return `${process.env.RC_BASE_URL}/bib/b${num}`
+      }
+      else {
         return `${process.env.VEGA_HOST}/search/card?recordId=${num.replace(/\D/g, '')}`
       }
-      return `${process.env.RC_BASE_URL}/bib/b${num}`
     }
   },
 
