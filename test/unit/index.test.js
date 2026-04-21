@@ -528,10 +528,10 @@ describe('handler', () => {
     })
   })
 
-  describe('collection query param takes precedence over RL 910$a', () => {
+  describe('collection query param', () => {
     let queryIsResearchStub
     before(() => {
-      queryIsResearchStub = sinon.stub(requests, 'queryIsResearch').resolves({ isResearch: false })
+      queryIsResearchStub = sinon.stub(requests, 'queryIsResearch').resolves({ isResearch: true })
     })
     after(() => {
       queryIsResearchStub.restore()
@@ -573,7 +573,7 @@ describe('handler', () => {
       })
     })
 
-    it('should redirect to research catalog when anything other than "circ" is in collection query params', async function () {
+    it('circ collection param takes precedence over RL 910$a', async function () {
       const event = {
         path: '/record=b22297361',
         multiValueHeaders: {
