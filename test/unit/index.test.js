@@ -529,8 +529,12 @@ describe('handler', () => {
   })
 
   describe('collection query param takes precedence over RL 910$a', () => {
+    let queryIsResearchStub
     before(() => {
-      sinon.stub(requests, 'queryIsResearch').resolves({ isResearch: false })
+      queryIsResearchStub = sinon.stub(requests, 'queryIsResearch').resolves({ isResearch: false })
+    })
+    after(() => {
+      queryIsResearchStub.restore()
     })
 
     it('should redirect to vega with converted bib id when "circ" set as collection query param', async function () {

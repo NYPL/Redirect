@@ -1,20 +1,22 @@
-const bibServiceResponse = ({isResearch}) => {
+const bibServiceResponse = ({ isResearch }) => {
   return {
-          data: [
-            {
-              id: 'abcdefg',
-              varFields: [
-                {
-                  marcTag: '910',
-                  subfields: [
-                    {
-                      tag: 'a',
-                      content: isResearch? 'RL' : 'BL'
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
-        }
+    data: [
+      {
+        id: 'abcdefg',
+        varFields: [
+          {
+            marcTag: '910',
+            subfields: [
+              {
+                tag: 'a',
+                content: isResearch ? 'RL' : 'BL'
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
 }
+
+module.exports = { bibServiceResponse }

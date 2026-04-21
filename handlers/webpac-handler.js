@@ -40,7 +40,7 @@ const expressions = {
     handler: async (match) => {
       // check if bib is research or circulating
       const oclcNum = match[1]
-      const { isResearch, bibId } = await requests.queryIsResearch(oclcNum, "oclc")
+      const { isResearch, bibId } = await requests.queryIsResearch(oclcNum, "controlNumber")
       if (isResearch) {
         return `${process.env.RC_BASE_URL}/search?oclc=${oclcNum}&redirectOnMatch=true`
       } else {
@@ -117,7 +117,7 @@ const expressions = {
       const num = match[1]
       const { collection } = request.query
       const circCollection = Array.isArray(collection) && collection.includes('circ')
-      const { isResearch } = await requests.queryIsResearch(num, 'bibId')
+      const { isResearch } = await requests.queryIsResearch(num, 'id')
       if (!circCollection || isResearch) {
         return `${process.env.RC_BASE_URL}/bib/b${num}`
       }
