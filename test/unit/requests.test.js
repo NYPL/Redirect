@@ -3,15 +3,18 @@ const sinon = require('sinon')
 const requests = require('../../lib/requests')
 const NyplApiClient = require('@nypl/nypl-data-api-client')
 const { bibServiceResponse } = require('./fixtures')
+const kmsClient = require("../../lib/kms-helper")
 
 describe('requests', () => {
   describe('queryIsResearch', () => {
     let nyplApiClientGetStub
     before(() => {
       nyplApiClientGetStub = sinon.stub(NyplApiClient.prototype, 'get')
+      kmsClientDecryptStub = sinon.stub(kmsClient, 'decrypt')
     })
     after(() => {
       nyplApiClientGetStub.restore()
+      kmsClientDecryptStub.restore()
     })
     it('bib, 910$a =RL', async () => {
       nyplApiClientGetStub.resolves(bibServiceResponse({ isResearch: true }))
