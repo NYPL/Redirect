@@ -1,8 +1,6 @@
-const axios = require('axios')
 const { expect } = require('chai')
 const sinon = require('sinon')
-const NyplApiClient = require('@nypl/nypl-data-api-client')
-const { KMSClient } = require('@aws-sdk/client-kms')
+const requests = require('../../lib/requests')
 
 const {
   mapToRedirectURL,
@@ -10,7 +8,13 @@ const {
 } = require('../../index')
 
 describe('mapToRedirectURL', function () {
+  let queryIsResearchStub
+  before(() => {
+    queryIsResearchStub = sinon.stub(requests, 'queryIsResearch')
+  })
+  after(() => queryIsResearchStub.restore())
   describe('legacy catalog links', () => {
+    
     // Set up generic, overridable request object for catalog.nypl tests:
     const request = {
       proto: 'https',
@@ -26,10 +30,11 @@ describe('mapToRedirectURL', function () {
     })
 
     it('should map bib pages correctly', async function () {
+      queryIsResearchStub.resolves({ isResearch: true })
       const path = '/record=b12172157~S1'
-      axios.post = () => ({ data: { access_token: '' } })
-      axios.get = () => ({ data: { uri: 'b12172157' } })
+
       const mapped = await mapToRedirectURL({ ...request, path })
+      
       expect(mapped)
         .to.eql(`${process.env.RC_BASE_URL}/bib/b12172157?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Frecord%3Db12172157~S1`)
     })
@@ -151,39 +156,8 @@ describe('mapToRedirectURL', function () {
 
     describe('mapping oclc records in the research catalog', async () => {
       before(() => {
-        sinon.stub(NyplApiClient.prototype, 'get').callsFake(() => {
-          return {
-            data: [
-              {
-                id: 'abcdefg',
-                varFields: [
-                  {
-                    marcTag: '910',
-                    subfields: [
-                      {
-                        tag: 'a',
-                        content: 'RL'
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
-        })
-
-        sinon.stub(KMSClient.prototype, 'send').callsFake(() => {
-          return {
-            Plaintext: new ArrayBuffer(8)
-          }
-        })
+        queryIsResearchStub.resolves({ isResearch: true })
       })
-
-      after(() => {
-        NyplApiClient.prototype.get.restore()
-        KMSClient.prototype.send.restore()
-      })
-
       it('should map search pages for oclc records', async () => {
         const path = '/search/o1081334684'
         const mapped = await mapToRedirectURL({ ...request, path })
@@ -194,37 +168,7 @@ describe('mapToRedirectURL', function () {
 
     describe('mapping oclc records in the circulating catalog', async () => {
       before(() => {
-        sinon.stub(NyplApiClient.prototype, 'get').callsFake(() => {
-          return {
-            data: [
-              {
-                id: 'abcdefg',
-                varFields: [
-                  {
-                    marcTag: '910',
-                    subfields: [
-                      {
-                        tag: 'a',
-                        content: 'BL'
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
-        })
-
-        sinon.stub(KMSClient.prototype, 'send').callsFake(() => {
-          return {
-            Plaintext: new ArrayBuffer(8)
-          }
-        })
-      })
-
-      after(() => {
-        NyplApiClient.prototype.get.restore()
-        KMSClient.prototype.send.restore()
+        queryIsResearchStub.resolves({ isResearch: false, bibId: 'abcdefg' })
       })
 
       it('should map search pages for oclc records', async () => {
@@ -237,30 +181,7 @@ describe('mapToRedirectURL', function () {
 
     describe('oclc including = ', async () => {
       before(() => {
-        sinon.stub(NyplApiClient.prototype, 'get').callsFake(() => {
-          return {
-            data: [
-              {
-                id: 'abcdefg',
-                varFields: [
-                  {
-                    marcTag: '910',
-                    subfields: [
-                      {
-                        tag: 'a',
-                        content: 'RL'
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          }
-        })
-      })
-
-      after(() => {
-        NyplApiClient.prototype.get.restore()
+        queryIsResearchStub.resolves({ isResearch: true })
       })
 
       it('should map search pages for oclc records including =', async () => {
@@ -319,18 +240,18 @@ describe('mapToRedirectURL', function () {
         .to.eql('catalogservices.nypl.org/pinreset~S1')
     })
 
-    ;[
-      // These paths are marked forever accessible via new stable webpac host:
-      '/selfreg/patonsite',
-      '/pinreset',
-      '/iii/cas?fladeedle'
-    ].forEach((path) => {
-      it(`should redirect ${path} to stable webpac host`, async () => {
-        const mapped = await mapToRedirectURL({ ...request, path })
-        expect(mapped)
-          .to.eql(`catalogservices.nypl.org${path}`)
+      ;[
+        // These paths are marked forever accessible via new stable webpac host:
+        '/selfreg/patonsite',
+        '/pinreset',
+        '/iii/cas?fladeedle'
+      ].forEach((path) => {
+        it(`should redirect ${path} to stable webpac host`, async () => {
+          const mapped = await mapToRedirectURL({ ...request, path })
+          expect(mapped)
+            .to.eql(`catalogservices.nypl.org${path}`)
+        })
       })
-    })
 
     it('should map legacy subject search URLs to starts with browse', async () => {
       const path = '/search~S1/d'
@@ -607,7 +528,15 @@ describe('handler', () => {
     })
   })
 
-  describe('collection query param redirect', () => {
+  describe('collection query param', () => {
+    let queryIsResearchStub
+    before(() => {
+      queryIsResearchStub = sinon.stub(requests, 'queryIsResearch').resolves({ isResearch: true })
+    })
+    after(() => {
+      queryIsResearchStub.restore()
+    })
+
     it('should redirect to vega with converted bib id when "circ" set as collection query param', async function () {
       const event = {
         path: '/record=b22297361',
@@ -644,7 +573,7 @@ describe('handler', () => {
       })
     })
 
-    it('should redirect to research catalog when anything other than "circ" is in collection query params', async function () {
+    it('circ collection param takes precedence over RL 910$a', async function () {
       const event = {
         path: '/record=b22297361',
         multiValueHeaders: {
@@ -679,16 +608,16 @@ describe('handler', () => {
       const url = jsConditionalRedirect +
         '?redirect_uri=' + encodeURIComponent(
           `https://${process.env.VEGA_HOST}/logout` +
-            '?redirect_uri=' +
-            encodeURIComponent(
-              'https://redir-browse.nypl.org/vega-logout-handler?redirect_uri=' +
-              encodeURIComponent(`https://${process.env.VEGA_HOST}/`)
-            )
-      ) +
+          '?redirect_uri=' +
+          encodeURIComponent(
+            'https://redir-browse.nypl.org/vega-logout-handler?redirect_uri=' +
+            encodeURIComponent(`https://${process.env.VEGA_HOST}/`)
+          )
+        ) +
         '&noscript_redirect_uri=' + encodeURIComponent(
-        'https://catalogservices.nypl.org/iii/cas/logout?service=' +
+          'https://catalogservices.nypl.org/iii/cas/logout?service=' +
           encodeURIComponent(`https://${process.env.VEGA_HOST}/`)
-      )
+        )
       expect(resp).to.deep.eql({
         isBase64Encoded: false,
         statusCode: 302,
@@ -696,65 +625,65 @@ describe('handler', () => {
       })
     })
 
-    // Test several allowed redirect_uris:
-    ; [
-      // redirect_uri 0:
-      () => 'https://www.nypl.org/',
-      // redirect_uri 1:
-      () => `https://${process.env.DEPRECATED_ENCORE_HOSTS.split(',')[0]}/`,
-      // redirect_uri 2:
-      () => `https://${process.env.WEBPAC_HOST}/`,
-      // redirect_uri 3:
-      () => `https://${process.env.VEGA_HOST}/`,
-      // redirect_uri 4:
-      () => `https://${process.env.RC_BASE_URL}`,
-      // redirect_uri 5:
-      () => `https://${process.env.VEGA_HOST}/logout?redirect_uri=https://www.nypl.org/research/research-catalog/bib/b11373666`
-    ].forEach((urlGenerator, ind) => {
-      it(`should respect redirect_uri ${ind}`, async function () {
-        const validUrl = urlGenerator()
-        const eventWithRedirect = Object.assign({}, baseEvent,
-          { multiValueQueryStringParameters: { redirect_uri: [validUrl] } }
-        )
-        const resp = await handler(eventWithRedirect, context, (_, resp) => resp)
-        const url = jsConditionalRedirect +
-          '?redirect_uri=' + encodeURIComponent(
-            `https://${process.env.VEGA_HOST}/logout?redirect_uri=` + encodeURIComponent(
-            'https://redir-browse.nypl.org/vega-logout-handler?redirect_uri=' + encodeURIComponent(validUrl)
+      // Test several allowed redirect_uris:
+      ;[
+        // redirect_uri 0:
+        () => 'https://www.nypl.org/',
+        // redirect_uri 1:
+        () => `https://${process.env.DEPRECATED_ENCORE_HOSTS.split(',')[0]}/`,
+        // redirect_uri 2:
+        () => `https://${process.env.WEBPAC_HOST}/`,
+        // redirect_uri 3:
+        () => `https://${process.env.VEGA_HOST}/`,
+        // redirect_uri 4:
+        () => `https://${process.env.RC_BASE_URL}`,
+        // redirect_uri 5:
+        () => `https://${process.env.VEGA_HOST}/logout?redirect_uri=https://www.nypl.org/research/research-catalog/bib/b11373666`
+      ].forEach((urlGenerator, ind) => {
+        it(`should respect redirect_uri ${ind}`, async function () {
+          const validUrl = urlGenerator()
+          const eventWithRedirect = Object.assign({}, baseEvent,
+            { multiValueQueryStringParameters: { redirect_uri: [validUrl] } }
           )
-        ) +
-          '&noscript_redirect_uri=' + encodeURIComponent(
-          'https://catalogservices.nypl.org/iii/cas/logout?service=' + encodeURIComponent(validUrl)
-        )
+          const resp = await handler(eventWithRedirect, context, (_, resp) => resp)
+          const url = jsConditionalRedirect +
+            '?redirect_uri=' + encodeURIComponent(
+              `https://${process.env.VEGA_HOST}/logout?redirect_uri=` + encodeURIComponent(
+                'https://redir-browse.nypl.org/vega-logout-handler?redirect_uri=' + encodeURIComponent(validUrl)
+              )
+            ) +
+            '&noscript_redirect_uri=' + encodeURIComponent(
+              'https://catalogservices.nypl.org/iii/cas/logout?service=' + encodeURIComponent(validUrl)
+            )
 
-        expect(resp).to.deep.include({
-          statusCode: 302,
-          multiValueHeaders: { Location: [url] }
+          expect(resp).to.deep.include({
+            statusCode: 302,
+            multiValueHeaders: { Location: [url] }
+          })
         })
       })
-    })
 
-    // Test replacing discovery.nypl.org with nypl.org in redirect
+      // Test replacing discovery.nypl.org with nypl.org in redirect
 
-    ; [
-      'https://www.discovery.nypl.org/',
-      'https://discovery.nypl.org/'
-    ].forEach((validUrl) => {
-      it(`should respect redirect_uri=${validUrl}`, async function () {
-        const eventWithRedirect = Object.assign({}, baseEvent,
-          { multiValueQueryStringParameters: { redirect_uri: [validUrl] } }
-        )
-        const resp = await handler(eventWithRedirect, context, (_, resp) => resp)
+      ;[
+        'https://www.discovery.nypl.org/',
+        'https://discovery.nypl.org/'
+      ].forEach((validUrl) => {
+        it(`should respect redirect_uri=${validUrl}`, async function () {
+          const eventWithRedirect = Object.assign({}, baseEvent,
+            { multiValueQueryStringParameters: { redirect_uri: [validUrl] } }
+          )
+          const resp = await handler(eventWithRedirect, context, (_, resp) => resp)
 
-        const url = jsConditionalRedirect +
-         '?redirect_uri=' + encodeURIComponent(`https://${process.env.VEGA_HOST}/logout?redirect_uri=https%3A%2F%2Fredir-browse.nypl.org%2Fvega-logout-handler%3Fredirect_uri%3D` + encodeURIComponent(encodeURIComponent('https://www.nypl.org/'))) +
-         '&noscript_redirect_uri=https%3A%2F%2Fcatalogservices.nypl.org%2Fiii%2Fcas%2Flogout%3Fservice%3Dhttps%253A%252F%252Fwww.nypl.org%252F'
-        expect(resp).to.deep.include({
-          statusCode: 302,
-          multiValueHeaders: { Location: [url] }
+          const url = jsConditionalRedirect +
+            '?redirect_uri=' + encodeURIComponent(`https://${process.env.VEGA_HOST}/logout?redirect_uri=https%3A%2F%2Fredir-browse.nypl.org%2Fvega-logout-handler%3Fredirect_uri%3D` + encodeURIComponent(encodeURIComponent('https://www.nypl.org/'))) +
+            '&noscript_redirect_uri=https%3A%2F%2Fcatalogservices.nypl.org%2Fiii%2Fcas%2Flogout%3Fservice%3Dhttps%253A%252F%252Fwww.nypl.org%252F'
+          expect(resp).to.deep.include({
+            statusCode: 302,
+            multiValueHeaders: { Location: [url] }
+          })
         })
       })
-    })
 
     it('should reject invalid redirect_uri param', async function () {
       const eventWithRedirect = Object.assign({}, baseEvent,
@@ -790,7 +719,7 @@ describe('handler', () => {
         statusCode: 302,
         multiValueHeaders: {
           Location: [
-          `https://catalogservices.nypl.org/iii/cas/logout?service=${encodeURIComponent('https://www.nypl.org/research/research-catalog/bib/b1234')}`
+            `https://catalogservices.nypl.org/iii/cas/logout?service=${encodeURIComponent('https://www.nypl.org/research/research-catalog/bib/b1234')}`
           ]
         }
       })
@@ -803,7 +732,7 @@ describe('handler', () => {
         statusCode: 302,
         multiValueHeaders: {
           Location: [
-          `https://catalogservices.nypl.org/iii/cas/logout?service=${encodeURIComponent(`https://${process.env.VEGA_HOST}/`)}`
+            `https://catalogservices.nypl.org/iii/cas/logout?service=${encodeURIComponent(`https://${process.env.VEGA_HOST}/`)}`
           ]
         }
       })
