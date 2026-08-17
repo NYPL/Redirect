@@ -1,11 +1,30 @@
 const { expect } = require('chai')
 const sinon = require('sinon')
 const requests = require('../../lib/requests')
+const nodeUtils = require('@nypl/node-utils')
 
 const {
   mapToRedirectURL,
   handler
 } = require('../../index')
+
+before(() => {
+  sinon.stub(nodeUtils.config, 'loadConfig').resolves()
+  sinon.stub(nodeUtils.NyplSourceMapper, 'loadInstance').resolves()
+  sinon.stub(nodeUtils.NyplSourceMapper, 'instance').returns({
+    splitIdentifier: (id) => {
+      if (/^b\d/.test(id)) return { id: id.slice(1), type: 'bib', nyplSource: 'sierra-nypl' }
+      if (/^cb\d/.test(id)) return { id: id.slice(2), type: 'bib', nyplSource: 'recap-cul' }
+      throw new Error(`Unrecognized identifier: ${id}`)
+    }
+  })
+})
+
+after(() => {
+  if (nodeUtils.config.loadConfig.restore) nodeUtils.config.loadConfig.restore()
+  if (nodeUtils.NyplSourceMapper.loadInstance.restore) nodeUtils.NyplSourceMapper.loadInstance.restore()
+  if (nodeUtils.NyplSourceMapper.instance.restore) nodeUtils.NyplSourceMapper.instance.restore()
+})
 
 describe('mapToRedirectURL', function () {
   let queryIsResearchStub
@@ -221,10 +240,18 @@ describe('mapToRedirectURL', function () {
     })
 
     it('should return 404 page if no match is found', async function () {
-      const path = '/record=fishsticks'
+      const path = '/record=bsomeid/'
       const mapped = await mapToRedirectURL({ ...request, path })
       expect(mapped)
-        .to.eql(`${process.env.RC_BASE_URL}/404/redirect?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Frecord%3Dfishsticks`)
+        .to.eql(`${process.env.RC_BASE_URL}/404/redirect?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Frecord%3Dbsomeid%2F`)
+    })
+
+    it('should map partner ids like cb[num] as research', async function () {
+      queryIsResearchStub.resolves({ isResearch: true })
+      const path = '/record=cb1234567'
+      const mapped = await mapToRedirectURL({ ...request, path })
+      expect(mapped)
+        .to.eql(`${process.env.RC_BASE_URL}/bib/cb1234567?originalUrl=https%3A%2F%2Fcatalog.nypl.org%2Frecord%3Dcb1234567`)
     })
 
     it('should return account page for research my account', async () => {
