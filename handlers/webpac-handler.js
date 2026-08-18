@@ -146,7 +146,7 @@ const expressions = {
       if (circCollection) {
         return vegaUrl
       }
-      const { isResearch } = await requests.queryIsResearch(num, 'id')
+      const { isResearch } = await requests.queryIsResearch(num, 'id', mapping.nyplSource)
       if (isResearch) {
         return `${process.env.RC_BASE_URL}/bib/${identifier}`
       } else return vegaUrl
