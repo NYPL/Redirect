@@ -8,12 +8,11 @@ const {
 } = require('../lib/utils')
 const logger = require('../lib/logger')
 const requests = require('../lib/requests')
-const { NyplSourceMapper, config } = require('@nypl/node-utils')
+const { NyplSourceMapper } = require('@nypl/node-utils')
 
 let nyplSourceMapperInstance = null
 const getNyplSourceMapper = async () => {
   if (!nyplSourceMapperInstance) {
-    await config.loadConfig()
     await NyplSourceMapper.loadInstance()
     nyplSourceMapperInstance = NyplSourceMapper.instance()
   }
