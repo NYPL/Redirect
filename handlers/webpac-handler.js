@@ -127,11 +127,13 @@ const expressions = {
       const identifier = match[1]
 
       let num
+      let nyplSource
       try {
         const mapper = await getNyplSourceMapper()
         const mapping = mapper.splitIdentifier(identifier)
         if (mapping && mapping.id) {
           num = mapping.id
+          nyplSource = mapping.nyplSource
         } else {
           return `${process.env.RC_BASE_URL}/404/redirect`
         }
@@ -146,7 +148,7 @@ const expressions = {
       if (circCollection) {
         return vegaUrl
       }
-      const { isResearch } = await requests.queryIsResearch(num, 'id', mapping.nyplSource)
+      const { isResearch } = await requests.queryIsResearch(num, 'id', nyplSource)
       if (isResearch) {
         return `${process.env.RC_BASE_URL}/bib/${identifier}`
       } else return vegaUrl
