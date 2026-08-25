@@ -8,12 +8,11 @@ const {
 } = require('../lib/utils')
 const logger = require('../lib/logger')
 const requests = require('../lib/requests')
-const { NyplSourceMapper, config } = require('@nypl/node-utils')
+const { NyplSourceMapper } = require('@nypl/node-utils')
 
 let nyplSourceMapperInstance = null
 const getNyplSourceMapper = async () => {
   if (!nyplSourceMapperInstance) {
-    await config.loadConfig()
     await NyplSourceMapper.loadInstance()
     nyplSourceMapperInstance = NyplSourceMapper.instance()
   }
@@ -128,11 +127,13 @@ const expressions = {
       const identifier = match[1]
 
       let num
+      let nyplSource
       try {
         const mapper = await getNyplSourceMapper()
         const mapping = mapper.splitIdentifier(identifier)
         if (mapping && mapping.id) {
           num = mapping.id
+          nyplSource = mapping.nyplSource
         } else {
           return `${process.env.RC_BASE_URL}/404/redirect`
         }
@@ -147,7 +148,7 @@ const expressions = {
       if (circCollection) {
         return vegaUrl
       }
-      const { isResearch } = await requests.queryIsResearch(num, 'id')
+      const { isResearch } = await requests.queryIsResearch(num, 'id', nyplSource)
       if (isResearch) {
         return `${process.env.RC_BASE_URL}/bib/${identifier}`
       } else return vegaUrl

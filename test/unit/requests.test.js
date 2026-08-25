@@ -16,6 +16,10 @@ describe('requests', () => {
       nyplApiClientGetStub.restore()
       kmsClientDecryptStub.restore()
     })
+    afterEach(() => {
+      nyplApiClientGetStub.resetHistory()
+      kmsClientDecryptStub.resetHistory()
+    })
     it('bib, 910$a =RL', async () => {
       nyplApiClientGetStub.resolves(bibServiceResponse({ isResearch: true }))
       const { isResearch } = await requests.queryIsResearch(123, 'id')
@@ -39,6 +43,13 @@ describe('requests', () => {
       const {isResearch, bibId} = await requests.queryIsResearch(123, 'controlNumber')
       expect(isResearch).to.equal(false)
       expect(bibId).to.equal('abcdefg')
+    })
+
+    it('should return isResearch true immediately if nyplSource is not sierra-nypl', async () => {
+      const { isResearch, bibId } = await requests.queryIsResearch(123, 'id', 'recap-cul')
+      expect(isResearch).to.equal(true)
+      expect(bibId).to.equal(123)
+      expect(nyplApiClientGetStub.called).to.be.false
     })
   })
 })
