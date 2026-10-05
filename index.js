@@ -125,7 +125,8 @@ const handler = async (event, context, callback) => {
     }
     return callback(null, response)
   } catch (err) {
-    logger.error('Error', err)
+    // Individual request failures fall back to RC_BASE_URL
+    logger.warn('Warning', { metric: 'RedirectFailure', message: err})
     const mappedUrl = RC_BASE_URL
     const redirectLocation = `${proto}://${mappedUrl}`
     const response = {
